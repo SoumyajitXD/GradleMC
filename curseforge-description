@@ -1,0 +1,116 @@
+<div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.65; color: #e5f2ff; border: 1px solid #193247;">
+<div>
+<div style="display: inline-block; color: #03120a; font-size: 13px; font-weight: 900; text-transform: uppercase;">Modpack Stability Scanner</div>
+<h1 style="font-size: 40px; line-height: 1.05; color: #fff;">GradleMC</h1>
+<p style="font-size: 19px; color: #d5eaff;">An in-game diagnostic toolkit for Minecraft modpacks. Run health checks, benchmark runtime performance, detect risky mod/config combinations, scan entity and worldgen pressure, and export clean reports before your pack collapses like a badly optimized sandcastle.</p>
+<div><span style="display: inline-block; border: 1px solid #38f28b; color: #a8ffd0; font-weight: 800; font-size: 13px;">Health Checks</span> <span style="display: inline-block; border: 1px solid #56a7ff; color: #b8dcff; font-weight: 800; font-size: 13px;">Benchmarks</span> <span style="display: inline-block; border: 1px solid #ff62d2; color: #ffd0f2; font-weight: 800; font-size: 13px;">Risk Detection</span> <span style="display: inline-block; border: 1px solid #ffb84d; color: #ffe0a8; font-weight: 800; font-size: 13px;">Worldgen Scans</span> <span style="display: inline-block; border: 1px solid #ff5c5c; color: #ffc4c4; font-weight: 800; font-size: 13px;">Debug Reports</span></div>
+</div>
+<div>
+<h2 style="color: #38f28b; font-size: 26px;">Stop guessing. Start diagnosing.</h2>
+<p style="color: #d7e9f8; font-size: 16px;">GradleMC is built for modpack creators, server owners, and players who need answers faster than &ldquo;remove half your mods and pray.&rdquo; It gives you structured checks, readable results, and exportable reports so you can find the real problem instead of throwing random JVM flags into the void.</p>
+</div>
+<div>
+<h2 style="color: #fff; font-size: 28px;">Core Features</h2>
+<div style="display: grid;">
+<div style="border: 1px solid #56a7ff;">
+<h3 style="color: #8cc8ff;">⚡ Runtime Benchmarks</h3>
+<p style="color: #d7e9f8;">Measure live performance conditions and expose bottlenecks that are dragging your pack into swamp-tier frame pacing.</p>
+</div>
+<div style="border: 1px solid #38f28b;">
+<h3 style="color: #7dffba;">🩺 Health Checks</h3>
+<p style="color: #d7fbea;">Scan your modpack for stability risks, suspicious behavior, unsafe assumptions, and obvious problems hiding in plain sight.</p>
+</div>
+<div style="border: 1px solid #ff62d2;">
+<h3 style="color: #ff9ee5;">🧨 Risky Combo Detection</h3>
+<p style="color: #ffe0f6;">Detect risky mod and configuration combinations before they become crash logs, corrupted saves, or Discord support nightmares.</p>
+</div>
+<div style="border: 1px solid #ffb84d;">
+<h3 style="color: #ffd27a;">🌍 Worldgen Pressure</h3>
+<p style="color: #fff0cc;">Analyze world generation pressure and chunk-related stress that can turn exploration into a slideshow with trees.</p>
+</div>
+<div style="border: 1px solid #ff5c5c;">
+<h3 style="color: #ff9696;">🐄 Entity Pressure Scans</h3>
+<p style="color: #ffe1e1;">Find entity-heavy situations that are quietly strangling tick rate behind your back like a cowardly little lag gremlin.</p>
+</div>
+<div style="border: 1px solid #8b7cff;">
+<h3 style="color: #beb7ff;">📄 Clean Report Export</h3>
+<p style="color: #e4e1ff;">Export readable reports for debugging, sharing with maintainers, or proving that yes, something is actually wrong.</p>
+</div>
+</div>
+</div>
+<div>
+<h2 style="color: #fff; font-size: 28px;">Built For People Who Actually Need Answers</h2>
+<div style="display: grid;">
+<div><strong style="display: block; color: #8cc8ff; font-size: 16px;">Modpack Creators</strong> <span style="color: #d7e9f8;">Test stability before publishing instead of letting users become unpaid crash-test goblins.</span></div>
+<div><strong style="display: block; color: #7dffba; font-size: 16px;">Server Owners</strong> <span style="color: #d7fbea;">Track pressure points before your TPS drops into the basement and starts paying rent.</span></div>
+<div><strong style="display: block; color: #ffd27a; font-size: 16px;">Players</strong> <span style="color: #fff0cc;">Understand why your favorite pack runs like a furnace-powered potato.</span></div>
+<div><strong style="display: block; color: #ff9ee5; font-size: 16px;">Debuggers</strong> <span style="color: #ffe0f6;">Get structured reports instead of vague screams like &ldquo;it crashed idk fix pls.&rdquo;</span></div>
+</div>
+</div>
+<div>
+<h2 style="color: #38f28b; font-size: 28px;">Diagnostic Pipeline</h2>
+<div style="border: 1px solid #1f4d37; font-family: Consolas, Monaco, monospace; color: #a8ffd0;">
+<div style="color: #56a7ff;">&gt; GradleMC scan initialized</div>
+<div>✓ Running modpack health checks</div>
+<div>✓ Benchmarking runtime performance</div>
+<div>✓ Checking risky mod/config combinations</div>
+<div>✓ Scanning entity pressure</div>
+<div>✓ Measuring worldgen pressure</div>
+<div>✓ Building clean diagnostic report</div>
+<div style="color: #ffb84d;">&gt; Result: stop guessing, start fixing.</div>
+</div>
+</div>
+<div>
+<h2 style="color: #fff; font-size: 28px;">What GradleMC Helps Detect</h2>
+<table style="width: 100%; font-size: 15px;">
+<tbody>
+<tr>
+<th style="text-align: left; color: #03120a;">Check Type</th>
+<th style="text-align: left; color: #03101f;">What It Helps With</th>
+</tr>
+<tr>
+<td style="color: #7dffba; font-weight: 800;">Health Checks</td>
+<td style="color: #d7e9f8;">General instability, suspicious behavior, and modpack risk signals.</td>
+</tr>
+<tr>
+<td style="color: #8cc8ff; font-weight: 800;">Benchmarks</td>
+<td style="color: #d7e9f8;">Runtime performance, stress points, and measurable slowdowns.</td>
+</tr>
+<tr>
+<td style="color: #ff9ee5; font-weight: 800;">Risky Combos</td>
+<td style="color: #d7e9f8;">Mod/config combinations that may trigger crashes, lag, or unstable behavior.</td>
+</tr>
+<tr>
+<td style="color: #ff9696; font-weight: 800;">Entity Pressure</td>
+<td style="color: #d7e9f8;">Entity overload, ticking stress, and mob-heavy performance problems.</td>
+</tr>
+<tr>
+<td style="color: #ffd27a; font-weight: 800;">Worldgen Pressure</td>
+<td style="color: #d7e9f8;">Chunk generation stress and exploration-related performance spikes.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div>
+<h2 style="color: #fff; font-size: 28px;">Export Reports That Are Actually Useful</h2>
+<p style="color: #d7e9f8;">GradleMC generates clean debugging reports designed to be read, shared, and acted on. No cryptic garbage pile. No &ldquo;good luck decoding this ancient scroll.&rdquo; Just useful information for finding what is hurting your pack.</p>
+<div style="display: grid;">
+<div style="border: 1px solid #38f28b; color: #d7fbea;">✔ Share reports with pack maintainers</div>
+<div style="border: 1px solid #56a7ff; color: #d7e9f8;">✔ Compare performance between runs</div>
+<div style="border: 1px solid #ff62d2; color: #ffe0f6;">✔ Track risky setup conditions</div>
+<div style="border: 1px solid #ffb84d; color: #fff0cc;">✔ Debug lag before it gets worse</div>
+</div>
+</div>
+<div>
+<h2 style="color: #ffd27a; font-size: 25px;">Important Reality Check</h2>
+<p style="color: #ffe1c2; font-size: 16px;">GradleMC is a diagnostic tool. It helps you find problems, measure pressure, and export useful reports. It does not magically fix every cursed modpack held together by bad configs, missing patches, and raw optimism. It points at the fire. You still have to put the fire out.</p>
+</div>
+<div>
+<h2 style="color: #fff; font-size: 28px;">Recommended CurseForge Categories</h2>
+<div style="display: flex;"><span style="color: #03120a; font-weight: 900;">Utility &amp; QoL</span> <span style="color: #03101f; font-weight: 900;">Performance</span> <span style="color: #211200; font-weight: 900;">Server Utility</span> <span style="color: #260018; font-weight: 900;">Management</span></div>
+</div>
+<div style="text-align: center;">
+<h2 style="color: #fff; font-size: 30px;">GradleMC</h2>
+<p style="color: #d5eaff; font-size: 17px;">Diagnose smarter. Debug faster. Stop letting your modpack die mysteriously in the corner.</p>
+</div>
+</div>
