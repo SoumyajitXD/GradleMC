@@ -1,6 +1,6 @@
 # GradleMC
 
-![GradleMC logo](src/main/resources/GradleMC_logo.png)
+![GradleMC logo](GradleMC_logo.png)
 
 **In-game diagnostics and stability checker for Minecraft modpacks.**
 
