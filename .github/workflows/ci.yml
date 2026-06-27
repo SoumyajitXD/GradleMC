@@ -14,102 +14,220 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MOD_PROJECT_DIR: SOURCE CODEs/Forge/Minecraft 1.20.1
+
 jobs:
   repository-sanity:
     name: Repository sanity
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Run repository checks
+      - name: Validate repository layout
         shell: bash
         run: |
           set -euo pipefail
 
-          test -f LICENSE
+          echo "Project directory: $MOD_PROJECT_DIR"
+
+          [[ -f LICENSE ]] || {
+            echo "Missing LICENSE file. A public mod without a license is not mysterious; it is unusable." >&2
+            exit 1
+          }
+
+          [[ -d "$MOD_PROJECT_DIR" ]] || {
+            echo "Missing mod project directory: $MOD_PROJECT_DIR" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/gradlew" ]] || {
+            echo "Missing Gradle wrapper script inside $MOD_PROJECT_DIR" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/build.gradle" || -f "$MOD_PROJECT_DIR/build.gradle.kts" ]] || {
+            echo "Missing build.gradle/build.gradle.kts inside $MOD_PROJECT_DIR" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/settings.gradle" || -f "$MOD_PROJECT_DIR/settings.gradle.kts" ]] || {
+            echo "Missing settings.gradle/settings.gradle.kts inside $MOD_PROJECT_DIR" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/gradle/wrapper/gradle-wrapper.jar" ]] || {
+            echo "Missing Gradle wrapper jar inside $MOD_PROJECT_DIR/gradle/wrapper" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties" ]] || {
+            echo "Missing Gradle wrapper properties inside $MOD_PROJECT_DIR/gradle/wrapper" >&2
+            exit 1
+          }
+
+          [[ -f "$MOD_PROJECT_DIR/src/main/resources/META-INF/mods.toml" ]] || {
+            echo "Missing Forge mods.toml metadata." >&2
+            exit 1
+          }
+
+          find "$MOD_PROJECT_DIR/src/main/java" -type f -name '*.java' -print -quit | grep -q . || {
+            echo "No Java sources found under $MOD_PROJECT_DIR/src/main/java" >&2
+            exit 1
+          }
+
+      - name: Validate mod metadata
+        shell: bash
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+
+          get_property() {
+            sed -n "s/^$1=//p" gradle.properties | tail -n 1
+          }
+
+          mod_id="$(get_property mod_id)"
+          mod_version="$(get_property mod_version)"
+          minecraft_version="$(get_property minecraft_version)"
+          forge_version="$(get_property forge_version)"
+
+          [[ "$mod_id" =~ ^[a-z][a-z0-9_]{1,63}$ ]] || {
+            echo "Invalid mod_id '$mod_id'. Forge mod IDs must be lowercase and boring. Boring is good here." >&2
+            exit 1
+          }
+
+          [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
+          [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
+          [[ -n "$forge_version" ]] || { echo "forge_version is empty." >&2; exit 1; }
+
+          echo "mod_id=$mod_id"
+          echo "mod_version=$mod_version"
+          echo "minecraft_version=$minecraft_version"
+          echo "forge_version=$forge_version"
+
+      - name: Check tracked junk and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
 
           if [[ -f curseforge-description.html ]]; then
             test -s curseforge-description.html
           elif [[ -f curseforge-description ]]; then
             test -s curseforge-description
           else
-            echo "::notice::No CurseForge description file found. That is fine for code-only changes, but keep release text tracked before publishing."
+            echo "::notice::No CurseForge description file found. Fine for code changes, bad for release prep."
           fi
 
           bad_files="$(find . -type f \( -path '*/build/*' -o -path '*/.gradle/*' -o -name '*.class' \) -print)"
           if [[ -n "$bad_files" ]]; then
-            echo "Generated build files are committed. Delete them; CI should create them, not babysit them."
-            echo "$bad_files"
+            echo "Generated build files are committed. Delete them; CI should create them." >&2
+            echo "$bad_files" >&2
             exit 1
           fi
 
-          committed_jars="$(find . -type f -name '*.jar' ! -path './gradle/wrapper/gradle-wrapper.jar' -print)"
-          if [[ -n "$committed_jars" ]]; then
-            echo "Jar files are committed outside the Gradle wrapper. Ship jars through releases/artifacts, not source control."
-            echo "$committed_jars"
+          unexpected_jars=()
+          while IFS= read -r jar; do
+            case "$jar" in
+              */gradle/wrapper/gradle-wrapper.jar|./Releases/*|*/libs/*.jar)
+                echo "Allowed jar: $jar"
+                ;;
+              *)
+                unexpected_jars+=("$jar")
+                ;;
+            esac
+          done < <(find . -type f -name '*.jar' -print)
+
+          if (( ${#unexpected_jars[@]} > 0 )); then
+            echo "Unexpected committed jar files found:" >&2
+            printf ' - %s\n' "${unexpected_jars[@]}" >&2
+            echo "Keep wrapper jars, local dependency libs, and release jars only. Everything else belongs in CI artifacts." >&2
             exit 1
           fi
 
-          if grep -RInIE '(ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' . --exclude-dir=.git; then
-            echo "Possible token/secret found. Rotate it if real, then remove it from git."
+          if grep -RInIE --exclude-dir=.git --exclude-dir=build --exclude-dir=.gradle --exclude='*.jar' '(ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' .; then
+            echo "Possible token/secret found. Rotate it if real, then remove it from git." >&2
             exit 1
           fi
 
   gradle-build:
-    name: Gradle build
+    name: Forge Gradle build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: repository-sanity
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Detect Gradle project
-        id: gradle
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ -f gradlew && ( -f build.gradle || -f build.gradle.kts || -f settings.gradle || -f settings.gradle.kts ) ]]; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::No Gradle wrapper/build files found, so the build is skipped. Push the mod source and Gradle wrapper to enable compilation."
-          fi
-
       - name: Set up Java 17
-        if: steps.gradle.outputs.found == 'true'
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Gradle
-        if: steps.gradle.outputs.found == 'true'
         uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-provider: basic
 
-      - name: Make Gradle wrapper executable
-        if: steps.gradle.outputs.found == 'true'
+      - name: Prepare Gradle wrapper
         shell: bash
-        run: chmod +x ./gradlew
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+          sed -i 's/\r$//' ./gradlew
+          chmod +x ./gradlew
+          ./gradlew --version
 
-      - name: Build with Gradle
-        if: steps.gradle.outputs.found == 'true'
+      - name: Build mod
         shell: bash
-        run: ./gradlew --no-daemon clean build
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: ./gradlew --no-daemon --stacktrace clean build
+
+      - name: Verify built jar name
+        shell: bash
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+
+          get_property() {
+            sed -n "s/^$1=//p" gradle.properties | tail -n 1
+          }
+
+          mod_id="$(get_property mod_id)"
+          mod_version="$(get_property mod_version)"
+          minecraft_version="$(get_property minecraft_version)"
+          expected_jar="${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
+
+          [[ -f "build/libs/$expected_jar" ]] || {
+            echo "Expected jar not found: build/libs/$expected_jar" >&2
+            echo "Actual jars:" >&2
+            find build/libs -maxdepth 1 -type f -name '*.jar' -print >&2 || true
+            exit 1
+          }
+
+          echo "EXPECTED_JAR=$expected_jar" >> "$GITHUB_ENV"
+
+      - name: Write build summary
+        shell: bash
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: |
+          {
+            echo "### GradleMC CI"
+            echo ""
+            echo "- Project directory: \`$MOD_PROJECT_DIR\`"
+            echo "- Expected jar: \`$EXPECTED_JAR\`"
+            echo ""
+            echo "Built jars:"
+            find build/libs -maxdepth 1 -type f -name '*.jar' -printf '- `%p`\n'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload built jars
-        if: steps.gradle.outputs.found == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: gradlemc-jars
-          path: |
-            build/libs/*.jar
-            */build/libs/*.jar
+          name: gradlemc-forge-1.20.1-jars
+          path: ${{ env.MOD_PROJECT_DIR }}/build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
