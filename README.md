@@ -1,5 +1,12 @@
 # GradleMC
 
+[![CI](https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg)](https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+![Version](https://img.shields.io/badge/Version-1.0.0-informational)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen)
+![Forge](https://img.shields.io/badge/Forge-47.4.20-orange)
+![Java](https://img.shields.io/badge/Java-17-blue)
+
 ![GradleMC logo](GradleMC_logo.png)
 
 **In-game diagnostics and stability checker for Minecraft modpacks.**
