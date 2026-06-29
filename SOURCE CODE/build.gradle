@@ -220,7 +220,38 @@ tasks.register('updateVariantDocs', Exec) {
 tasks.register('checkAutomationTools', Exec) {
     group = 'verification'
     description = 'Checks local automation helper availability without requiring Node unless package.json exists.'
+    dependsOn tasks.named('checkNodeTooling')
+    dependsOn tasks.named('checkKotlinBuildLogic')
     commandLine gradlemcPython('toolchain_report', ['--matrix', gradlemcVariantMatrixFile.asFile.absolutePath, '--check-tools'])
+}
+
+tasks.register('checkNodeTooling', Exec) {
+    group = 'verification'
+    description = 'Runs TypeScript/Node checks for docs and web-facing release assets when package.json exists.'
+    onlyIf { layout.projectDirectory.file('package.json').asFile.exists() }
+    def npmCommand = org.gradle.internal.os.OperatingSystem.current().isWindows() ? 'npm.cmd' : 'npm'
+    commandLine npmCommand, 'run', 'check'
+}
+
+tasks.register('checkKotlinBuildLogic') {
+    group = 'verification'
+    description = 'Runs narrow Kotlin build-logic sanity checks for variant artifact metadata.'
+    doLast {
+        def matrix = gradlemcLoadMatrix()
+        def errors = com.soumyajit.gradlemc.buildlogic.GradleMcVariantSanity.validateVariantArtifacts(matrix)
+        if (!errors.isEmpty()) {
+            throw new GradleException("Kotlin variant artifact sanity failed:\n- ${errors.join('\n- ')}")
+        }
+        logger.lifecycle("Kotlin variant artifact sanity passed for ${matrix.variants.size()} variants.")
+    }
+}
+
+tasks.register('printVariantSummaryKotlin') {
+    group = 'help'
+    description = 'Prints a compact variant summary through the Kotlin build-logic helper.'
+    doLast {
+        logger.lifecycle(com.soumyajit.gradlemc.buildlogic.GradleMcVariantSanity.variantSummary(gradlemcLoadMatrix()))
+    }
 }
 
 tasks.register('checkProjectIdentity', Exec) {

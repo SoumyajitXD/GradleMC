@@ -16,6 +16,8 @@ out
 # gradle
 /build/
 /.gradle/
+/buildSrc/build/
+/buildSrc/.gradle/
 /mcmodsrepo/
 
 # other
@@ -40,6 +42,7 @@ jar-inspect/
 tmp-jar/
 __pycache__/
 *.py[cod]
+node_modules/
 *.tmp
 *.bak
 

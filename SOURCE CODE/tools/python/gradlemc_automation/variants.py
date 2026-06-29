@@ -427,7 +427,8 @@ def automation_report(matrix: dict[str, Any]) -> str:
             "- Gradle: primary build orchestrator and variant task entrypoint.",
             "- Python 3.12+: manifest validation, matrix generation, docs tables, and checks.",
             "- PowerShell 7: Windows-first wrapper commands.",
-            "- Node/TypeScript: not required by the current pipeline.",
+            "- Node/TypeScript: docs and optional web-facing asset validation when package.json exists.",
+            "- Kotlin: Gradle build-logic helpers only; not mod runtime code.",
             "",
         ]
     )
@@ -468,6 +469,13 @@ def check_automation_tools(require_node: bool = False) -> list[str]:
         checks.append(CommandResult(False, "node", "package.json exists but Node.js was not found"))
     else:
         checks.append(CommandResult(True, "node", "not required; package.json is absent"))
+
+    npm_command = "npm.cmd" if os.name == "nt" else "npm"
+    npm_path = shutil.which(npm_command) or shutil.which("npm")
+    if require_node and npm_path:
+        checks.append(run_tool([npm_command, "--version"]))
+    elif require_node:
+        checks.append(CommandResult(False, "npm", "package.json exists but npm was not found"))
 
     for check in checks:
         status = "OK" if check.ok else "ERROR"

@@ -47,9 +47,11 @@ Adaptive diagnostics and Smart Diagnostics are local rule-based/adaptive systems
 - Do not enable or publish a variant unless the matrix, build, runtime checks, docs, and artifact naming all agree.
 - Keep `config/gradlemc-variants.json` as the loader/version source of truth.
 - Gradle is the main automation orchestrator. Do not bypass Gradle for normal build validation.
-- Do not create language sprawl. Java, Gradle, Python, PowerShell, and optional Node/TypeScript must each have a clear role.
+- Do not create language sprawl. Java, Gradle, Python, PowerShell, Node/TypeScript, and Kotlin build logic must each have a clear role.
 - Do not duplicate validators across languages unless the duplication is an intentional cross-check and documented.
 - Python owns manifest validation, matrix generation, docs table generation, command casing checks, and support-claim checks.
+- Node.js/TypeScript owns docs and web-facing asset validation only; do not port the Python variant validator to TypeScript.
+- Kotlin may be used only in Gradle/build automation helpers; do not add Kotlin to Minecraft runtime sources or the mod jar.
 - PowerShell wrappers must stay thin and call Gradle or Python instead of reimplementing validation logic.
 - Automation scripts must fail loudly and return nonzero on failed Gradle, Python, missing-file, missing-artifact, stale-path, metadata, or command-casing checks.
 - Release/export automation must verify the expected jar exists before and after copy/export, then print the final path.
@@ -85,14 +87,17 @@ Adaptive diagnostics and Smart Diagnostics are local rule-based/adaptive systems
 - `gradlemc_automation/__init__.py` - bootstrap so `python -m gradlemc_automation...` works from the repo root.
 - `tools/python/gradlemc_automation/validate_release.py` - release metadata, stale path, command casing, required resource, and optional jar-content validator.
 - `tools/pwsh/` - thin PowerShell 7 wrappers for local Windows-first automation commands, including release export.
+- `package.json` and `tsconfig.json` - minimal Node/TypeScript tooling for docs and web-facing asset checks.
+- `tools/node/` - TypeScript source and tiny JavaScript bootstrap for Node checks.
+- `buildSrc/` - Kotlin build-logic helpers for Gradle-side variant artifact sanity checks only.
 - `scripts/validate-variant-matrix.py` - compatibility wrapper for the Python package.
 - `scripts/variant_matrix_tests.py` - compatibility wrapper for Python automation tests.
 - `docs/AUTOMATION_PIPELINE.md` - local and CI automation design.
 - `docs/PORTING_MATRIX.md` - multi-loader/multi-version release strategy and gates.
 - `docs/COMMON_CORE_EXTRACTION.md` - extraction audit for common-core, bridge, adapter, client-only, and version-sensitive code.
-- `.github/workflows/gradlemc-matrix.yml` - CI skeleton for matrix validation and current release builds.
+- `.github/workflows/ci.yml` - CI skeleton for matrix validation, current release builds, Python tests, conditional Node checks, and PowerShell wrappers.
 - `LICENSE` - Apache-2.0 license text.
-- `curseforge-description` - concise user-facing description.
+- `curseforge-description` or `curseforge-description.html` - optional concise user-facing description; do not recreate it unless explicitly requested.
 - `gradlemc/reports/` under the Minecraft game directory - runtime report output; do not commit.
 - `gradlemc/exports/` under the Minecraft game directory - diagnostics exports; do not commit.
 - `gradlemc/issue-bundles/` under the Minecraft game directory - generated support bundles; do not commit.
@@ -166,6 +171,9 @@ Allowed when appropriate:
 ./gradlew checkCommandCasing
 ./gradlew checkFalseSupportClaims
 ./gradlew checkReleaseMetadata
+./gradlew checkNodeTooling
+./gradlew checkKotlinBuildLogic
+./gradlew printVariantSummaryKotlin
 ./gradlew buildVariant -PgradlemcVariant=forge-1.20.1
 ./gradlew buildEnabledVariants
 ./gradlew assembleVariantMatrix
@@ -190,6 +198,9 @@ gradlew.bat checkProjectIdentity
 gradlew.bat checkCommandCasing
 gradlew.bat checkFalseSupportClaims
 gradlew.bat checkReleaseMetadata
+gradlew.bat checkNodeTooling
+gradlew.bat checkKotlinBuildLogic
+gradlew.bat printVariantSummaryKotlin
 gradlew.bat buildVariant "-PgradlemcVariant=forge-1.20.1"
 gradlew.bat buildEnabledVariants
 gradlew.bat assembleVariantMatrix
@@ -207,7 +218,9 @@ Rules:
 - Run `./gradlew validateVariantMatrix` after changing `config/gradlemc-variants.json`, artifact naming, CI matrix logic, or support documentation.
 - Run `./gradlew checkProjectIdentity checkCommandCasing checkFalseSupportClaims checkReleaseMetadata` after changing docs, commands, metadata, paths, release automation, or support claims.
 - Run `python -m unittest discover -s tools/python/tests` after changing Python automation.
-- Do not require Node.js for `./gradlew build` unless a future Node tool is deliberately added and documented.
+- `checkAutomationTools` requires Node.js and npm when `package.json` exists; do not make Node part of mod runtime or duplicate Python validation in Node.
+- Do not require Node.js for Java/mod runtime logic.
+- Kotlin build logic is allowed under `buildSrc/` only; do not migrate `build.gradle` to Kotlin DSL unless explicitly requested.
 - Do not require Python 3.14-only features. Python 3.12 is the automation baseline.
 - Run `./gradlew genIntellijRuns` only after setup/run-configuration changes or when the user requests IDE run generation.
 - Do not run internet-heavy Gradle tasks unless the user explicitly allows them.

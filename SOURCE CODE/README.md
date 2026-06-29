@@ -328,6 +328,8 @@ Variant automation:
 ./gradlew checkCommandCasing
 ./gradlew checkFalseSupportClaims
 ./gradlew checkReleaseMetadata
+./gradlew checkNodeTooling
+./gradlew checkKotlinBuildLogic
 ./gradlew listSupportedVariants
 ./gradlew listPlannedVariants
 ./gradlew listExperimentalVariants
@@ -348,6 +350,14 @@ python -m gradlemc_automation.validate_variants
 python -m gradlemc_automation.generate_github_matrix
 ```
 
+Node/TypeScript automation is intentionally narrow and checks docs plus web-facing release assets. It does not own variant matrix validation.
+
+```sh
+npm install
+npm run build
+npm run check
+```
+
 Windows PowerShell wrappers:
 
 ```powershell
@@ -365,7 +375,7 @@ gradlew.bat buildVariant "-PgradlemcVariant=forge-1.20.1"
 ```
 
 For now, only `forge-1.20.1` is enabled, buildable, and wired to the existing ForgeGradle build. Planned Fabric, NeoForge, later Forge, and 26.x entries are metadata and release gates, not buildable ports.
-Node.js and TypeScript are not required by the current default build because the variant tooling is implemented in Python.
+Python remains the source of truth for variant and release validation. PowerShell remains thin Windows wrapper glue. Node.js and TypeScript validate docs and optional CurseForge/web-facing assets when `package.json` exists. Kotlin is confined to Gradle build logic in `buildSrc/` and is not part of the mod runtime.
 
 For IntelliJ IDEA run configuration setup:
 

@@ -8,7 +8,10 @@ GradleMC uses several languages, but each one has a narrow job. Gradle remains t
 - Gradle owns build orchestration, variant task entrypoints, Java toolchain selection, and CI parity.
 - Python 3.12+ owns variant manifest validation, matrix generation, docs table generation, claim checks, command casing checks, and readable diagnostics.
 - PowerShell 7 owns Windows-first local wrappers around Gradle and Python checks.
-- Node.js and TypeScript are optional. They are not used in the current pipeline because Python handles the JSON and Markdown work without extra dependencies.
+- Node.js and TypeScript own docs and web-facing asset checks, including Markdown local-link checks and optional CurseForge description validation.
+- Kotlin is used only for Gradle/build automation helpers in `buildSrc/`; it must not be added to Minecraft runtime code or the mod jar.
+
+Python remains the source of truth for `config/gradlemc-variants.json`. TypeScript must not duplicate the Python variant matrix validator.
 
 Python 3.12 is the baseline because it is modern, widely available in CI, and includes the standard-library features this tooling needs. Python 3.13 can be used locally and in CI, but Python 3.14-only features are not allowed.
 
@@ -19,7 +22,7 @@ Python 3.12 is the baseline because it is modern, widely available in CI, and in
 - Java 25 for 26.x candidates that declare it in `config/gradlemc-variants.json`.
 - Python 3.12 or newer.
 - PowerShell 7 for `tools/pwsh/*.ps1`.
-- Node.js only if a future `package.json` is added for justified tooling.
+- Node.js and npm when `package.json` exists.
 
 ## Local Commands
 
@@ -44,6 +47,9 @@ Gradle:
 ./gradlew checkCommandCasing
 ./gradlew checkFalseSupportClaims
 ./gradlew checkReleaseMetadata
+./gradlew checkNodeTooling
+./gradlew checkKotlinBuildLogic
+./gradlew printVariantSummaryKotlin
 ./gradlew generateGithubMatrix
 ./gradlew buildVariant -PgradlemcVariant=forge-1.20.1
 ./gradlew buildEnabledVariants
@@ -59,6 +65,16 @@ python -m gradlemc_automation.generate_docs_tables
 python -m gradlemc_automation.check_claims
 python -m gradlemc_automation.check_command_casing
 python -m gradlemc_automation.validate_release
+```
+
+Node/TypeScript:
+
+```sh
+npm install
+npm run build
+npm run check
+npm run check:docs
+npm run check:curseforge
 ```
 
 ## Release Export
@@ -77,6 +93,7 @@ Validation and generation tasks write only under `build/` by default:
 - `build/generated/gradlemc/github-matrix.json`
 - `build/generated/gradlemc/variant-table.md`
 - `build/reports/gradlemc/automation-report.txt`
+- `build/reports/gradlemc/node-tooling-report.txt`
 
 These files are build outputs and should not be committed unless the project explicitly changes that convention. Checked-in docs are updated only by `./gradlew updateVariantDocs`.
 
@@ -99,7 +116,7 @@ GitHub Actions mirrors the local flow:
 - `automation-validation` checks tools, manifest, identity, command casing, false support claims, and GitHub matrix generation.
 - `build-enabled-variants` builds enabled/buildable variants only.
 - `python-tooling-test` runs Python automation tests on Python 3.12 and 3.13 where available.
-- `node-tooling-test` runs only if `package.json` exists.
+- `node-tooling-test` runs `npm ci` and `npm run check` only if `package.json` exists.
 - `powershell-wrapper-test` runs the Windows PowerShell wrappers.
 
 No CI job publishes, exports release jars, or creates placeholder variant jars.
