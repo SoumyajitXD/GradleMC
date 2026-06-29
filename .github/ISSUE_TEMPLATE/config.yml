@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support guide
+    url: https://github.com/SoumyajitXD/GradleMC/blob/main/SUPPORT.md
+    about: Read this before opening bug, crash, GUI, report, or diagnostics issues.
+  - name: Security policy
+    url: https://github.com/SoumyajitXD/GradleMC/blob/main/SECURITY.md
+    about: Use this for fake downloads, unsafe links, sensitive reports, or distribution-chain concerns.
+  - name: Roadmap
+    url: https://github.com/SoumyajitXD/GradleMC/blob/main/ROADMAP.md
+    about: Check planned work before requesting Fabric, NeoForge, Quilt, future Minecraft versions, or major features.
+  - name: Release checklist
+    url: https://github.com/SoumyajitXD/GradleMC/blob/main/docs/RELEASE_CHECKLIST.md
+    about: Use this before publishing, exporting, or reviewing a release candidate.
+  - name: Screenshot plan
+    url: https://github.com/SoumyajitXD/GradleMC/blob/main/docs/SCREENSHOT_PLAN.md
+    about: Screenshots should be added after V1.0.1 is visually stable.
