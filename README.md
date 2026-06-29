@@ -14,6 +14,17 @@
   <img alt="Forge 47.4.20" src="https://img.shields.io/badge/Forge-47.4.20-orange">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-blue">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
+  <img alt="No telemetry" src="https://img.shields.io/badge/Telemetry-none-success">
+</p>
+
+<p align="center">
+  <a href="#quick-start"><strong>Quick Start</strong></a>
+  · <a href="#what-gradlemc-checks">Checks</a>
+  · <a href="#build-from-source">Build</a>
+  · <a href="CHANGELOG.md">Changelog</a>
+  · <a href="ROADMAP.md">Roadmap</a>
+  · <a href="SUPPORT.md">Support</a>
+  · <a href="SECURITY.md">Security</a>
 </p>
 
 GradleMC helps players, pack makers, server owners, and testers inspect a running modpack **without leaving Minecraft**. It gives you a GUI, lowercase `/gradlemc` commands, bounded performance checks, local profiler foundations, Smart Diagnostics, adaptive diagnostics status, and shareable text reports.
@@ -23,6 +34,14 @@ Translation: fewer blind guesses, fewer ritual mod deletions, fewer support thre
 > **Current supported build:** Minecraft Java Edition `1.20.1` on Forge.  
 > **Release artifact name:** `gradlemc-1.0.0-forge-1.20.1.jar`  
 > **Project ID:** `1585182`
+
+---
+
+## Preview
+
+Screenshots are intentionally waiting until the `V1.0.1` visual state is final. Fake or outdated screenshots are worse than no screenshots; they are technical debt with eyeliner.
+
+The planned screenshot pass is documented in [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md). It will cover the GUI overview, status panel, Smart Diagnostics, report export flow, optional overlay, and possibly a short GIF.
 
 ---
 
@@ -53,6 +72,26 @@ GradleMC exists to turn that mess into local evidence you can actually share.
 | **Smart Diagnostics** | Local rule-based scoring, advice, evidence, confidence, trends, and missing-data notes. |
 | **Adaptive diagnostics** | Lightweight local gameplay-state logic for bounded adaptive status and warnings. No cloud nonsense. |
 | **Privacy-aware exports** | Avoids broad private-file scans and full-folder dumps by default. Review exports before sharing anyway. |
+
+---
+
+## Project Quality Surface
+
+GradleMC is set up like a real project, not a zip file with ambition.
+
+| Surface | File |
+| --- | --- |
+| Release history | [`CHANGELOG.md`](CHANGELOG.md) |
+| Public planning | [`ROADMAP.md`](ROADMAP.md) |
+| Support policy | [`SUPPORT.md`](SUPPORT.md) |
+| Security policy | [`SECURITY.md`](SECURITY.md) |
+| Contribution rules | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Code of conduct | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
+| Release checklist | [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) |
+| Screenshot plan | [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) |
+| Agent/maintainer manual | [`AGENTS.md`](AGENTS.md) |
+| Pull request checklist | [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) |
+| Issue routing | [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) |
 
 ---
 
@@ -167,6 +206,8 @@ cd "SOURCE CODE"
 pwsh ./tools/pwsh/validate.ps1
 ```
 
+For release/export flow, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
+
 ---
 
 ## Repository Layout
@@ -175,10 +216,16 @@ pwsh ./tools/pwsh/validate.ps1
 | --- | --- |
 | [`SOURCE CODE/`](SOURCE%20CODE/) | Main Forge mod source, Gradle build, automation, docs, and tests. |
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI for repository sanity, Forge build, Python automation, Node tooling, and PowerShell wrappers. |
-| [`README.md`](README.md) | Project landing page. You are reading it. Very dramatic. |
+| [`README.md`](README.md) | Project landing page. |
+| [`CHANGELOG.md`](CHANGELOG.md) | Release and repository-surface history. |
+| [`ROADMAP.md`](ROADMAP.md) | Public planning and support gates. |
 | [`AGENTS.md`](AGENTS.md) | Technical operating manual for coding agents and maintainers. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules and local verification flow. |
 | [`SUPPORT.md`](SUPPORT.md) | How to ask for help without creating a cursed mystery novel. |
+| [`SECURITY.md`](SECURITY.md) | Security and distribution-chain reporting policy. |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Community behavior rules. |
+| [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) | Release/export validation checklist. |
+| [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Post-`V1.0.1` screenshot plan. |
 | [`LICENSE`](LICENSE) | Apache License 2.0. |
 | [`GradleMC_logo.png`](GradleMC_logo.png) | Repository/project logo. |
 
@@ -211,7 +258,7 @@ Start here:
 - Do not add telemetry, cloud calls, LLMs, generative AI, or fake “AI” marketing fog.
 - Run the relevant Gradle/Python/Node/PowerShell checks before opening a PR.
 
-Bug reports and feature requests now have structured GitHub issue templates so reports include useful evidence instead of “it broke pls fix.”
+Bug reports and feature requests have structured GitHub issue templates so reports include useful evidence instead of “it broke pls fix.”
 
 ---
 
