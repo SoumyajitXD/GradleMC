@@ -5,35 +5,9 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      variant:
-        description: "Variant id to build, or all for enabled variants"
-        required: false
-        default: "forge-1.20.1"
-      includePlanned:
-        description: "Include planned variants in generated matrix"
-        required: false
-        default: false
-        type: boolean
-      includeExperimental:
-        description: "Include experimental variants in generated matrix"
-        required: false
-        default: false
-        type: boolean
-      pythonVersion:
-        description: "Python version for automation validation"
-        required: false
-        default: "3.12"
-      nodeVersion:
-        description: "Node version if Node tooling exists"
-        required: false
-        default: "22"
-      runPowerShellChecks:
-        description: "Run PowerShell wrapper checks"
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   contents: read
@@ -47,49 +21,163 @@ env:
   PYTHONPATH: "${{ github.workspace }}/SOURCE CODE/tools/python"
 
 jobs:
-  automation-validation:
-    name: Automation validation
+  repository-sanity:
+    name: Repository sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    defaults:
-      run:
-        working-directory: ${{ env.PROJECT_DIR }}
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
 
       - name: Validate repository layout
         shell: bash
-        working-directory: ${{ github.workspace }}
         run: |
           set -euo pipefail
+
+          [[ -f LICENSE ]] || { echo "Missing LICENSE." >&2; exit 1; }
           [[ -d "$PROJECT_DIR" ]] || { echo "Missing source directory: $PROJECT_DIR" >&2; exit 1; }
           [[ ! -d "SOURCE CODEs" ]] || { echo "Stale source root exists: SOURCE CODEs" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/gradlew" ]] || { echo "Missing Gradle wrapper in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/settings.gradle" || -f "$PROJECT_DIR/settings.gradle.kts" ]] || { echo "Missing Gradle settings in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/build.gradle" || -f "$PROJECT_DIR/build.gradle.kts" ]] || { echo "Missing Gradle build file in $PROJECT_DIR" >&2; exit 1; }
-          [[ -f "$PROJECT_DIR/tools/python/gradlemc_automation/__init__.py" ]] || { echo "Missing Python automation package" >&2; exit 1; }
+          [[ -f "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.jar" ]] || { echo "Missing Gradle wrapper jar." >&2; exit 1; }
+          [[ -f "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties" ]] || { echo "Missing Gradle wrapper properties." >&2; exit 1; }
+          [[ -f "$PROJECT_DIR/tools/python/gradlemc_automation/__init__.py" ]] || { echo "Missing Python automation package." >&2; exit 1; }
+          [[ -f "$PROJECT_DIR/src/main/resources/META-INF/mods.toml" ]] || { echo "Missing Forge mods.toml." >&2; exit 1; }
 
-      - uses: actions/setup-java@v4
+          java_source_count="$(find "$PROJECT_DIR/src/main/java" -type f -name '*.java' | wc -l | tr -d ' ')"
+          if (( java_source_count == 0 )); then
+            echo "No Java sources found under $PROJECT_DIR/src/main/java" >&2
+            exit 1
+          fi
+          echo "Java source files: $java_source_count"
+
+      - name: Validate release identity
+        shell: bash
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+
+          get_property() {
+            sed -n "s/^$1=//p" gradle.properties | tail -n 1
+          }
+
+          mod_id="$(get_property mod_id)"
+          mod_version="$(get_property mod_version)"
+          minecraft_version="$(get_property minecraft_version)"
+          forge_version="$(get_property forge_version)"
+          artifact_name="$(get_property artifact_name)"
+          expected_artifact="${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
+
+          [[ "$mod_id" =~ ^[a-z][a-z0-9_]{1,63}$ ]] || { echo "Invalid mod_id: $mod_id" >&2; exit 1; }
+          [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
+          [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
+          [[ -n "$forge_version" ]] || { echo "forge_version is empty." >&2; exit 1; }
+          [[ "$artifact_name" == "$expected_artifact" ]] || {
+            echo "artifact_name mismatch. Expected '$expected_artifact', got '$artifact_name'." >&2
+            exit 1
+          }
+
+          echo "mod_id=$mod_id"
+          echo "mod_version=$mod_version"
+          echo "minecraft_version=$minecraft_version"
+          echo "forge_version=$forge_version"
+          echo "artifact_name=$artifact_name"
+
+      - name: Check tracked junk and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          bad_files="$(find . -type f \( -path '*/build/*' -o -path '*/.gradle/*' -o -name '*.class' \) -print)"
+          if [[ -n "$bad_files" ]]; then
+            echo "Generated build files are committed. Delete them; CI should create them." >&2
+            echo "$bad_files" >&2
+            exit 1
+          fi
+
+          unexpected_jars=()
+          while IFS= read -r jar; do
+            case "$jar" in
+              */gradle/wrapper/gradle-wrapper.jar|./Releases/*|*/libs/*.jar)
+                echo "Allowed jar: $jar"
+                ;;
+              *)
+                unexpected_jars+=("$jar")
+                ;;
+            esac
+          done < <(find . -type f -name '*.jar' -print)
+
+          if (( ${#unexpected_jars[@]} > 0 )); then
+            echo "Unexpected committed jar files found:" >&2
+            printf ' - %s\n' "${unexpected_jars[@]}" >&2
+            exit 1
+          fi
+
+          if grep -RInIE --exclude-dir=.git --exclude-dir=build --exclude-dir=.gradle --exclude='*.jar' '(ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' .; then
+            echo "Possible token/secret found." >&2
+            exit 1
+          fi
+
+  python-automation:
+    name: Python automation ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: repository-sanity
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - "3.12"
+          - "3.13"
+    defaults:
+      run:
+        working-directory: ${{ env.PROJECT_DIR }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run Python automation checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python --version
+          python -m gradlemc_automation.validate_variants
+          python -m gradlemc_automation.generate_github_matrix --output build/generated/gradlemc/github-matrix.json
+          python -m gradlemc_automation.generate_docs_tables
+          python -m gradlemc_automation.check_claims --identity
+          python -m gradlemc_automation.check_claims --false-support
+          python -m gradlemc_automation.check_command_casing
+          python -m gradlemc_automation.validate_release
+          python -m unittest discover -s tools/python/tests
+
+  forge-build:
+    name: Forge 1.20.1 verification and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: repository-sanity
+    defaults:
+      run:
+        working-directory: ${{ env.PROJECT_DIR }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: |
-            17
-            21
-            25
+          java-version: "17"
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ github.event_name == 'workflow_dispatch' && inputs.pythonVersion || '3.12' }}
-
-      - name: Setup Node only when package.json exists
-        if: ${{ hashFiles('SOURCE CODE/package.json') != '' }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ github.event_name == 'workflow_dispatch' && inputs.nodeVersion || '22' }}
-          cache: npm
-          cache-dependency-path: SOURCE CODE/package-lock.json
+          python-version: "3.12"
 
       - name: Prepare Gradle wrapper
         shell: bash
@@ -106,125 +194,64 @@ jobs:
           fi
           ./gradlew --no-daemon --version
 
-      - name: Check automation tools
-        run: ./gradlew --no-daemon --stacktrace checkAutomationTools
+      - name: Run Gradle verification
+        shell: bash
+        run: ./gradlew --no-daemon --stacktrace check
 
-      - name: Validate matrix and project checks
-        run: ./gradlew --no-daemon --stacktrace validateVariantMatrix checkProjectIdentity checkCommandCasing checkFalseSupportClaims checkReleaseMetadata
+      - name: Build mod jar
+        shell: bash
+        run: ./gradlew --no-daemon --stacktrace assemble
 
-      - name: Generate GitHub matrix
-        id: matrix
+      - name: Verify built artifact
         shell: bash
         run: |
           set -euo pipefail
-          args=()
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ "${{ inputs.includePlanned }}" == "true" ]]; then
-              args+=(--include-planned)
-            fi
-            if [[ "${{ inputs.includeExperimental }}" == "true" ]]; then
-              args+=(--include-experimental)
-            fi
-            if [[ -n "${{ inputs.variant }}" && "${{ inputs.variant }}" != "all" ]]; then
-              args+=(--only-variant "${{ inputs.variant }}")
-            fi
-          fi
-          python -m gradlemc_automation.generate_github_matrix "${args[@]}" --output build/generated/gradlemc/github-matrix.json
-          matrix="$(tr -d '\n' < build/generated/gradlemc/github-matrix.json)"
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  build-enabled-variants:
-    name: Build ${{ matrix.variant }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    needs: automation-validation
-    if: ${{ needs.automation-validation.outputs.matrix != '{"include":[]}' }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.automation-validation.outputs.matrix) }}
-    defaults:
-      run:
-        working-directory: ${{ env.PROJECT_DIR }}
-    steps:
-      - uses: actions/checkout@v4
+          get_property() {
+            sed -n "s/^$1=//p" gradle.properties | tail -n 1
+          }
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+          artifact_name="$(get_property artifact_name)"
+          [[ -f "build/libs/$artifact_name" ]] || {
+            echo "Expected jar not found: build/libs/$artifact_name" >&2
+            echo "Actual jars:" >&2
+            find build/libs -maxdepth 1 -type f -name '*.jar' -print >&2 || true
+            exit 1
+          }
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: |
-            17
-            21
-            25
+          echo "Built artifact: build/libs/$artifact_name"
+          echo "ARTIFACT_NAME=$artifact_name" >> "$GITHUB_ENV"
 
-      - name: Prepare Gradle wrapper
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -i 's/\r$//' ./gradlew
-          chmod +x ./gradlew
-          ./gradlew --no-daemon --version
-
-      - name: Build selected variant
-        run: ./gradlew --no-daemon --stacktrace buildVariant -PgradlemcVariant=${{ matrix.variant }}
-
-      - name: Upload real build artifact
-        if: ${{ success() && matrix.buildable }}
+      - name: Upload built jar
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifactName }}
-          path: ${{ env.PROJECT_DIR }}/build/libs/${{ matrix.artifactName }}
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PROJECT_DIR }}/build/libs/${{ env.ARTIFACT_NAME }}
           if-no-files-found: error
           retention-days: 14
 
-  python-tooling-test:
-    name: Python tooling ${{ matrix.python }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        python:
-          - "3.12"
-          - "3.13"
-    defaults:
-      run:
-        working-directory: ${{ env.PROJECT_DIR }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Run Python automation tests
-        run: |
-          set -euo pipefail
-          python -m gradlemc_automation.validate_variants
-          python -m gradlemc_automation.generate_github_matrix
-          python -m gradlemc_automation.generate_docs_tables
-          python -m gradlemc_automation.check_claims
-          python -m gradlemc_automation.check_command_casing
-          python -m gradlemc_automation.validate_release
-          python -m unittest discover -s tools/python/tests
-
-  node-tooling-test:
+  node-tooling:
     name: Node tooling
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: repository-sanity
     if: ${{ hashFiles('SOURCE CODE/package.json') != '' }}
     defaults:
       run:
         working-directory: ${{ env.PROJECT_DIR }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ github.event_name == 'workflow_dispatch' && inputs.nodeVersion || '22' }}
+          node-version: "22"
           cache: npm
           cache-dependency-path: SOURCE CODE/package-lock.json
+
       - name: Run Node checks
+        shell: bash
         run: |
           set -euo pipefail
           npm ci
@@ -233,29 +260,29 @@ jobs:
             npm run typecheck
           fi
 
-  powershell-wrapper-test:
-    name: PowerShell wrappers
+  powershell-wrapper:
+    name: PowerShell wrapper validation
     runs-on: windows-latest
-    timeout-minutes: 15
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.runPowerShellChecks }}
+    timeout-minutes: 20
+    needs: repository-sanity
     defaults:
       run:
         working-directory: ${{ env.PROJECT_DIR }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: |
-            17
-            21
-            25
-      - uses: actions/setup-python@v5
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Check environment
-        shell: pwsh
-        run: pwsh ./tools/pwsh/check-env.ps1
-      - name: Run validation wrapper
+
+      - name: Run PowerShell validation wrapper
         shell: pwsh
         run: pwsh ./tools/pwsh/validate.ps1
