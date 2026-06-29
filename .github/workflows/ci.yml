@@ -15,7 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MOD_PROJECT_DIR: SOURCE CODEs/Forge/Minecraft 1.20.1
+  MOD_PROJECT_DIR: "SOURCE CODE"
+  PYTHON_VERSION: "3.12"
+  PYTHONPATH: "${{ github.workspace }}/SOURCE CODE/tools/python"
 
 jobs:
   repository-sanity:
@@ -36,6 +38,11 @@ jobs:
 
           [[ -f LICENSE ]] || {
             echo "Missing LICENSE file. A public mod without a license is not mysterious; it is unusable." >&2
+            exit 1
+          }
+
+          [[ ! -d "SOURCE CODEs" ]] || {
+            echo "Stale source root found: SOURCE CODEs. Keep the canonical project under SOURCE CODE only." >&2
             exit 1
           }
 
@@ -69,15 +76,22 @@ jobs:
             exit 1
           }
 
+          [[ -f "$MOD_PROJECT_DIR/tools/python/gradlemc_automation/__init__.py" ]] || {
+            echo "Missing GradleMC Python automation package under $MOD_PROJECT_DIR/tools/python" >&2
+            exit 1
+          }
+
           [[ -f "$MOD_PROJECT_DIR/src/main/resources/META-INF/mods.toml" ]] || {
             echo "Missing Forge mods.toml metadata." >&2
             exit 1
           }
 
-          find "$MOD_PROJECT_DIR/src/main/java" -type f -name '*.java' -print -quit | grep -q . || {
+          java_source_count="$(find "$MOD_PROJECT_DIR/src/main/java" -type f -name '*.java' | wc -l | tr -d ' ')"
+          if (( java_source_count == 0 )); then
             echo "No Java sources found under $MOD_PROJECT_DIR/src/main/java" >&2
             exit 1
-          }
+          fi
+          echo "Java source files: $java_source_count"
 
       - name: Validate mod metadata
         shell: bash
@@ -93,6 +107,7 @@ jobs:
           mod_version="$(get_property mod_version)"
           minecraft_version="$(get_property minecraft_version)"
           forge_version="$(get_property forge_version)"
+          artifact_name="$(get_property artifact_name)"
 
           [[ "$mod_id" =~ ^[a-z][a-z0-9_]{1,63}$ ]] || {
             echo "Invalid mod_id '$mod_id'. Forge mod IDs must be lowercase and boring. Boring is good here." >&2
@@ -102,11 +117,19 @@ jobs:
           [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
           [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
           [[ -n "$forge_version" ]] || { echo "forge_version is empty." >&2; exit 1; }
+          [[ -n "$artifact_name" ]] || { echo "artifact_name is empty." >&2; exit 1; }
+
+          expected_artifact="${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
+          [[ "$artifact_name" == "$expected_artifact" ]] || {
+            echo "artifact_name mismatch. Expected '$expected_artifact', got '$artifact_name'." >&2
+            exit 1
+          }
 
           echo "mod_id=$mod_id"
           echo "mod_version=$mod_version"
           echo "minecraft_version=$minecraft_version"
           echo "forge_version=$forge_version"
+          echo "artifact_name=$artifact_name"
 
       - name: Check tracked junk and secrets
         shell: bash
@@ -153,9 +176,9 @@ jobs:
           fi
 
   gradle-build:
-    name: Forge Gradle build
+    name: Forge Gradle verification and build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     needs: repository-sanity
 
     steps:
@@ -168,22 +191,59 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-disabled: true
 
-      - name: Prepare Gradle wrapper
+      - name: Validate automation imports
+        shell: bash
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: |
+          set -euo pipefail
+          python --version
+          python - <<'PY'
+          import importlib.util
+          import sys
+
+          required = [
+              "gradlemc_automation.validate_variants",
+              "gradlemc_automation.generate_github_matrix",
+              "gradlemc_automation.check_claims",
+              "gradlemc_automation.validate_release",
+          ]
+          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          if missing:
+              print("Missing GradleMC automation modules:", ", ".join(missing), file=sys.stderr)
+              sys.exit(1)
+          print("GradleMC Python automation imports are healthy.")
+          PY
+
+      - name: Prepare and validate Gradle wrapper
         shell: bash
         working-directory: ${{ env.MOD_PROJECT_DIR }}
         run: |
           set -euo pipefail
           sed -i 's/\r$//' ./gradlew
           chmod +x ./gradlew
+          jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
+          grep -Eq '^distributionUrl=https\\://services\.gradle\.org/distributions/gradle-[0-9][^[:space:]]*-bin\.zip$' gradle/wrapper/gradle-wrapper.properties
           ./gradlew --version
+
+      - name: Run verification checks
+        shell: bash
+        working-directory: ${{ env.MOD_PROJECT_DIR }}
+        run: ./gradlew --no-daemon --stacktrace check
 
       - name: Build mod
         shell: bash
         working-directory: ${{ env.MOD_PROJECT_DIR }}
-        run: ./gradlew --no-daemon --stacktrace clean build
+        run: ./gradlew --no-daemon --stacktrace assemble
 
       - name: Verify built jar name
         shell: bash
@@ -198,7 +258,13 @@ jobs:
           mod_id="$(get_property mod_id)"
           mod_version="$(get_property mod_version)"
           minecraft_version="$(get_property minecraft_version)"
+          artifact_name="$(get_property artifact_name)"
           expected_jar="${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
+
+          [[ "$artifact_name" == "$expected_jar" ]] || {
+            echo "artifact_name mismatch. Expected '$expected_jar', got '$artifact_name'." >&2
+            exit 1
+          }
 
           [[ -f "build/libs/$expected_jar" ]] || {
             echo "Expected jar not found: build/libs/$expected_jar" >&2
@@ -217,6 +283,7 @@ jobs:
             echo "### GradleMC CI"
             echo ""
             echo "- Project directory: \`$MOD_PROJECT_DIR\`"
+            echo "- Python version: \`$PYTHON_VERSION\`"
             echo "- Expected jar: \`$EXPECTED_JAR\`"
             echo ""
             echo "Built jars:"
