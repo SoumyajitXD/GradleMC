@@ -235,13 +235,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: repository-sanity
-    if: ${{ hashFiles('SOURCE CODE/package.json') != '' }}
     defaults:
       run:
         working-directory: ${{ env.PROJECT_DIR }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+
+      - name: Validate Node manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f package.json ]] || { echo "Missing package.json for Node tooling." >&2; exit 1; }
+          [[ -f package-lock.json ]] || { echo "Missing package-lock.json for reproducible Node installs." >&2; exit 1; }
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -250,13 +256,23 @@ jobs:
           cache: npm
           cache-dependency-path: SOURCE CODE/package-lock.json
 
+      - name: Validate Node package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_name="$(node -p "require('./package.json').name || ''")"
+          [[ "$package_name" == "gradlemc-automation" ]] || {
+            echo "Unexpected Node package name: $package_name" >&2
+            exit 1
+          }
+
       - name: Run Node checks
         shell: bash
         run: |
           set -euo pipefail
           npm ci
           npm run check
-          if npm run | grep -q "typecheck"; then
+          if node -e "const scripts = require('./package.json').scripts || {}; process.exit(scripts.typecheck ? 0 : 1)"; then
             npm run typecheck
           fi
 
