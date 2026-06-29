@@ -1,0 +1,91 @@
+name: Feature request
+description: Suggest a focused GradleMC improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest a feature that fits GradleMC's purpose: local diagnostics, stability checks, reports, GUI/commands, automation, or support workflow.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight checks
+      options:
+        - label: I searched existing issues first.
+          required: true
+        - label: This request is for GradleMC, not general Minecraft or Forge support.
+          required: true
+        - label: This does not request telemetry, analytics, cloud inference, or unsupported loader/version claims.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature area
+      options:
+        - GUI
+        - Commands
+        - Reports / exports
+        - Smart Diagnostics
+        - Adaptive diagnostics
+        - Performance / profiler
+        - Worldgen observation
+        - Automation / CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What pain does this solve?
+      placeholder: "When I troubleshoot a modpack, I need..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Mention commands, tools, or workflows that partially solve this already.
+
+  - type: dropdown
+    id: support-target
+    attributes:
+      label: Target environment
+      options:
+        - Client
+        - Dedicated server
+        - Both client and server
+        - Automation / repository only
+        - Documentation only
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or examples
+      description: Add screenshots, report snippets, command examples, or links that explain the need.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope control
+      options:
+        - label: I understand that current release support is Forge 1.20.1 unless the project explicitly expands support.
+          required: true
