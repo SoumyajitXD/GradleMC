@@ -1,0 +1,51 @@
+name: Documentation problem
+description: Report unclear or incorrect GradleMC documentation.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for README, support docs, roadmap, changelog, release notes, command examples, or public wording problems.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight checks
+      options:
+        - label: I searched existing issues first.
+          required: true
+        - label: This is about documentation.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - README
+        - CHANGELOG
+        - ROADMAP
+        - SUPPORT
+        - SECURITY
+        - CONTRIBUTING
+        - Release checklist
+        - Command examples
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong?
+      description: Explain what is unclear, stale, missing, or inaccurate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix
+      description: Paste improved wording or explain the change.
