@@ -1,6 +1,6 @@
 # GradleMC Roadmap
 
-This roadmap is a planning document, not a promise factory. If the code, build, runtime behavior, docs, and artifact naming do not prove support, the support claim does not exist. Simple. 🗿
+This roadmap is a planning document, not a promise factory. If the code, build, runtime behavior, docs, and artifact naming do not prove support, the support claim does not exist.
 
 ---
 
@@ -8,12 +8,12 @@ This roadmap is a planning document, not a promise factory. If the code, build, 
 
 | Field | Value |
 | --- | --- |
-| Version | `1.0.0` |
+| Version | `1.0.1` |
 | Minecraft | `1.20.1` |
 | Loader | Forge |
 | Forge target | `47.4.20` |
 | Java | `17` |
-| Artifact | `gradlemc-1.0.0-forge-1.20.1.jar` |
+| Artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
 
 Current public focus:
 
@@ -28,9 +28,24 @@ Current public focus:
 
 ---
 
-## Next: `V1.0.1` Stabilization
+## Released: `1.0.1` Stabilization
 
-`V1.0.1` should be a quality release, not a feature landfill.
+`1.0.1` is the current public Forge `1.20.1` release.
+
+Release-surface goals:
+
+- keep support claims locked to Forge `1.20.1`;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from the released jar.
+
+---
+
+## Next: `1.0.x` Hardening
+
+Future `1.0.x` work should be quality-first, not feature stuffing.
 
 Priority work:
 
@@ -43,13 +58,13 @@ Priority work:
 - keep CI strict;
 - update README and CurseForge copy only after behavior is verified.
 
-Do **not** add screenshots to the README until the `V1.0.1` visual state is stable. Screenshots of a half-finished UI age like milk in a furnace.
+Do not add screenshots to the README until they are captured from the actual released build. Screenshots are proof, not decoration.
 
 ---
 
 ## Screenshot And Demo Pass
 
-After `V1.0.1` finishes, add a focused visual proof section:
+After `1.0.1`, add a focused visual proof section using real assets:
 
 1. GUI overview screen.
 2. Diagnostics/status screen.
@@ -81,7 +96,7 @@ Potential `1.0.x` improvements:
 - clearer separation between diagnostics, profiler, and adaptive gameplay-state logic;
 - better docs for server owners and support helpers.
 
-Each item needs testing. “Looks cool” is not a release criterion; that is how bloat enters through the window with a fake mustache.
+Each item needs testing. A cool idea is not a release criterion.
 
 ---
 
