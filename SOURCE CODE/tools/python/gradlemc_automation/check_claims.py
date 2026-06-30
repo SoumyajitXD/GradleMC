@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .variants import DEFAULT_MATRIX, ROOT, load_matrix, read_text, validate_matrix, variants
 
-DOC_PATHS = ["README.md", "AGENTS.md", "docs", "curseforge-description"]
+DOC_PATHS = ["README.md", "AGENTS.md", "docs", "curseforge-description", "curseforge-description.html"]
 FALSE_SUPPORT_PATTERNS = [
     (re.compile(r"\bsupports\s+fabric\b", re.IGNORECASE), "Fabric support claim"),
     (re.compile(r"\bfabric\s+is\s+supported\b", re.IGNORECASE), "Fabric support claim"),
