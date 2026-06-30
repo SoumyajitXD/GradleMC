@@ -6,39 +6,52 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 ---
 
-## Current Public Release Target
+## Current Public Release
 
 | Field | Value |
 | --- | --- |
 | Project | GradleMC |
-| Current public version | `1.0.0` |
+| Current public version | `1.0.1` |
 | Minecraft | `1.20.1` |
 | Loader | Forge |
 | Forge target | `47.4.20` |
 | Java | `17` |
 | CurseForge Project ID | `1585182` |
-| Expected artifact | `gradlemc-1.0.0-forge-1.20.1.jar` |
+| Expected artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
 | Repository license | Apache-2.0 |
 
 ---
 
 ## Unreleased
 
-### Repository and community surface
+No unreleased changes yet.
 
-- Added a security policy for fake downloads, sensitive logs, unsafe distribution, and report privacy.
-- Added a roadmap that separates current support, next-release work, and future ports.
-- Added a release checklist for repeatable release/export validation.
-- Added a screenshot plan for the post-`V1.0.1` visual pass without faking screenshots early.
-- Improved GitHub issue routing through contact links.
-- Expanded the pull request template with stricter release, privacy, and validation checks.
-- Improved the README repository map and public trust signals.
+---
+
+## `1.0.1`
+
+Published public release for Minecraft Java Edition `1.20.1` on Forge.
+
+### Release identity
+
+- Release artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
+- Supported target remains Forge `1.20.1`.
+- Java target remains `17`.
+- Forge target remains `47.4.20`.
+- CurseForge Project ID remains `1585182`.
+
+### Documentation and publishing surface
+
+- Updated GitHub release-facing docs for the `1.0.1` public release.
+- Added `curseforge-description.html` as the repository source for the CurseForge project description.
+- Clarified that screenshots should be captured from the real `1.0.1` release jar before being added.
+- Kept public support claims limited to Forge `1.20.1` only.
 
 ### Guardrails
 
-- Current supported target remains Minecraft `1.20.1` on Forge.
-- Fabric, NeoForge, Quilt, and other Minecraft versions remain future work until fully implemented and verified.
-- Adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, or cloud inference.
+- No Fabric, NeoForge, Quilt, or non-`1.20.1` support is claimed by this release.
+- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
+- Profiler features remain bounded local evidence tools, not Spark parity.
 
 ---
 
