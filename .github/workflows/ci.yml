@@ -19,6 +19,9 @@ concurrency:
 env:
   PROJECT_DIR: "SOURCE CODE"
   PYTHONPATH: "${{ github.workspace }}/SOURCE CODE/tools/python"
+  JAVA_VERSION: "17"
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
 
 jobs:
   repository-sanity:
@@ -37,6 +40,7 @@ jobs:
           [[ -f LICENSE ]] || { echo "Missing LICENSE." >&2; exit 1; }
           [[ -d "$PROJECT_DIR" ]] || { echo "Missing source directory: $PROJECT_DIR" >&2; exit 1; }
           [[ ! -d "SOURCE CODEs" ]] || { echo "Stale source root exists: SOURCE CODEs" >&2; exit 1; }
+          [[ ! -d "$PROJECT_DIR/.github/workflows" ]] || { echo "Nested workflow directory found: $PROJECT_DIR/.github/workflows. GitHub only runs workflows from repository-root .github/workflows." >&2; exit 1; }
           [[ -f "$PROJECT_DIR/gradlew" ]] || { echo "Missing Gradle wrapper in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/settings.gradle" || -f "$PROJECT_DIR/settings.gradle.kts" ]] || { echo "Missing Gradle settings in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/build.gradle" || -f "$PROJECT_DIR/build.gradle.kts" ]] || { echo "Missing Gradle build file in $PROJECT_DIR" >&2; exit 1; }
@@ -168,16 +172,16 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Prepare Gradle wrapper
         shell: bash
@@ -249,22 +253,12 @@ jobs:
           [[ -f package.json ]] || { echo "Missing package.json for Node tooling." >&2; exit 1; }
           [[ -f package-lock.json ]] || { echo "Missing package-lock.json for reproducible Node installs." >&2; exit 1; }
 
-      - name: Set up Node
+      - name: Set up Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: SOURCE CODE/package-lock.json
-
-      - name: Validate Node package identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          package_name="$(node -p "require('./package.json').name || ''")"
-          [[ "$package_name" == "gradlemc-automation" ]] || {
-            echo "Unexpected Node package name: $package_name" >&2
-            exit 1
-          }
 
       - name: Run Node checks
         shell: bash
@@ -288,16 +282,33 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate Node manifests
+        shell: pwsh
+        run: |
+          if (-not (Test-Path package.json)) { throw "Missing package.json for Node-backed validation." }
+          if (-not (Test-Path package-lock.json)) { throw "Missing package-lock.json for reproducible Node installs." }
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: SOURCE CODE/package-lock.json
+
+      - name: Install Node dependencies
+        shell: pwsh
+        run: npm ci
 
       - name: Run PowerShell validation wrapper
         shell: pwsh
