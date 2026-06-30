@@ -1,8 +1,8 @@
 # GradleMC Screenshot Plan
 
-Screenshots should be added **after `V1.0.1` finishes**. Adding screenshots before the UI and report flow stabilize is how you preserve outdated evidence forever like a fossilized mistake. 🦴
+Screenshots should be captured from the real `1.0.1` release jar. Adding screenshots before the actual released UI and report flow are shown clearly is how outdated evidence becomes permanent clutter.
 
-This file defines the screenshot pass so the repo is ready without pretending the visuals are final today.
+This file defines the screenshot pass so the repo can add visuals without pretending mockups are proof.
 
 ---
 
@@ -10,12 +10,12 @@ This file defines the screenshot pass so the repo is ready without pretending th
 
 Add screenshots only after:
 
-- [ ] `V1.0.1` behavior is final.
-- [ ] GUI copy is stable.
-- [ ] report/export flow is stable.
-- [ ] Smart Diagnostics output is stable.
-- [ ] overlay defaults are confirmed.
-- [ ] no private paths, usernames, server addresses, or tokens appear in screenshots.
+- [ ] the `1.0.1` release jar is installed in a clean test instance;
+- [ ] GUI copy is stable for the published build;
+- [ ] report/export flow is stable for the published build;
+- [ ] Smart Diagnostics output is stable for the published build;
+- [ ] overlay defaults are confirmed;
+- [ ] no private paths, usernames, server addresses, or tokens appear in screenshots;
 - [ ] README and CurseForge copy are ready to update together.
 
 ---
@@ -37,7 +37,7 @@ Use real screenshots from the released build.
 
 ## README Placement
 
-After assets exist, add a `Preview` section near the top of `README.md`, after the project pitch and before `Why This Exists`.
+After assets exist, add a `Preview` section near the top of `README.md`, after the project pitch and before `Why GradleMC Exists`.
 
 Suggested structure:
 
@@ -60,7 +60,7 @@ Keep the section compact. The README should sell the project, not become a museu
 ## Capture Rules
 
 - Use a clean test instance.
-- Use the official release jar.
+- Use the official `gradlemc-1.0.1-forge-1.20.1.jar` release jar.
 - Use Minecraft `1.20.1` on Forge.
 - Use readable GUI scale.
 - Avoid cluttered modpack backgrounds.
@@ -94,7 +94,7 @@ final_final_REAL.png
 image.png
 ```
 
-That naming style belongs in a haunted Downloads folder, not a repository.
+Clear names make release assets easier to review.
 
 ---
 
