@@ -10,7 +10,7 @@ Security reports are for risks that could harm players, server owners, maintaine
 
 | Version / target | Security support |
 | --- | --- |
-| GradleMC `1.0.0` for Minecraft `1.20.1` Forge | Current public support target |
+| GradleMC `1.0.1` for Minecraft `1.20.1` Forge | Current public support target |
 | Future `1.0.x` Forge `1.20.1` releases | Supported after release |
 | Fabric, NeoForge, Quilt, or other Minecraft versions | Not supported until actually implemented and released |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
@@ -18,7 +18,7 @@ Security reports are for risks that could harm players, server owners, maintaine
 Current expected release artifact:
 
 ```text
-gradlemc-1.0.0-forge-1.20.1.jar
+gradlemc-1.0.1-forge-1.20.1.jar
 ```
 
 ---
@@ -82,7 +82,7 @@ GradleMC tries to avoid broad private-file scans, full logs, crash reports, full
 - runtime context;
 - private modpack or server information.
 
-Review files before posting them publicly. Evidence is useful. Doxxing yourself by accident is not a feature.
+Review files before posting them publicly. Evidence is useful. Accidentally exposing yourself is not a feature.
 
 ---
 
