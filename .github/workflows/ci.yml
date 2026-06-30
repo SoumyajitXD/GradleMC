@@ -376,6 +376,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: "SOURCE CODE/package-lock.json"
+
       - name: Run PowerShell validation wrapper
         shell: pwsh
         run: pwsh ./tools/pwsh/validate.ps1
