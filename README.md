@@ -14,84 +14,62 @@
   <img alt="Forge 47.4.20" src="https://img.shields.io/badge/Forge-47.4.20-orange">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-blue">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
-  <img alt="No telemetry" src="https://img.shields.io/badge/Telemetry-none-success">
+  <img alt="Telemetry-none" src="https://img.shields.io/badge/Telemetry-none-success">
 </p>
 
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a>
-  · <a href="#what-gradlemc-checks">Checks</a>
+  · <a href="#features">Features</a>
   · <a href="#build-from-source">Build</a>
   · <a href="CHANGELOG.md">Changelog</a>
   · <a href="ROADMAP.md">Roadmap</a>
   · <a href="SUPPORT.md">Support</a>
-  · <a href="SECURITY.md">Security</a>
 </p>
 
-GradleMC helps players, pack makers, server owners, and testers inspect a running modpack **without leaving Minecraft**. It gives you a GUI, lowercase `/gradlemc` commands, bounded performance checks, local profiler foundations, Smart Diagnostics, adaptive diagnostics status, and shareable text reports.
+GradleMC helps players, pack makers, server owners, and testers inspect a running modded Minecraft instance without leaving the game. It provides a diagnostics GUI, lowercase `/gradlemc` commands, bounded performance checks, local profiler foundations, Smart Diagnostics, adaptive diagnostics status, and shareable text reports.
 
-Translation: fewer blind guesses, fewer ritual mod deletions, fewer support threads that look like a raccoon walked across a keyboard. 💀
-
-> **Current supported build:** Minecraft Java Edition `1.20.1` on Forge.  
-> **Release artifact name:** `gradlemc-1.0.0-forge-1.20.1.jar`  
+> **Latest public release:** `1.0.1`  
+> **Current supported build:** Minecraft Java Edition `1.20.1` on Forge `47.4.20`  
+> **Release artifact:** `gradlemc-1.0.1-forge-1.20.1.jar`  
+> **Java:** `17`  
 > **Project ID:** `1585182`
 
 ---
 
 ## Preview
 
-Screenshots are intentionally waiting until the `V1.0.1` visual state is final. Fake or outdated screenshots are worse than no screenshots; they are technical debt with eyeliner.
-
-The planned screenshot pass is documented in [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md). It will cover the GUI overview, status panel, Smart Diagnostics, report export flow, optional overlay, and possibly a short GIF.
+Screenshots should be captured from the real `1.0.1` release jar before they are added here. The screenshot plan lives in [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md).
 
 ---
 
-## Why This Exists
+## Why GradleMC Exists
 
-Troubleshooting a modded Minecraft instance is usually chaos:
+Troubleshooting modded Minecraft often turns into guesswork. GradleMC exists to produce local evidence that is easier to read, export, and share:
 
-- “Is it memory pressure?”
-- “Is the server tick dying?”
-- “Which mods are loaded?”
-- “Did worldgen just punch the TPS in the face?”
-- “Can I export something readable instead of sending vague screenshots?”
-
-GradleMC exists to turn that mess into local evidence you can actually share.
+- version and environment details;
+- memory pressure;
+- loaded mod information;
+- config/report path checks;
+- entity and block entity density;
+- TPS/MSPT, FPS, profiler, and worldgen observations;
+- Smart Diagnostics recommendations and evidence;
+- exportable reports for support conversations.
 
 ---
 
-## Highlights
+## Features
 
 | Feature | What it does |
 | --- | --- |
-| **Diagnostics GUI** | Opens an in-game GradleMC control center with quick actions, tests, reports, settings, and status panels. |
-| **Lowercase commands** | Uses the `/gradlemc` command tree. Minecraft commands should stay lowercase. |
-| **Report export** | Writes readable local troubleshooting reports under `<gameDir>/gradlemc/reports/`. |
-| **Mod/config inspection** | Shows loaded mods, config paths, report paths, local rule checks, and environment details. |
-| **Bounded performance tests** | Samples TPS/MSPT, FPS, entity density, block entity density, and passive worldgen pressure within configured limits. |
-| **Profiler foundation** | Produces bounded local tick/CPU-lite/memory-lite summaries. Useful evidence, not Spark parity cosplay. |
-| **Smart Diagnostics** | Local rule-based scoring, advice, evidence, confidence, trends, and missing-data notes. |
-| **Adaptive diagnostics** | Lightweight local gameplay-state logic for bounded adaptive status and warnings. No cloud nonsense. |
-| **Privacy-aware exports** | Avoids broad private-file scans and full-folder dumps by default. Review exports before sharing anyway. |
-
----
-
-## Project Quality Surface
-
-GradleMC is set up like a real project, not a zip file with ambition.
-
-| Surface | File |
-| --- | --- |
-| Release history | [`CHANGELOG.md`](CHANGELOG.md) |
-| Public planning | [`ROADMAP.md`](ROADMAP.md) |
-| Support policy | [`SUPPORT.md`](SUPPORT.md) |
-| Security policy | [`SECURITY.md`](SECURITY.md) |
-| Contribution rules | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| Code of conduct | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
-| Release checklist | [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) |
-| Screenshot plan | [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) |
-| Agent/maintainer manual | [`AGENTS.md`](AGENTS.md) |
-| Pull request checklist | [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) |
-| Issue routing | [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) |
+| Diagnostics GUI | Opens an in-game GradleMC control center with quick actions, tests, reports, settings, and status panels. |
+| Lowercase commands | Uses the `/gradlemc` command tree. Minecraft command examples must stay lowercase. |
+| Report export | Writes readable local troubleshooting reports under `<gameDir>/gradlemc/reports/`. |
+| Mod/config inspection | Shows loaded mods, config paths, report paths, local rule checks, and environment details. |
+| Bounded performance tests | Samples TPS/MSPT, FPS, entity density, block entity density, and passive worldgen pressure within configured limits. |
+| Profiler foundation | Produces bounded local tick, CPU-lite, and memory-lite summaries. |
+| Smart Diagnostics | Provides local rule-based scoring, advice, evidence, confidence, trends, and missing-data notes. |
+| Adaptive diagnostics | Provides lightweight local gameplay-state diagnostics. It is not cloud AI or telemetry. |
+| Privacy-aware exports | Avoids broad private-file scans and full-folder dumps by default. Review exports before sharing. |
 
 ---
 
@@ -101,7 +79,7 @@ GradleMC is set up like a real project, not a zip file with ambition.
 
 1. Install Minecraft Java Edition `1.20.1` with Forge `47.4.20`.
 2. Use Java `17`.
-3. Put `gradlemc-1.0.0-forge-1.20.1.jar` in the instance or server `mods` folder.
+3. Put `gradlemc-1.0.1-forge-1.20.1.jar` in the instance or server `mods` folder.
 4. Install on the client for the GUI, keybind, overlay, and FPS testing.
 5. Install on the server for server commands, reports, TPS/MSPT sampling, passive worldgen observation, scans, issue bundles, Smart Diagnostics, and adaptive diagnostics state.
 
@@ -131,7 +109,7 @@ Commands that inspect or export heavier information are permission-gated where a
 
 ## What GradleMC Checks
 
-GradleMC focuses on stability context that is useful when a pack is slow, unstable, overloaded, or painful to support:
+GradleMC focuses on stability context that is useful when a pack is slow, unstable, overloaded, or hard to support:
 
 - Java, Forge, Minecraft, GradleMC, and loaded-mod environment details.
 - JVM heap pressure.
@@ -161,7 +139,7 @@ Default subfolders include `reports/`, `exports/`, `issue-bundles/`, `profiles/`
 GradleMC is deliberately honest about its limits:
 
 - Not a Gradle replacement.
-- Not a magic crash-fixing bot.
+- Not a crash-fixing bot.
 - Not a replacement for Spark or deeper profilers.
 - Not an LLM, generative AI system, neural network, cloud AI service, online inference engine, telemetry feature, or analytics feature.
 - Not a claim of Fabric, NeoForge, Quilt, or non-1.20.1 support in this release.
@@ -186,10 +164,10 @@ cd "SOURCE CODE"
 gradlew.bat build
 ```
 
-The expected build output is:
+The expected build output for the current public release is:
 
 ```text
-SOURCE CODE/build/libs/gradlemc-1.0.0-forge-1.20.1.jar
+SOURCE CODE/build/libs/gradlemc-1.0.1-forge-1.20.1.jar
 ```
 
 Run the main verification gate:
@@ -219,15 +197,16 @@ For release/export flow, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIS
 | [`README.md`](README.md) | Project landing page. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release and repository-surface history. |
 | [`ROADMAP.md`](ROADMAP.md) | Public planning and support gates. |
-| [`AGENTS.md`](AGENTS.md) | Technical operating manual for coding agents and maintainers. |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules and local verification flow. |
-| [`SUPPORT.md`](SUPPORT.md) | How to ask for help without creating a cursed mystery novel. |
+| [`SUPPORT.md`](SUPPORT.md) | Support guide. |
 | [`SECURITY.md`](SECURITY.md) | Security and distribution-chain reporting policy. |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules and local verification flow. |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Community behavior rules. |
 | [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) | Release/export validation checklist. |
-| [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Post-`V1.0.1` screenshot plan. |
-| [`LICENSE`](LICENSE) | Apache License 2.0. |
-| [`GradleMC_logo.png`](GradleMC_logo.png) | Repository/project logo. |
+| [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Screenshot capture plan. |
+| [`curseforge-description.html`](curseforge-description.html) | CurseForge project description source for the current public release. |
+| [`AGENTS.md`](AGENTS.md) | Technical operating manual for coding agents and maintainers. |
+| [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) | Pull request checklist. |
+| [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) | Issue routing. |
 
 Inside `SOURCE CODE/`, the variant matrix lives at:
 
@@ -247,26 +226,14 @@ Planned or experimental entries are roadmap metadata only. They must not produce
 
 ## Contributing
 
-Good contributions are welcome. Random chaos is not. 🗿
-
-Start here:
+Good contributions are welcome. Start here:
 
 - Read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 - Read [`AGENTS.md`](AGENTS.md) before code or automation changes.
 - Keep Minecraft command examples lowercase.
 - Do not edit loader/version support claims unless the implementation and artifact gates prove it.
-- Do not add telemetry, cloud calls, LLMs, generative AI, or fake “AI” marketing fog.
+- Do not add telemetry, cloud calls, LLMs, generative AI, or fake AI marketing.
 - Run the relevant Gradle/Python/Node/PowerShell checks before opening a PR.
-
-Bug reports and feature requests have structured GitHub issue templates so reports include useful evidence instead of “it broke pls fix.”
-
----
-
-## Star The Repo If It Helps
-
-If GradleMC saves you from one doomed modpack debugging spiral, give the repo a star. ⭐
-
-Stars help other Minecraft pack makers find the project. They are not magic, but discovery without stars is basically shouting into a cave and waiting for GitHub to develop empathy.
 
 ---
 
