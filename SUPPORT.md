@@ -25,7 +25,7 @@ Check these first:
 1. You are using Minecraft Java Edition `1.20.1`.
 2. You are using Forge `47.4.20` or a compatible Forge `47.x` setup.
 3. You are using Java `17`.
-4. You are using a GradleMC jar named like `gradlemc-1.0.0-forge-1.20.1.jar`.
+4. You are using a GradleMC jar named `gradlemc-1.0.1-forge-1.20.1.jar`.
 5. You tried the relevant command again after restarting the instance or server.
 6. You reviewed the GradleMC report before sharing it.
 
