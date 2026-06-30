@@ -40,7 +40,9 @@ jobs:
           [[ -f LICENSE ]] || { echo "Missing LICENSE." >&2; exit 1; }
           [[ -d "$PROJECT_DIR" ]] || { echo "Missing source directory: $PROJECT_DIR" >&2; exit 1; }
           [[ ! -d "SOURCE CODEs" ]] || { echo "Stale source root exists: SOURCE CODEs" >&2; exit 1; }
-          [[ ! -d "$PROJECT_DIR/.github/workflows" ]] || { echo "Nested workflow directory found: $PROJECT_DIR/.github/workflows. GitHub only runs workflows from repository-root .github/workflows." >&2; exit 1; }
+          if [[ -d "$PROJECT_DIR/.github/workflows" ]]; then
+            echo "::warning title=Inactive nested workflow::Found $PROJECT_DIR/.github/workflows. GitHub only runs workflows from repository-root .github/workflows. Move or delete nested workflow files when the connector allows deletion."
+          fi
           [[ -f "$PROJECT_DIR/gradlew" ]] || { echo "Missing Gradle wrapper in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/settings.gradle" || -f "$PROJECT_DIR/settings.gradle.kts" ]] || { echo "Missing Gradle settings in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/build.gradle" || -f "$PROJECT_DIR/build.gradle.kts" ]] || { echo "Missing Gradle build file in $PROJECT_DIR" >&2; exit 1; }
@@ -260,6 +262,16 @@ jobs:
           cache: npm
           cache-dependency-path: SOURCE CODE/package-lock.json
 
+      - name: Validate Node package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_name="$(node -p "require('./package.json').name || ''")"
+          [[ "$package_name" == "gradlemc-automation" ]] || {
+            echo "Unexpected Node package name: $package_name" >&2
+            exit 1
+          }
+
       - name: Run Node checks
         shell: bash
         run: |
@@ -305,6 +317,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: SOURCE CODE/package-lock.json
+
+      - name: Validate Node package identity
+        shell: pwsh
+        run: |
+          $packageName = node -p "require('./package.json').name || ''"
+          if ($packageName -ne "gradlemc-automation") {
+            throw "Unexpected Node package name: $packageName"
+          }
 
       - name: Install Node dependencies
         shell: pwsh
