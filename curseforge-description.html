@@ -1,0 +1,79 @@
+<h2><span style="color:#8be9fd;">GradleMC</span></h2>
+
+<p><strong>In-game diagnostics, stability checks, and exportable troubleshooting reports for Minecraft Forge modpacks.</strong></p>
+
+<p>GradleMC helps players, pack makers, server owners, and testers understand what is happening inside a modded Minecraft instance before troubleshooting turns into blind guessing.</p>
+
+<p>This page is for <strong>GradleMC v1.0.1</strong>, built for <strong>Minecraft Java Edition 1.20.1</strong> on <strong>Forge</strong>.</p>
+
+<hr>
+
+<h3><span style="color:#50fa7b;">What GradleMC does</span></h3>
+
+<ul>
+  <li><strong>Diagnostics GUI:</strong> open the in-game control center with <code>/gradlemc gui</code> or the configurable GUI keybind.</li>
+  <li><strong>Readable commands:</strong> use lowercase <code>/gradlemc</code> commands for status, memory, checks, reports, performance samples, Smart Diagnostics, and more.</li>
+  <li><strong>Exportable reports:</strong> write local troubleshooting reports under <code>&lt;gameDir&gt;/gradlemc/reports/</code>.</li>
+  <li><strong>Mod and config inspection:</strong> view loaded mod details, config paths, report paths, local rule checks, and environment context.</li>
+  <li><strong>Bounded performance checks:</strong> sample TPS/MSPT, FPS, entity density, block entity density, and passive worldgen pressure within configured limits.</li>
+  <li><strong>Profiler foundation:</strong> capture bounded tick, CPU-lite, memory-lite, and combined local profiling summaries.</li>
+  <li><strong>Smart Diagnostics:</strong> get local rule-based scoring, advice, evidence, confidence, trend notes, and missing-data notes.</li>
+  <li><strong>Adaptive diagnostics:</strong> use lightweight local gameplay-state logic for bounded adaptive status and warnings.</li>
+</ul>
+
+<hr>
+
+<h3><span style="color:#ffb86c;">Quick start</span></h3>
+
+<ol>
+  <li>Install <strong>Minecraft Java Edition 1.20.1</strong>.</li>
+  <li>Install <strong>Forge 47.4.20</strong> or a compatible Forge 47.x setup.</li>
+  <li>Use <strong>Java 17</strong>.</li>
+  <li>Put <code>gradlemc-1.0.1-forge-1.20.1.jar</code> in the client or server <code>mods</code> folder.</li>
+</ol>
+
+<p>Install on the client for the GUI, keybind, overlay, and FPS testing. Install on the server for server-side commands, reports, TPS/MSPT sampling, passive worldgen observation, scans, issue bundles, Smart Diagnostics, and adaptive diagnostics state.</p>
+
+<hr>
+
+<h3><span style="color:#bd93f9;">Useful commands</span></h3>
+
+<ul>
+  <li><code>/gradlemc gui</code> - open the diagnostics GUI.</li>
+  <li><code>/gradlemc status</code> - show current GradleMC status and paths.</li>
+  <li><code>/gradlemc version</code> - show GradleMC, Minecraft, Forge, Java, and loaded-mod context.</li>
+  <li><code>/gradlemc memory</code> - show JVM heap information.</li>
+  <li><code>/gradlemc check</code> - run stability checks.</li>
+  <li><code>/gradlemc export</code> - write a troubleshooting report.</li>
+  <li><code>/gradlemc smart score</code> - calculate a local Smart Diagnostics score.</li>
+  <li><code>/gradlemc smart advice</code> - show prioritized local recommendations.</li>
+</ul>
+
+<hr>
+
+<h3><span style="color:#ff79c6;">Privacy and honesty</span></h3>
+
+<ul>
+  <li>No telemetry.</li>
+  <li>No analytics.</li>
+  <li>No cloud AI.</li>
+  <li>No LLM or generative AI integration.</li>
+  <li>No hidden online inference.</li>
+  <li>No broad private-file scans by default.</li>
+</ul>
+
+<p>Reports can still include local paths, mod names, Java details, and runtime context. Review exports before sharing them publicly.</p>
+
+<hr>
+
+<h3><span style="color:#f1fa8c;">Current support limits</span></h3>
+
+<p><strong>This release supports Forge for Minecraft Java Edition 1.20.1.</strong></p>
+
+<p>Fabric, NeoForge, Quilt, Bedrock, and other Minecraft versions are not included in this artifact. Future ports are roadmap work until the code, build, runtime checks, docs, and artifact naming all agree.</p>
+
+<hr>
+
+<h3><span style="color:#8be9fd;">Best use case</span></h3>
+
+<p>GradleMC is best used when you need clearer evidence for crash, lag, support, or modpack stability conversations. It will not magically fix a broken pack, but it gives you better local information so you can stop guessing and start debugging with actual data.</p>
