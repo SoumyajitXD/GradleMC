@@ -60,7 +60,7 @@ class AutomationTests(unittest.TestCase):
     def test_release_metadata_matches_current_supported_artifact(self) -> None:
         errors, artifact_name = check_metadata()
         self.assertEqual([], errors)
-        self.assertEqual("gradlemc-1.0.0-forge-1.20.1.jar", artifact_name)
+        self.assertEqual("gradlemc-1.0.1-forge-1.20.1.jar", artifact_name)
 
     def test_required_release_files_exist(self) -> None:
         self.assertEqual([], check_required_files())
