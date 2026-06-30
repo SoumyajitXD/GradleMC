@@ -117,6 +117,38 @@ Generated automation outputs are written under `build/generated/gradlemc/` and `
 | Variant | Minecraft | Loader | Java | Status | Enabled | Buildable |
 | --- | --- | --- | --- | --- | --- | --- |
 | `forge-1.20.1` | `1.20.1` | forge | 17 | supported | true | true |
+| `forge-1.19.2` | `1.19.2` | forge | 17 | needs-verification | false | false |
+| `fabric-1.19.2` | `1.19.2` | fabric | 17 | planned | false | false |
+| `neoforge-1.19.2` | `1.19.2` | neoforge | 17 | unsupported | false | false |
+| `fabric-1.20.1` | `1.20.1` | fabric | 17 | planned | false | false |
+| `neoforge-1.20.1` | `1.20.1` | neoforge | 17 | needs-verification | false | false |
+| `forge-1.20.4` | `1.20.4` | forge | 17 | needs-verification | false | false |
+| `fabric-1.20.4` | `1.20.4` | fabric | 17 | planned | false | false |
+| `neoforge-1.20.4` | `1.20.4` | neoforge | 17 | needs-verification | false | false |
+| `forge-1.20.6` | `1.20.6` | forge | 17 | needs-verification | false | false |
+| `fabric-1.20.6` | `1.20.6` | fabric | 17 | planned | false | false |
+| `neoforge-1.20.6` | `1.20.6` | neoforge | 17 | needs-verification | false | false |
+| `forge-1.21.1` | `1.21.1` | forge | 21 | planned | false | false |
+| `fabric-1.21.1` | `1.21.1` | fabric | 21 | planned | false | false |
+| `neoforge-1.21.1` | `1.21.1` | neoforge | 21 | planned | false | false |
+| `forge-1.21.4` | `1.21.4` | forge | 21 | needs-verification | false | false |
+| `fabric-1.21.4` | `1.21.4` | fabric | 21 | planned | false | false |
+| `neoforge-1.21.4` | `1.21.4` | neoforge | 21 | planned | false | false |
+| `forge-1.21.8` | `1.21.8` | forge | 21 | needs-verification | false | false |
+| `fabric-1.21.8` | `1.21.8` | fabric | 21 | planned | false | false |
+| `neoforge-1.21.8` | `1.21.8` | neoforge | 21 | planned | false | false |
+| `forge-1.21.11` | `1.21.11` | forge | 21 | needs-verification | false | false |
+| `fabric-1.21.11` | `1.21.11` | fabric | 21 | planned | false | false |
+| `neoforge-1.21.11` | `1.21.11` | neoforge | 21 | planned | false | false |
+| `forge-26.1` | `26.1` | forge | 25 | needs-verification | false | false |
+| `fabric-26.1` | `26.1` | fabric | 25 | experimental | false | false |
+| `neoforge-26.1` | `26.1` | neoforge | 25 | experimental | false | false |
+| `forge-26.1.2` | `26.1.2` | forge | 25 | needs-verification | false | false |
+| `fabric-26.1.2` | `26.1.2` | fabric | 25 | experimental | false | false |
+| `neoforge-26.1.2` | `26.1.2` | neoforge | 25 | needs-verification | false | false |
+| `forge-26.2` | `26.2` | forge | 25 | needs-verification | false | false |
+| `fabric-26.2` | `26.2` | fabric | 25 | needs-verification | false | false |
+| `neoforge-26.2` | `26.2` | neoforge | 25 | needs-verification | false | false |
 <!-- gradlemc:variant-table:end -->
 
 ## Next Actual Port Target
