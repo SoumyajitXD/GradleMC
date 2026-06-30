@@ -12,12 +12,12 @@ Confirm the intended release identity:
 | --- | --- |
 | Mod ID | `gradlemc` |
 | Product name | GradleMC |
-| Version | `1.0.0` |
+| Version | `1.0.1` |
 | Minecraft | `1.20.1` |
 | Loader | Forge |
 | Forge target | `47.4.20` |
 | Java | `17` |
-| Expected artifact | `gradlemc-1.0.0-forge-1.20.1.jar` |
+| Expected artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
 | CurseForge Project ID | `1585182` |
 
 Do not ship if the identity disagrees across `gradle.properties`, `mods.toml`, README, CurseForge copy, variant matrix, artifact name, or release automation.
@@ -136,6 +136,7 @@ Before publishing, check every public surface:
 Confirm these claims are still true:
 
 - [ ] Current release target is Forge `1.20.1`.
+- [ ] Artifact name is `gradlemc-1.0.1-forge-1.20.1.jar` for the current public release.
 - [ ] Java `17` is stated where needed.
 - [ ] Commands are lowercase.
 - [ ] `/gradlemc gui` is lowercase.
@@ -153,7 +154,7 @@ Confirm these claims are still true:
 - [ ] Update `CHANGELOG.md`.
 - [ ] Update README if artifact/version changes.
 - [ ] Update CurseForge description if public behavior changes.
-- [ ] Add screenshots only after the `V1.0.1` visual state is final.
+- [ ] Add screenshots only after they are captured from the real release jar.
 - [ ] Watch GitHub issues and CurseForge comments for regressions.
 
 ---
