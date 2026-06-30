@@ -19,6 +19,7 @@ concurrency:
 env:
   PROJECT_DIR: "SOURCE CODE"
   PYTHONPATH: "${{ github.workspace }}/SOURCE CODE/tools/python"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 jobs:
   repository-sanity:
@@ -35,8 +36,16 @@ jobs:
           set -euo pipefail
 
           [[ -f LICENSE ]] || { echo "Missing LICENSE." >&2; exit 1; }
+          [[ -d ".github/workflows" ]] || { echo "Missing root GitHub workflows directory." >&2; exit 1; }
+          [[ -f ".github/workflows/ci.yml" ]] || { echo "Missing root CI workflow." >&2; exit 1; }
           [[ -d "$PROJECT_DIR" ]] || { echo "Missing source directory: $PROJECT_DIR" >&2; exit 1; }
           [[ ! -d "SOURCE CODEs" ]] || { echo "Stale source root exists: SOURCE CODEs" >&2; exit 1; }
+          [[ ! -d "$PROJECT_DIR/.github/workflows" ]] || {
+            echo "Inactive nested workflows found under $PROJECT_DIR/.github/workflows." >&2
+            echo "GitHub only runs workflows from the repository-root .github/workflows directory; keeping duplicates here is CI theater." >&2
+            find "$PROJECT_DIR/.github/workflows" -maxdepth 1 -type f -print >&2 || true
+            exit 1
+          }
           [[ -f "$PROJECT_DIR/gradlew" ]] || { echo "Missing Gradle wrapper in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/settings.gradle" || -f "$PROJECT_DIR/settings.gradle.kts" ]] || { echo "Missing Gradle settings in $PROJECT_DIR" >&2; exit 1; }
           [[ -f "$PROJECT_DIR/build.gradle" || -f "$PROJECT_DIR/build.gradle.kts" ]] || { echo "Missing Gradle build file in $PROJECT_DIR" >&2; exit 1; }
@@ -156,6 +165,27 @@ jobs:
           python -m gradlemc_automation.validate_release
           python -m unittest discover -s tools/python/tests
 
+      - name: Verify generated docs are checked in
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m gradlemc_automation.generate_docs_tables --update-docs
+          if ! git diff --exit-code -- docs/PORTING_MATRIX.md; then
+            echo "Generated variant docs are stale. Run python -m gradlemc_automation.generate_docs_tables --update-docs and commit the result." >&2
+            exit 1
+          fi
+
+      - name: Upload Python automation reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-automation-${{ matrix.python }}-reports
+          path: |
+            ${{ env.PROJECT_DIR }}/build/generated/gradlemc/**
+            ${{ env.PROJECT_DIR }}/build/reports/gradlemc/**
+          if-no-files-found: ignore
+          retention-days: 7
+
   forge-build:
     name: Forge 1.20.1 verification and build
     runs-on: ubuntu-latest
@@ -173,6 +203,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            SOURCE CODE/**/*.gradle
+            SOURCE CODE/**/*.gradle.kts
+            SOURCE CODE/gradle.properties
+            SOURCE CODE/gradle/wrapper/gradle-wrapper.properties
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -186,6 +222,11 @@ jobs:
           sed -i 's/\r$//' ./gradlew
           chmod +x ./gradlew
           jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
+          distribution_url="$(sed -n 's/^distributionUrl=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
+          [[ "$distribution_url" == https\\://services.gradle.org/distributions/gradle-*-bin.zip ]] || {
+            echo "Unexpected Gradle wrapper distributionUrl: $distribution_url" >&2
+            exit 1
+          }
           timeout_ms="$(sed -n 's/^networkTimeout=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
           [[ "$timeout_ms" =~ ^[0-9]+$ ]] || { echo "Invalid Gradle wrapper networkTimeout: $timeout_ms" >&2; exit 1; }
           if (( timeout_ms < 60000 )); then
@@ -201,6 +242,10 @@ jobs:
       - name: Build mod jar
         shell: bash
         run: ./gradlew --no-daemon --stacktrace assemble
+
+      - name: Export release jar
+        shell: bash
+        run: ./gradlew --no-daemon --stacktrace exportReleaseJar
 
       - name: Verify built artifact
         shell: bash
@@ -218,8 +263,14 @@ jobs:
             find build/libs -maxdepth 1 -type f -name '*.jar' -print >&2 || true
             exit 1
           }
+          [[ -f "build/exports/$artifact_name" ]] || {
+            echo "Expected exported jar not found: build/exports/$artifact_name" >&2
+            find build/exports -maxdepth 1 -type f -name '*.jar' -print >&2 || true
+            exit 1
+          }
 
           echo "Built artifact: build/libs/$artifact_name"
+          echo "Exported artifact: build/exports/$artifact_name"
           echo "ARTIFACT_NAME=$artifact_name" >> "$GITHUB_ENV"
 
       - name: Upload built jar
@@ -229,6 +280,17 @@ jobs:
           path: ${{ env.PROJECT_DIR }}/build/libs/${{ env.ARTIFACT_NAME }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload Gradle reports on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-gradle-failure-reports
+          path: |
+            ${{ env.PROJECT_DIR }}/build/reports/**
+            ${{ env.PROJECT_DIR }}/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   node-tooling:
     name: Node tooling
@@ -254,7 +316,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: SOURCE CODE/package-lock.json
+          cache-dependency-path: "SOURCE CODE/package-lock.json"
 
       - name: Validate Node package identity
         shell: bash
@@ -276,6 +338,15 @@ jobs:
             npm run typecheck
           fi
 
+      - name: Upload Node reports on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-tooling-failure-reports
+          path: ${{ env.PROJECT_DIR }}/build/reports/gradlemc/**
+          if-no-files-found: ignore
+          retention-days: 7
+
   powershell-wrapper:
     name: PowerShell wrapper validation
     runs-on: windows-latest
@@ -293,6 +364,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            SOURCE CODE/**/*.gradle
+            SOURCE CODE/**/*.gradle.kts
+            SOURCE CODE/gradle.properties
+            SOURCE CODE/gradle/wrapper/gradle-wrapper.properties
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -302,3 +379,14 @@ jobs:
       - name: Run PowerShell validation wrapper
         shell: pwsh
         run: pwsh ./tools/pwsh/validate.ps1
+
+      - name: Upload PowerShell validation reports on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: powershell-wrapper-failure-reports
+          path: |
+            ${{ env.PROJECT_DIR }}/build/reports/**
+            ${{ env.PROJECT_DIR }}/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
