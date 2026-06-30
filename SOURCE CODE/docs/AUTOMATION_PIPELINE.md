@@ -79,7 +79,7 @@ npm run check:curseforge
 
 ## Release Export
 
-The intended release artifact is `gradlemc-1.0.0-forge-1.20.1.jar`.
+The intended release artifact is `gradlemc-1.0.1-forge-1.20.1.jar`.
 
 `./gradlew exportReleaseJar` builds the current supported Forge artifact, validates release metadata, copies the jar to `build/exports/`, verifies the exported file exists, and prints the final path. Use `-PgradlemcExportDir=<path>` to export to a specific local handoff folder.
 
