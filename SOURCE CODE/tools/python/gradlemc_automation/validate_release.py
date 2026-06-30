@@ -39,6 +39,7 @@ ALLOWED_UPPERCASE_COMMAND_REFERENCES = {
     Path("tools/python/gradlemc_automation/validate_release.py"),
     Path("tools/python/tests/test_automation.py"),
 }
+EXPECTED_RELEASE_ARTIFACT = "gradlemc-1.0.1-forge-1.20.1.jar"
 
 
 def repo_relative(path: Path) -> str:
@@ -151,8 +152,8 @@ def check_metadata() -> tuple[list[str], str]:
         if props.get(key) != expected:
             errors.append(f"gradle.properties {key} must be {expected!r}, found {props.get(key)!r}")
 
-    if props.get("artifact_name") != "gradlemc-1.0.0-forge-1.20.1.jar":
-        errors.append("release artifact must remain gradlemc-1.0.0-forge-1.20.1.jar")
+    if props.get("artifact_name") != EXPECTED_RELEASE_ARTIFACT:
+        errors.append(f"release artifact must remain {EXPECTED_RELEASE_ARTIFACT}")
 
     gradlemc_java = (ROOT / "src/main/java/com/soumyajit/gradlemc/GradleMC.java").read_text(encoding="utf-8")
     required_java = {
