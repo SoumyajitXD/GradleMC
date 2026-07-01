@@ -1,2 +1,0 @@
-"""GradleMC automation helpers."""
-
