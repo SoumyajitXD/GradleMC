@@ -6,62 +6,43 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 
 ## Release Identity
 
-Confirm the intended release identity:
+Confirm the intended public release identity:
 
-| Field | Expected for current release |
+| Field | Expected for current public release |
 | --- | --- |
 | Mod ID | `gradlemc` |
 | Product name | GradleMC |
-| Version | `1.0.1` |
+| Public version | `1.0.1` |
 | Minecraft | `1.20.1` |
 | Loader | Forge |
 | Forge target | `47.4.20` |
 | Java | `17` |
-| Expected artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
+| Expected public artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
 | CurseForge Project ID | `1585182` |
 
-Do not ship if the identity disagrees across `gradle.properties`, `mods.toml`, README, CurseForge copy, variant matrix, artifact name, or release automation.
+The standalone source folder is [`../GradleMC/Forge/Minecraft 1.20.1/`](../GradleMC/Forge/Minecraft%201.20.1/). Before exporting or publishing, check its `gradle.properties` values against the intended public release. If `mod_version`, `artifact_name`, README, release notes, and the jar filename disagree, stop. That is not a release; it is a bug with a ZIP extension.
 
 ---
 
 ## Pre-Release Checks
 
-From `SOURCE CODE/`:
+From the standalone Forge source folder:
 
 ```sh
-./gradlew checkAutomationTools validateVariantMatrix checkProjectIdentity checkCommandCasing checkFalseSupportClaims checkReleaseMetadata
-```
-
-Run the full build:
-
-```sh
-./gradlew build
+cd "GradleMC/Forge/Minecraft 1.20.1"
+./gradlew clean build gradlemcSelfTest
 ```
 
 On Windows:
 
 ```bat
-gradlew.bat build
+cd "GradleMC\Forge\Minecraft 1.20.1"
+gradlew.bat clean build gradlemcSelfTest
 ```
 
-PowerShell wrapper validation:
+Use Java `17`. Do not claim the build passed unless this was actually run and passed.
 
-```powershell
-pwsh ./tools/pwsh/validate.ps1
-```
-
-Python tests after Python automation changes:
-
-```sh
-python -m unittest discover -s tools/python/tests
-```
-
-Node checks after Node/TypeScript web-facing tooling changes:
-
-```sh
-npm ci
-npm run check
-```
+If release automation is restored later, document the exact command here before relying on it. Dead commands in release docs are productivity taxidermy.
 
 ---
 
@@ -91,31 +72,36 @@ Test with the actual release jar:
 
 ## Export
 
-Build first, then export.
+Build first, then copy the built jar from:
 
-```sh
-./gradlew exportReleaseJar
-```
-
-Or export to a handoff directory:
-
-```sh
-./gradlew exportReleaseJar -PgradlemcExportDir=/path/to/output
-```
-
-Windows PowerShell:
-
-```powershell
-pwsh ./tools/pwsh/export-release.ps1 -OutputDir "C:\path\to\output"
+```text
+GradleMC/Forge/Minecraft 1.20.1/build/libs/
 ```
 
 Verify:
 
 - [ ] artifact exists before export;
-- [ ] artifact exists after export;
-- [ ] exported filename exactly matches expected artifact name;
+- [ ] exported filename exactly matches the intended public artifact name;
+- [ ] jar metadata reports the intended GradleMC version;
 - [ ] no stale old-folder paths appear in docs or scripts;
-- [ ] no generated local runtime reports are accidentally committed.
+- [ ] no generated local runtime reports are accidentally committed;
+- [ ] no placeholder Fabric, NeoForge, Quilt, or future-version jar is produced.
+
+---
+
+## Screenshot And Visual Check
+
+The current committed screenshot set lives in [`../Screenshots/`](../Screenshots/), and the full gallery is documented in [`SCREENSHOTS.md`](SCREENSHOTS.md).
+
+Before publishing or replacing screenshots:
+
+- [ ] screenshots are captured from the intended release jar;
+- [ ] screenshots show Forge `1.20.1`, not a future or unsupported port;
+- [ ] no private paths, usernames, server addresses, or secrets are visible;
+- [ ] README preview images render on GitHub;
+- [ ] `docs/SCREENSHOTS.md` includes every committed screenshot;
+- [ ] `docs/SCREENSHOT_PLAN.md` matches the current screenshot paths;
+- [ ] CurseForge copy is updated only if it references visuals.
 
 ---
 
@@ -128,6 +114,8 @@ Before publishing, check every public surface:
 - [ ] ROADMAP.
 - [ ] SUPPORT.
 - [ ] SECURITY.
+- [ ] `docs/SCREENSHOTS.md`.
+- [ ] `docs/SCREENSHOT_PLAN.md`.
 - [ ] CurseForge description.
 - [ ] Release notes.
 - [ ] Issue templates.
@@ -135,7 +123,7 @@ Before publishing, check every public surface:
 
 Confirm these claims are still true:
 
-- [ ] Current release target is Forge `1.20.1`.
+- [ ] Current public release target is Forge `1.20.1`.
 - [ ] Artifact name is `gradlemc-1.0.1-forge-1.20.1.jar` for the current public release.
 - [ ] Java `17` is stated where needed.
 - [ ] Commands are lowercase.
@@ -153,8 +141,8 @@ Confirm these claims are still true:
 - [ ] Attach or publish the correct jar through the intended platform.
 - [ ] Update `CHANGELOG.md`.
 - [ ] Update README if artifact/version changes.
-- [ ] Update CurseForge description if public behavior changes.
-- [ ] Add screenshots only after they are captured from the real release jar.
+- [ ] Update screenshot docs if screenshots change.
+- [ ] Update CurseForge description if public behavior or visuals change.
 - [ ] Watch GitHub issues and CurseForge comments for regressions.
 
 ---
@@ -166,9 +154,11 @@ Do not release if any of these are true:
 - build fails;
 - CI fails;
 - artifact name is wrong;
+- source metadata and public docs disagree;
 - command casing regressed;
 - dedicated server loads client-only code;
 - docs claim unsupported loaders or versions;
+- screenshots imply unsupported features or versions;
 - reports expose broad private data;
 - release jar was built from a dirty mystery state;
 - old folder names or stale paths still appear;
