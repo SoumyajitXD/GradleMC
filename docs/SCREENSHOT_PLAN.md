@@ -1,81 +1,70 @@
-# GradleMC Screenshot Plan
+# GradleMC Screenshot Guide
 
-Screenshots should be captured from the real `1.0.1` release jar. Adding screenshots before the actual released UI and report flow are shown clearly is how outdated evidence becomes permanent clutter.
+GradleMC now has a committed screenshot set in [`../Screenshots/`](../Screenshots/), with numbered PNG assets from `0.png` through `13.png`.
 
-This file defines the screenshot pass so the repo can add visuals without pretending mockups are proof.
-
----
-
-## When To Add Screenshots
-
-Add screenshots only after:
-
-- [ ] the `1.0.1` release jar is installed in a clean test instance;
-- [ ] GUI copy is stable for the published build;
-- [ ] report/export flow is stable for the published build;
-- [ ] Smart Diagnostics output is stable for the published build;
-- [ ] overlay defaults are confirmed;
-- [ ] no private paths, usernames, server addresses, or tokens appear in screenshots;
-- [ ] README and CurseForge copy are ready to update together.
+This file is no longer only a future capture plan. The screenshots exist, so the job is keeping them accurate, useful, and linked correctly.
 
 ---
 
-## Recommended Assets
+## Current Screenshot Locations
 
-Use real screenshots from the released build.
-
-| Asset | Purpose | Suggested path |
+| Asset | Path | Used by |
 | --- | --- | --- |
-| GUI overview | Show the main control center immediately. | `docs/assets/screenshots/gui-overview.png` |
-| Status panel | Show environment/status clarity. | `docs/assets/screenshots/status-panel.png` |
-| Smart Diagnostics | Show score, advice, evidence, and confidence. | `docs/assets/screenshots/smart-diagnostics.png` |
-| Report export | Show export confirmation or report location. | `docs/assets/screenshots/report-export.png` |
-| Overlay | Show optional disabled-by-default overlay only if visually clean. | `docs/assets/screenshots/stats-overlay.png` |
-| Short GIF | Show `/gradlemc gui` to report export flow. | `docs/assets/demo/gradlemc-gui-export.gif` |
+| Main preview | `Screenshots/0.png` | `README.md`, `docs/SCREENSHOTS.md` |
+| README thumbnail 1 | `Screenshots/1.png` | `README.md`, `docs/SCREENSHOTS.md` |
+| README thumbnail 2 | `Screenshots/2.png` | `README.md`, `docs/SCREENSHOTS.md` |
+| README thumbnail 3 | `Screenshots/3.png` | `README.md`, `docs/SCREENSHOTS.md` |
+| Full gallery assets | `Screenshots/0.png` through `Screenshots/13.png` | `docs/SCREENSHOTS.md` |
+
+The full gallery lives in [`SCREENSHOTS.md`](SCREENSHOTS.md).
 
 ---
 
 ## README Placement
 
-After assets exist, add a `Preview` section near the top of `README.md`, after the project pitch and before `Why GradleMC Exists`.
+The README should stay compact:
 
-Suggested structure:
+1. one large preview image;
+2. three thumbnails;
+3. a link to `docs/SCREENSHOTS.md` for the complete gallery.
 
-```md
-## Preview
-
-<p align="center">
-  <img src="docs/assets/screenshots/gui-overview.png" alt="GradleMC diagnostics GUI overview" width="850">
-</p>
-
-| GUI overview | Smart Diagnostics | Report export |
-| --- | --- | --- |
-| ![GUI overview](docs/assets/screenshots/gui-overview.png) | ![Smart Diagnostics](docs/assets/screenshots/smart-diagnostics.png) | ![Report export](docs/assets/screenshots/report-export.png) |
-```
-
-Keep the section compact. The README should sell the project, not become a museum hallway.
+Do not paste all fourteen screenshots into the README. A README is a landing page, not an image dump.
 
 ---
 
 ## Capture Rules
 
-- Use a clean test instance.
-- Use the official `gradlemc-1.0.1-forge-1.20.1.jar` release jar.
-- Use Minecraft `1.20.1` on Forge.
-- Use readable GUI scale.
-- Avoid cluttered modpack backgrounds.
-- Avoid usernames unless they are fake test users.
-- Avoid local file paths unless sanitized.
-- Avoid server IPs and tokens.
-- Avoid misleading staged outputs.
-- Do not show unsupported Fabric, NeoForge, Quilt, or future-version builds.
-- Compress images before committing.
+Use real screenshots from the actual supported build. Do not use mockups unless they are clearly labeled as mockups.
+
+Before replacing the screenshot set, confirm:
+
+- [ ] the release jar being shown is the intended GradleMC release;
+- [ ] Minecraft is `1.20.1`;
+- [ ] Forge is the documented supported Forge line;
+- [ ] command examples use lowercase `/gradlemc`;
+- [ ] no private paths, usernames, server addresses, or secrets appear;
+- [ ] screenshots do not imply Fabric, NeoForge, Quilt, or future-version support;
+- [ ] UI text matches the checked-in language/resources;
+- [ ] images are compressed enough for GitHub without becoming unreadable;
+- [ ] README, `docs/SCREENSHOTS.md`, and this file are updated together.
 
 ---
 
 ## Naming Rules
 
-Use lowercase kebab-case names:
+The current committed files are numbered:
+
+```text
+0.png
+1.png
+2.png
+...
+13.png
+```
+
+That is not elegant, but it is stable and documented.
+
+Future cleanup can rename them to lowercase kebab-case names:
 
 ```text
 gui-overview.png
@@ -83,10 +72,9 @@ status-panel.png
 smart-diagnostics.png
 report-export.png
 stats-overlay.png
-gradlemc-gui-export.gif
 ```
 
-Do not use names like:
+Do not leave names like:
 
 ```text
 Screenshot (47).png
@@ -94,17 +82,18 @@ final_final_REAL.png
 image.png
 ```
 
-Clear names make release assets easier to review.
+Also do not rename files without updating every reference. Renaming one file and leaving stale links is not cleanup.
 
 ---
 
 ## CurseForge Sync
 
-When screenshots are added to GitHub:
+When screenshots change on GitHub:
 
-- update README;
-- update `curseforge-description.html` if it references visuals;
+- update README if the visible preview changes;
+- update `docs/SCREENSHOTS.md` if assets are added, removed, renamed, or reordered;
+- update `curseforge-description.html` only if the public description references visuals or needs matching screenshots;
 - keep claims consistent with the released jar;
-- do not mention screenshots of features not present in the release.
+- do not mention screenshots of features that are not present in the release.
 
 Visuals are proof. Fake proof is worse than no proof.
