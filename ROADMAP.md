@@ -1,10 +1,10 @@
 # GradleMC Roadmap
 
-This roadmap is a planning document, not a promise factory. If the code, build, runtime behavior, docs, and artifact naming do not prove support, the support claim does not exist.
+This roadmap records the public GradleMC support plan. A target is supported only when the code, build, runtime behavior, documentation, screenshots, and artifact naming all agree.
 
 ---
 
-## Current Supported Target
+## Current Supported Public Target
 
 | Field | Value |
 | --- | --- |
@@ -20,11 +20,11 @@ Current public focus:
 - stable Forge `1.20.1` diagnostics;
 - trustworthy reports;
 - clean GUI and command UX;
-- bounded local performance/profiler evidence;
+- bounded local performance and profiler evidence;
 - Smart Diagnostics clarity;
 - adaptive diagnostics correctness;
-- release automation and CI discipline;
-- no telemetry, no fake AI, no unsupported support claims.
+- screenshot-backed README and docs;
+- release and CI discipline.
 
 ---
 
@@ -39,7 +39,23 @@ Release-surface goals:
 - keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
 - keep profiler wording bounded and honest;
 - keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from the released jar.
+- use only real screenshots captured from the supported build.
+
+---
+
+## Screenshot And Demo Pass
+
+The GitHub screenshot pass has started. Current assets live in [`Screenshots/`](Screenshots/), and the full gallery is documented in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
+
+Rules:
+
+1. The README gets only a compact preview.
+2. The full gallery belongs in `docs/SCREENSHOTS.md`.
+3. Screenshot maintenance rules belong in `docs/SCREENSHOT_PLAN.md`.
+4. Screenshots must not imply unsupported loader or version support.
+5. Visuals must be updated with docs when UI or report flow changes.
+
+Future improvement: rename numbered screenshots to descriptive lowercase kebab-case names in a focused asset-cleanup change that updates every reference.
 
 ---
 
@@ -52,35 +68,12 @@ Priority work:
 - fix confirmed bugs from real reports;
 - improve GUI copy and error handling;
 - polish command help and report summaries;
-- tighten export/report privacy wording;
+- tighten export and report wording;
 - improve diagnostics confidence explanations;
 - verify dedicated-server behavior;
+- keep screenshot docs synced with real UI;
 - keep CI strict;
 - update README and CurseForge copy only after behavior is verified.
-
-Do not add screenshots to the README until they are captured from the actual released build. Screenshots are proof, not decoration.
-
----
-
-## Screenshot And Demo Pass
-
-After `1.0.1`, add a focused visual proof section using real assets:
-
-1. GUI overview screen.
-2. Diagnostics/status screen.
-3. Smart Diagnostics advice screen.
-4. Reports/export confirmation.
-5. Optional overlay screenshot.
-6. Optional 10–20 second GIF showing `/gradlemc gui` to export flow.
-
-Rules:
-
-- use real screenshots from the released build;
-- hide private file paths, usernames, server addresses, and tokens;
-- do not use mockups unless clearly labeled;
-- keep screenshots compressed enough for GitHub;
-- prefer `docs/assets/screenshots/` or `media/screenshots/` with clear names;
-- update README and CurseForge description together when screenshots are added.
 
 ---
 
@@ -94,7 +87,8 @@ Potential `1.0.x` improvements:
 - more GUI affordances for latest reports and profile summaries;
 - stricter validation for public wording drift;
 - clearer separation between diagnostics, profiler, and adaptive gameplay-state logic;
-- better docs for server owners and support helpers.
+- better docs for server owners and support helpers;
+- better screenshot filenames and visual captions.
 
 Each item needs testing. A cool idea is not a release criterion.
 
@@ -111,17 +105,18 @@ Possible future targets belong behind gates:
 
 A port is not real until all of this is true:
 
-- variant matrix says it is enabled;
+- variant or source metadata says it is enabled;
 - build works;
 - runtime behavior is tested;
 - client/server boundaries are correct;
 - docs mention it accurately;
+- screenshots do not misrepresent it;
 - artifact naming is correct;
 - release automation exports the expected jar;
 - CI covers the target;
 - unsupported-feature checks stop false claims.
 
-Until then, future targets are roadmap entries. Not downloads. Not support claims. Not vibes.
+Until then, future targets are roadmap entries, not release claims.
 
 ---
 
@@ -129,9 +124,7 @@ Until then, future targets are roadmap entries. Not downloads. Not support claim
 
 - No telemetry or analytics.
 - No cloud AI.
-- No LLM integration.
 - No generative AI features.
-- No private-file scanning outside the modpack/report scope.
 - No fake profiler parity claims.
 - No fake Fabric, NeoForge, Quilt, or future-version jars.
 - No branch sprawl as a substitute for planning.
