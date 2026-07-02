@@ -2,7 +2,7 @@
 
 Thanks for wanting to improve GradleMC. Focused contributions are welcome.
 
-GradleMC is currently a Minecraft Java Edition `1.20.1` Forge mod. The actual mod project lives in [`SOURCE CODE/`](SOURCE%20CODE/). The repository root holds public-facing docs, GitHub configuration, license, and project assets.
+GradleMC is currently a Minecraft Java Edition `1.20.1` Forge mod. The current standalone mod project lives in [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/). The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
 
 ---
 
@@ -12,19 +12,20 @@ Read these first:
 
 1. [`README.md`](README.md) for the public project promise.
 2. [`AGENTS.md`](AGENTS.md) for technical repository rules.
-3. `SOURCE CODE/config/gradlemc-variants.json` before touching loader/version support claims.
+3. [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release-facing changes.
+4. [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) and [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) before changing visual assets.
 
-Unsupported ports are roadmap entries until the code, build, runtime checks, docs, and artifact names all agree.
+Unsupported ports are roadmap entries until the code, build, runtime checks, docs, screenshots, and artifact names all agree.
 
 ---
 
 ## Non-Negotiable Rules
 
-- Keep the mod id as `gradlemc`.
+- Keep the mod ID as `gradlemc`.
 - Minecraft command literals and examples must be lowercase.
 - Correct GUI command: `/gradlemc gui`.
-- Current supported release target: Forge `1.20.1`, Java `17`.
-- Do not imply Fabric, NeoForge, Quilt, or non-1.20.1 support unless fully implemented and verified.
+- Current supported public release target: Forge `1.20.1`, Java `17`.
+- Do not imply Fabric, NeoForge, Quilt, or non-`1.20.1` support unless fully implemented and verified.
 - Do not add telemetry, analytics, remote services, generative AI, embeddings, or online inference.
 - Keep client-only code isolated from dedicated-server-safe code.
 - Do not commit generated build output, local run folders, logs, private files, or exported reports.
@@ -37,14 +38,14 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 From the repository root:
 
 ```sh
-cd "SOURCE CODE"
+cd "GradleMC/Forge/Minecraft 1.20.1"
 ./gradlew build
 ```
 
 On Windows:
 
 ```bat
-cd "SOURCE CODE"
+cd "GradleMC\Forge\Minecraft 1.20.1"
 gradlew.bat build
 ```
 
@@ -54,37 +55,23 @@ Use Java `17` for the current Forge `1.20.1` build.
 
 ## Verification Checklist
 
-For docs-only changes, run the relevant lightweight checks from `SOURCE CODE/`:
-
-```sh
-./gradlew checkProjectIdentity checkCommandCasing checkFalseSupportClaims checkReleaseMetadata
-```
+For docs-only changes, manually check the edited Markdown links and any release-facing claims. If screenshots changed, confirm README and `docs/SCREENSHOTS.md` render the intended files from `Screenshots/`.
 
 For source/resource changes, run:
 
 ```sh
-./gradlew build
+cd "GradleMC/Forge/Minecraft 1.20.1"
+./gradlew clean build gradlemcSelfTest
 ```
 
-For automation or variant matrix changes, run:
+On Windows:
 
-```sh
-./gradlew checkAutomationTools validateVariantMatrix checkVariantMatrix
-python -m unittest discover -s tools/python/tests
+```bat
+cd "GradleMC\Forge\Minecraft 1.20.1"
+gradlew.bat clean build gradlemcSelfTest
 ```
 
-For PowerShell wrapper validation on Windows:
-
-```powershell
-pwsh ./tools/pwsh/validate.ps1
-```
-
-For Node/TypeScript web-facing asset checks when Node tooling is touched:
-
-```sh
-npm ci
-npm run check
-```
+Old validation commands from the removed `SOURCE CODE/` layout are not valid unless they are reintroduced in the current standalone project. Do not paste dead commands into docs, PRs, or release notes.
 
 ---
 
@@ -99,6 +86,20 @@ A useful PR includes:
 - Notes about any known limitations.
 
 Avoid unrelated rewrites. They make review harder and usually hide bugs.
+
+---
+
+## Screenshot Contributions
+
+Current screenshots live in [`Screenshots/`](Screenshots/) and are documented in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
+
+When adding or replacing screenshots:
+
+- use real screenshots from the supported Forge `1.20.1` build;
+- avoid exposing local paths, private server details, usernames that should not be public, or sensitive values;
+- keep README preview compact;
+- update `docs/SCREENSHOTS.md` for the full gallery;
+- update `docs/SCREENSHOT_PLAN.md` if paths, naming rules, or capture rules change.
 
 ---
 
@@ -127,6 +128,7 @@ Good first issues usually live in:
 - README clarity.
 - Command help text clarity.
 - GUI copy polish.
+- Screenshot captions and docs polish.
 - Test coverage for small pure logic components.
 - Safer validation messages.
 - Better issue reproduction docs.
