@@ -2,7 +2,7 @@
 
 This changelog tracks public GradleMC release and repository-surface changes.
 
-GradleMC uses semantic versioning where practical. Public support claims must match the code, variant matrix, build, runtime behavior, docs, and artifact names. No fake ports. No placeholder jars. No marketing fog.
+GradleMC uses semantic versioning where practical. Public support claims must match the code, build, runtime behavior, docs, screenshots, and artifact names.
 
 ---
 
@@ -24,7 +24,13 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 ## Unreleased
 
-No unreleased changes yet.
+### Documentation
+
+- Added real GitHub screenshot previews to `README.md` using the committed `Screenshots/` assets.
+- Added `docs/SCREENSHOTS.md` as the full screenshot gallery.
+- Updated `docs/SCREENSHOT_PLAN.md` from a future capture plan into a screenshot maintenance guide.
+- Updated release, contribution, roadmap, PR-template, and agent-facing docs for the current standalone source path: `GradleMC/Forge/Minecraft 1.20.1/`.
+- Removed stale `SOURCE CODE/` instructions from current contribution and build guidance.
 
 ---
 
