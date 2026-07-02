@@ -18,9 +18,11 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><strong>Quick Start</strong></a>
+  <a href="#preview"><strong>Preview</strong></a>
+  · <a href="#quick-start">Quick Start</a>
   · <a href="#features">Features</a>
   · <a href="#build-from-source">Build</a>
+  · <a href="docs/SCREENSHOTS.md">Screenshots</a>
   · <a href="CHANGELOG.md">Changelog</a>
   · <a href="ROADMAP.md">Roadmap</a>
   · <a href="SUPPORT.md">Support</a>
@@ -29,7 +31,7 @@
 GradleMC helps players, pack makers, server owners, and testers inspect a running modded Minecraft instance without leaving the game. It provides a diagnostics GUI, lowercase `/gradlemc` commands, bounded performance checks, local profiler foundations, Smart Diagnostics, adaptive diagnostics status, and shareable text reports.
 
 > **Latest public release:** `1.0.1`  
-> **Current supported build:** Minecraft Java Edition `1.20.1` on Forge `47.4.20`  
+> **Current supported public build:** Minecraft Java Edition `1.20.1` on Forge `47.4.20`  
 > **Release artifact:** `gradlemc-1.0.1-forge-1.20.1.jar`  
 > **Java:** `17`  
 > **Project ID:** `1585182`
@@ -38,7 +40,19 @@ GradleMC helps players, pack makers, server owners, and testers inspect a runnin
 
 ## Preview
 
-Screenshots should be captured from the real `1.0.1` release jar before they are added here. The screenshot plan lives in [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md).
+<p align="center">
+  <img src="Screenshots/0.png" alt="GradleMC in-game diagnostics screenshot" width="900">
+</p>
+
+<p align="center">
+  <sub>Real screenshots are stored in <code>Screenshots/</code>. The full visual inventory lives in <a href="docs/SCREENSHOTS.md">docs/SCREENSHOTS.md</a>.</sub>
+</p>
+
+| Screenshot 1 | Screenshot 2 | Screenshot 3 |
+| --- | --- | --- |
+| ![GradleMC screenshot 1](Screenshots/1.png) | ![GradleMC screenshot 2](Screenshots/2.png) | ![GradleMC screenshot 3](Screenshots/3.png) |
+
+Screenshots show the current GradleMC Forge `1.20.1` surface. They are visual proof of the checked-in build state, not a claim of Fabric, NeoForge, Quilt, or future-version support.
 
 ---
 
@@ -150,41 +164,36 @@ Unsupported ports belong on the roadmap until the code, build, runtime checks, d
 
 ## Build From Source
 
-The actual mod project lives in [`SOURCE CODE/`](SOURCE%20CODE/). The repository root contains public-facing docs, license, GitHub configuration, and the logo.
+The current standalone Forge source project lives in [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/). The repository root contains public-facing docs, license, GitHub configuration, screenshots, and the logo.
 
 ```sh
-cd "SOURCE CODE"
+cd "GradleMC/Forge/Minecraft 1.20.1"
 ./gradlew build
 ```
 
 On Windows:
 
 ```bat
-cd "SOURCE CODE"
+cd "GradleMC\Forge\Minecraft 1.20.1"
 gradlew.bat build
 ```
 
-The expected build output for the current public release is:
-
-```text
-SOURCE CODE/build/libs/gradlemc-1.0.1-forge-1.20.1.jar
-```
-
-Run the main verification gate:
+Run the local self-test task:
 
 ```sh
-cd "SOURCE CODE"
-./gradlew checkAutomationTools validateVariantMatrix checkProjectIdentity checkCommandCasing checkFalseSupportClaims checkReleaseMetadata
+cd "GradleMC/Forge/Minecraft 1.20.1"
+./gradlew gradlemcSelfTest
 ```
 
-Run CI-equivalent validation from PowerShell:
+The build output is written under:
 
-```powershell
-cd "SOURCE CODE"
-pwsh ./tools/pwsh/validate.ps1
+```text
+GradleMC/Forge/Minecraft 1.20.1/build/libs/
 ```
 
-For release/export flow, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
+The exact jar name is controlled by `artifact_name` in `GradleMC/Forge/Minecraft 1.20.1/gradle.properties`. Before publishing anything, make sure the source metadata, public release version, docs, and exported artifact name agree. Version drift is not a release strategy; it is a foot-gun with a logo.
+
+For release/export checks, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
 
 ---
 
@@ -192,8 +201,11 @@ For release/export flow, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIS
 
 | Path | Purpose |
 | --- | --- |
-| [`SOURCE CODE/`](SOURCE%20CODE/) | Main Forge mod source, Gradle build, automation, docs, and tests. |
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI for repository sanity, Forge build, Python automation, Node tooling, and PowerShell wrappers. |
+| [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/) | Current standalone Forge `1.20.1` mod source project. |
+| [`Screenshots/`](Screenshots/) | Current GitHub screenshot set used by the README and docs. |
+| [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) | Full screenshot gallery and visual asset rules. |
+| [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Screenshot maintenance guide and future capture rules. |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Repository CI workflow. |
 | [`README.md`](README.md) | Project landing page. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release and repository-surface history. |
 | [`ROADMAP.md`](ROADMAP.md) | Public planning and support gates. |
@@ -202,19 +214,12 @@ For release/export flow, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIS
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules and local verification flow. |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Community behavior rules. |
 | [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) | Release/export validation checklist. |
-| [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Screenshot capture plan. |
 | [`curseforge-description.html`](curseforge-description.html) | CurseForge project description source for the current public release. |
 | [`AGENTS.md`](AGENTS.md) | Technical operating manual for coding agents and maintainers. |
 | [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) | Pull request checklist. |
 | [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) | Issue routing. |
 
-Inside `SOURCE CODE/`, the variant matrix lives at:
-
-```text
-SOURCE CODE/config/gradlemc-variants.json
-```
-
-Current enabled variant:
+Current supported public target:
 
 | Minecraft | Loader | Java | Variant ID |
 | --- | --- | --- | --- |
@@ -233,7 +238,7 @@ Good contributions are welcome. Start here:
 - Keep Minecraft command examples lowercase.
 - Do not edit loader/version support claims unless the implementation and artifact gates prove it.
 - Do not add telemetry, cloud calls, LLMs, generative AI, or fake AI marketing.
-- Run the relevant Gradle/Python/Node/PowerShell checks before opening a PR.
+- Run the relevant Gradle checks before opening a PR.
 
 ---
 
