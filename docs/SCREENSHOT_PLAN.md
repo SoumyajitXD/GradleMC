@@ -40,10 +40,9 @@ Before replacing the screenshot set, confirm:
 
 - [ ] the release jar being shown is the intended GradleMC release;
 - [ ] Minecraft is `1.20.1`;
-- [ ] Forge is the documented supported Forge line;
+- [ ] loader shown is a currently supported loader, such as Forge `1.20.1` or Fabric `1.20.1`;
 - [ ] command examples use lowercase `/gradlemc`;
-- [ ] no private paths, usernames, server addresses, or secrets appear;
-- [ ] screenshots do not imply Fabric, NeoForge, Quilt, or future-version support;
+- [ ] screenshots do not imply NeoForge, Quilt, Bedrock, or future-version support;
 - [ ] UI text matches the checked-in language/resources;
 - [ ] images are compressed enough for GitHub without becoming unreadable;
 - [ ] README, `docs/SCREENSHOTS.md`, and this file are updated together.
