@@ -14,9 +14,9 @@ If instructions conflict, follow the active user task unless it would cause data
 - Product name: GradleMC.
 - Purpose: in-game diagnostics and stability checking for Minecraft modpacks.
 - Current public targets: Minecraft Java Edition `1.20.1` on Forge and Fabric.
-- Current Forge public release line: `1.0.1`.
+- Current Forge public release line: `1.0.2`.
 - Current Fabric public release line: `1.0.0`.
-- Forge artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
+- Forge artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
 - Fabric artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - Java: `17`.
 - Mod ID: `gradlemc`.
@@ -25,6 +25,8 @@ If instructions conflict, follow the active user task unless it would cause data
 - License: Apache-2.0.
 
 GradleMC includes lowercase `/gradlemc` commands, a client diagnostics GUI, a configurable GUI keybind, optional disabled-by-default stats overlay, local reports, local risk rules, Smart Diagnostics, bounded performance/FPS/worldgen diagnostics, profiler foundations, and adaptive diagnostics.
+
+Forge `1.0.2` is a Forge `1.20.1` hotfix release for `gradlemc-1.0.2-forge-1.20.1.jar`. Its public release note is narrow: it fixes the Quick Actions tab overlay issue. Do not inflate it into a fake feature release. That is how docs become fan fiction with markdown.
 
 Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems. They are not LLMs, generative AI, cloud AI, online inference, telemetry, analytics, or ChatGPT integrations.
 
@@ -39,6 +41,7 @@ Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems
 | `GradleMC/Forge/Minecraft 1.20.1/src/main/resources/` | Forge resources and mod metadata. |
 | `GradleMC/Forge/Minecraft 1.20.1/gradle.properties` | Minecraft, Forge, mod, and artifact metadata for the local source build. |
 | `GradleMC/Forge/Minecraft 1.20.1/build.gradle` | ForgeGradle build. |
+| `GradleMC/Fabric/Minecraft 1.20.1/` | Current standalone Fabric `1.20.1` source project. |
 | `Screenshots/` | Committed screenshot assets, currently `0.png` through `13.png`. |
 | `docs/SCREENSHOTS.md` | Full screenshot gallery. |
 | `docs/SCREENSHOT_PLAN.md` | Screenshot maintenance and capture rules. |
@@ -47,7 +50,7 @@ Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems
 | `ROADMAP.md` | Public support and future-work plan. |
 | `curseforge-description.html` | CurseForge description source. |
 
-Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the current repo surface. Use the standalone Forge path above for Forge work unless the user explicitly moves the project again.
+Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the current repo surface. Use the standalone loader paths above unless the user explicitly moves the project again.
 
 ---
 
@@ -212,5 +215,6 @@ Rules:
 - Do not export release jars unless explicitly requested.
 - Do not publish from a dirty mystery state.
 - Do not claim support for a target until the code, build, runtime check, docs, screenshots, and artifact naming all agree.
+- For Forge `1.0.2`, keep public wording honest: it is a Forge `1.20.1` hotfix for the Quick Actions tab overlay issue, not a broad compatibility or feature milestone.
 
 If something is uncertain, say it clearly. Guessing in release docs is how users become unpaid QA.
