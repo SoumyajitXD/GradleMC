@@ -1,6 +1,6 @@
 # Security Policy
 
-GradleMC is a local Minecraft Forge diagnostics mod. Most problems will be bugs, crashes, bad configs, mod conflicts, or support workflow issues. Annoying, yes. Security issues, usually no.
+GradleMC is a local Minecraft diagnostics mod. Most problems will be bugs, crashes, bad configs, mod conflicts, or support workflow issues. Annoying, yes. Security issues, usually no.
 
 Security reports are for risks that could harm players, server owners, maintainers, or the project distribution chain.
 
@@ -11,14 +11,16 @@ Security reports are for risks that could harm players, server owners, maintaine
 | Version / target | Security support |
 | --- | --- |
 | GradleMC `1.0.1` for Minecraft `1.20.1` Forge | Current public support target |
-| Future `1.0.x` Forge `1.20.1` releases | Supported after release |
-| Fabric, NeoForge, Quilt, or other Minecraft versions | Not supported until actually implemented and released |
+| GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
+| Future `1.0.x` Forge or Fabric `1.20.1` releases | Supported after release |
+| NeoForge, Quilt, Bedrock, or other Minecraft versions | Not supported until actually implemented and released |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
 
-Current expected release artifact:
+Current expected release artifacts:
 
 ```text
 gradlemc-1.0.1-forge-1.20.1.jar
+gradlemc-fabric-1.20.1-1.0.0.jar
 ```
 
 ---
@@ -88,4 +90,4 @@ Review files before posting them publicly. Evidence is useful. Accidentally expo
 
 ## License Scope
 
-GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
+GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
