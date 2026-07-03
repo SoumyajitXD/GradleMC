@@ -253,7 +253,8 @@ jobs:
           chmod +x ./gradlew
           jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
           distribution_url="$(sed -n 's/^distributionUrl=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
-          [[ "$distribution_url" == https\://services.gradle.org/distributions/gradle-*-bin.zip ]] || {
+          distribution_url="${distribution_url//\\:/:}"
+          [[ "$distribution_url" == https://services.gradle.org/distributions/gradle-*-bin.zip ]] || {
             echo "Unexpected Gradle wrapper distributionUrl: $distribution_url" >&2
             exit 1
           }
