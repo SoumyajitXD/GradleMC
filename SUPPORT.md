@@ -14,7 +14,7 @@ Use GitHub issues for:
 - Documentation mistakes.
 - Focused feature requests.
 
-Use discussions, community posts, or modpack support channels for general Minecraft or Forge troubleshooting that is not clearly caused by GradleMC.
+Use discussions, community posts, or modpack support channels for general Minecraft, Forge, or Fabric troubleshooting that is not clearly caused by GradleMC.
 
 ---
 
@@ -23,9 +23,13 @@ Use discussions, community posts, or modpack support channels for general Minecr
 Check these first:
 
 1. You are using Minecraft Java Edition `1.20.1`.
-2. You are using Forge `47.4.20` or a compatible Forge `47.x` setup.
+2. You are using a supported loader setup:
+   - Forge `47.4.20` or a compatible Forge `47.x` setup.
+   - Fabric for Minecraft `1.20.1`.
 3. You are using Java `17`.
-4. You are using a GradleMC jar named `gradlemc-1.0.1-forge-1.20.1.jar`.
+4. You are using the correct GradleMC jar for your loader:
+   - Forge: `gradlemc-1.0.1-forge-1.20.1.jar`.
+   - Fabric: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 5. You tried the relevant command again after restarting the instance or server.
 6. You reviewed the GradleMC report before sharing it.
 
@@ -69,9 +73,10 @@ Also mention whether the GUI keybind opens the screen.
 A strong report includes:
 
 - Minecraft version.
-- Forge version.
+- Loader and loader version.
 - Java version.
 - GradleMC version.
+- Exact GradleMC jar filename.
 - Client, dedicated server, or integrated server.
 - Whether it happens with only GradleMC installed.
 - Reproduction steps.
@@ -95,11 +100,11 @@ Review anything before posting it publicly.
 
 ## Unsupported Requests
 
-These are not support issues for the current release:
+These are not support issues for the current releases:
 
-- Fabric support.
 - NeoForge support.
 - Quilt support.
+- Bedrock support.
 - Minecraft versions other than `1.20.1`.
 - Replacing Spark or other deep profilers.
 - Adding telemetry or cloud features.
