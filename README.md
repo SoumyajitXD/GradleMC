@@ -11,8 +11,8 @@
 <p align="center">
   <a href="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Minecraft 1.20.1" src="https://img.shields.io/badge/Minecraft-1.20.1-brightgreen">
-  <img alt="Forge 47.4.20" src="https://img.shields.io/badge/Forge-47.4.20-orange">
-  <img alt="Fabric 1.20.1" src="https://img.shields.io/badge/Fabric-1.20.1-blueviolet">
+  <img alt="Forge release 1.0.2" src="https://img.shields.io/badge/Forge_release-1.0.2-orange">
+  <img alt="Fabric release 1.0.0" src="https://img.shields.io/badge/Fabric_release-1.0.0-blueviolet">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-blue">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
@@ -44,7 +44,7 @@ It provides an in-game control center, readable `/gradlemc` commands, stability 
 
 | Loader | Public version | Artifact | Minecraft | Java | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.1` | `gradlemc-1.0.1-forge-1.20.1.jar` | `1.20.1` | `17` | Forge target `47.4.20` |
+| Forge | `1.0.2` | `gradlemc-1.0.2-forge-1.20.1.jar` | `1.20.1` | `17` | Forge target `47.4.20`; hotfix for the Quick Actions tab overlay issue |
 | Fabric | `1.0.0` | `gradlemc-fabric-1.20.1-1.0.0.jar` | `1.20.1` | `17` | Fabric release |
 
 | Field | Value |
@@ -53,6 +53,8 @@ It provides an in-game control center, readable `/gradlemc` commands, stability 
 | License | Apache-2.0 |
 | Telemetry | None |
 | Cloud AI or LLM usage | None |
+
+**Latest Forge release:** `1.0.2` is a Forge `1.20.1` hotfix release. It keeps the same public target and fixes the Quick Actions tab overlay issue instead of pretending to be a giant feature drop wearing sunglasses.
 
 ---
 
