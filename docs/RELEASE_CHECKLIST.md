@@ -8,7 +8,7 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 
 | Loader | Public version | Minecraft | Java | Expected public artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.1` | `1.20.1` | `17` | `gradlemc-1.0.1-forge-1.20.1.jar` | Forge target `47.4.20` |
+| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 
 | Field | Expected |
@@ -63,6 +63,7 @@ Test with the actual release jar:
 - [ ] `/gradlemc perf start 30` and `/gradlemc perf stop` work.
 - [ ] Client-only FPS tools do not load on dedicated servers.
 - [ ] Overlay remains disabled by default.
+- [ ] For Forge `1.0.2`, the Quick Actions tab no longer overlays lower controls or text.
 
 ---
 
@@ -122,7 +123,7 @@ Before publishing, check every public surface:
 Confirm these claims are still true:
 
 - [ ] Current public release targets are Forge `1.20.1` and Fabric `1.20.1`.
-- [ ] Forge artifact name is `gradlemc-1.0.1-forge-1.20.1.jar`.
+- [ ] Forge artifact name is `gradlemc-1.0.2-forge-1.20.1.jar`.
 - [ ] Fabric artifact name is `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - [ ] Java `17` is stated where needed.
 - [ ] Commands are lowercase.
