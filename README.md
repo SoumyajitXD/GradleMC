@@ -5,13 +5,14 @@
 </p>
 
 <p align="center">
-  <strong>In-game diagnostics, stability checks, Smart Diagnostics, and exportable troubleshooting reports for Minecraft Forge modpacks.</strong>
+  <strong>In-game diagnostics, stability checks, Smart Diagnostics, and exportable troubleshooting reports for Minecraft modpacks.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Minecraft 1.20.1" src="https://img.shields.io/badge/Minecraft-1.20.1-brightgreen">
   <img alt="Forge 47.4.20" src="https://img.shields.io/badge/Forge-47.4.20-orange">
+  <img alt="Fabric 1.20.1" src="https://img.shields.io/badge/Fabric-1.20.1-blueviolet">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-blue">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
@@ -28,16 +29,6 @@
   · <a href="SUPPORT.md">Support</a>
 </p>
 
-<p align="center">
-  <a href="https://url-shortener.curseforge.com/kZ5IK">
-    <img src="bisecthosting-banner.png" alt="Create a Minecraft server with BisectHosting" width="900">
-  </a>
-</p>
-
-<p align="center">
-  <sub>Want to test GradleMC on a server? Use the banner above or the <a href="https://url-shortener.curseforge.com/kZ5IK">server setup link</a>.</sub>
-</p>
-
 ---
 
 ## What GradleMC Does
@@ -46,20 +37,19 @@ GradleMC is a practical diagnostics mod for modded Minecraft. It helps players, 
 
 It gives you in-game tools for checking the local modded environment, memory pressure, loaded mods, paths, reports, profiler summaries, performance samples, worldgen pressure, Smart Diagnostics, and exportable support evidence.
 
-**Current public target:** Minecraft Java Edition `1.20.1` on Forge `47.4.20` with Java `17`.
+**Current public targets:** Minecraft Java Edition `1.20.1` on Forge `47.4.20` and Fabric `1.20.1`, with Java `17`.
+
+| Loader | Latest public release | Public artifact | Minecraft | Java | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Forge | `1.0.1` | `gradlemc-1.0.1-forge-1.20.1.jar` | `1.20.1` | `17` | Forge target `47.4.20` |
+| Fabric | `1.0.0` | `gradlemc-fabric-1.20.1-1.0.0.jar` | `1.20.1` | `17` | Fabric port release |
 
 | Field | Value |
 | --- | --- |
-| Latest public release | `1.0.1` |
-| Public artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
-| Supported loader | Forge |
-| Supported Minecraft version | `1.20.1` |
-| Forge target | `47.4.20` |
-| Java target | `17` |
 | CurseForge project ID | `1585182` |
 | License | Apache-2.0 |
 
-> GradleMC currently claims public support for Forge `1.20.1` only. Fabric, NeoForge, Quilt, and future Minecraft versions are not supported until the code, build, runtime checks, docs, and artifact names all agree. No placeholder-port clownery. 🗿
+> GradleMC currently claims public support for Forge `1.20.1` and Fabric `1.20.1` only. NeoForge, Quilt, Bedrock, and future Minecraft versions are not supported until the code, build, runtime checks, docs, and artifact names all agree. No placeholder-port clownery. 🗿
 
 ---
 
@@ -68,9 +58,11 @@ It gives you in-game tools for checking the local modded environment, memory pre
 ### Install
 
 1. Install Minecraft Java Edition `1.20.1`.
-2. Install Forge `47.4.20`.
-3. Use Java `17`.
-4. Put `gradlemc-1.0.1-forge-1.20.1.jar` into the instance or server `mods` folder.
+2. Use Java `17`.
+3. Choose the loader that matches your instance:
+   - Forge: install Forge `47.4.20` or a compatible Forge `47.x` setup, then use `gradlemc-1.0.1-forge-1.20.1.jar`.
+   - Fabric: install a Fabric `1.20.1` setup, then use `gradlemc-fabric-1.20.1-1.0.0.jar`.
+4. Put the matching GradleMC jar into the instance or server `mods` folder.
 5. Install it on the client for the GUI, keybind, overlay, and client-side FPS sampling.
 6. Install it on the server for server commands, reports, TPS/MSPT sampling, passive worldgen observation, issue bundles, Smart Diagnostics, and adaptive diagnostics state.
 
@@ -105,7 +97,7 @@ Minecraft commands are lowercase. `/GradleMC` is not cute; it is just wrong.
 | Diagnostics GUI | A central in-game panel for checks, reports, settings, and diagnostic status. |
 | Lowercase command tree | `/gradlemc` commands for status, memory, checks, exports, and Smart Diagnostics. |
 | Exportable reports | Local text reports that are easier to share than vague “it lagged” poetry. |
-| Mod and environment inspection | Minecraft, Forge, Java, GradleMC, loaded-mod, config, and path details. |
+| Mod and environment inspection | Minecraft, loader, Java, GradleMC, loaded-mod, config, and path details. |
 | Memory diagnostics | JVM heap visibility and memory-pressure context. |
 | Bounded performance checks | TPS/MSPT, FPS, entity density, block entity density, and passive worldgen observations. |
 | Local profiler foundation | Bounded tick, CPU-lite, memory-lite, and combined summaries with TXT/JSON output. |
@@ -119,7 +111,7 @@ Minecraft commands are lowercase. `/GradleMC` is not cute; it is just wrong.
 
 GradleMC focuses on evidence that helps when a pack is slow, unstable, overloaded, or painful to support:
 
-- Minecraft, Forge, Java, GradleMC, and loaded-mod environment details.
+- Minecraft, loader, Java, GradleMC, and loaded-mod environment details.
 - JVM heap pressure and memory status.
 - Loaded mod count, previews, and mod ID search.
 - Config and report directory access.
@@ -164,16 +156,6 @@ Use it server-side for:
 - issue-bundle export;
 - Smart Diagnostics summaries.
 
-<p align="center">
-  <a href="https://url-shortener.curseforge.com/kZ5IK">
-    <img src="bisecthosting-banner.png" alt="Create a Minecraft server with BisectHosting" width="900">
-  </a>
-</p>
-
-<p align="center">
-  <strong><a href="https://url-shortener.curseforge.com/kZ5IK">Create a Minecraft server for GradleMC testing</a></strong>
-</p>
-
 ---
 
 ## Screenshots
@@ -198,7 +180,7 @@ GradleMC is deliberately honest about its limits:
 - Not a crash-fixing bot.
 - Not Spark, VisualVM, or a deep profiler replacement.
 - Not an LLM, generative AI system, neural network, cloud AI service, online inference engine, telemetry feature, or analytics feature.
-- Not a public support claim for Fabric, NeoForge, Quilt, or non-`1.20.1` Minecraft versions.
+- Not a public support claim for NeoForge, Quilt, Bedrock, or non-`1.20.1` Minecraft versions.
 
 Unsupported ports belong on the roadmap until they are real. Fake support claims age like milk in a furnace. 🔥
 
@@ -206,7 +188,7 @@ Unsupported ports belong on the roadmap until they are real. Fake support claims
 
 ## Build From Source
 
-The current standalone Forge source project lives here:
+The currently documented standalone Forge source project lives here:
 
 [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/)
 
@@ -249,7 +231,7 @@ For release/export checks, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKL
 | --- | --- |
 | [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/) | Current standalone Forge `1.20.1` mod source project. |
 | [`Screenshots/`](Screenshots/) | README and docs screenshot assets. |
-| [`bisecthosting-banner.png`](bisecthosting-banner.png) | Server setup banner used by this README. |
+| [`bisecthosting-banner.png`](bisecthosting-banner.png) | Server setup banner asset. |
 | [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) | Full screenshot gallery. |
 | [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Screenshot maintenance guide. |
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Repository CI workflow. |
@@ -259,7 +241,7 @@ For release/export checks, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKL
 | [`SECURITY.md`](SECURITY.md) | Security and distribution-chain reporting policy. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules and local verification flow. |
 | [`AGENTS.md`](AGENTS.md) | Technical operating manual for coding agents and maintainers. |
-| [`curseforge-description.html`](curseforge-description.html) | CurseForge project description source for the current public release. |
+| [`curseforge-description.html`](curseforge-description.html) | CurseForge project description source for the current public releases. |
 
 ---
 
@@ -276,7 +258,7 @@ Before opening a PR:
 - Do not add telemetry, analytics, cloud calls, LLMs, generative AI, or fake AI marketing.
 - Run the relevant Gradle checks before opening a PR.
 
-Useful local checks:
+Useful local checks for the currently documented Forge source project:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
