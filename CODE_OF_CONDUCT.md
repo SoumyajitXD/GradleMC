@@ -25,7 +25,7 @@ It does not welcome harassment, spam, personal attacks, entitlement, fake suppor
 - Spamming issues, pull requests, or comments.
 - Reopening the same rejected request without new evidence.
 - Uploading copied assets, mod jars, private files, or unlicensed material.
-- Pushing fake support claims for Fabric, NeoForge, Quilt, or other Minecraft versions.
+- Pushing fake support claims for NeoForge, Quilt, Bedrock, or other unsupported Minecraft targets.
 - Demanding urgent support without logs, reproduction steps, or basic details.
 
 ---
