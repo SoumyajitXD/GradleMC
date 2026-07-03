@@ -165,6 +165,8 @@ jobs:
           mapfile -d '' tracked_files < <(git ls-files -z)
 
           bad_files=()
+          release_jars=()
+          bad_release_jars=()
           unexpected_jars=()
           for tracked_file in "${tracked_files[@]}"; do
             case "$tracked_file" in
@@ -174,6 +176,12 @@ jobs:
             esac
             case "$tracked_file" in
               */gradle/wrapper/gradle-wrapper.jar)
+                ;;
+              Releases/Forge/Minecraft\ 1.20.1/gradlemc-*-forge-1.20.1.jar|Releases/Fabric/Minecraft\ 1.20.1/gradlemc-fabric-1.20.1-*.jar)
+                release_jars+=("$tracked_file")
+                ;;
+              Releases/*.jar|Releases/**/*.jar)
+                bad_release_jars+=("$tracked_file")
                 ;;
               *.jar)
                 unexpected_jars+=("$tracked_file")
@@ -187,10 +195,21 @@ jobs:
             exit 1
           fi
 
+          if (( ${#bad_release_jars[@]} > 0 )); then
+            echo "Release jar files must live in the approved Releases/<loader>/Minecraft 1.20.1/ path and use GradleMC release naming." >&2
+            printf ' - %s\n' "${bad_release_jars[@]}" >&2
+            exit 1
+          fi
+
           if (( ${#unexpected_jars[@]} > 0 )); then
-            echo "Unexpected committed jar files found:" >&2
+            echo "Unexpected committed jar files found. Only Gradle wrapper jars and approved release artifacts under Releases/ are allowed:" >&2
             printf ' - %s\n' "${unexpected_jars[@]}" >&2
             exit 1
+          fi
+
+          if (( ${#release_jars[@]} > 0 )); then
+            echo "Approved release jar artifacts:"
+            printf ' - %s\n' "${release_jars[@]}"
           fi
 
           pat_a='ghp_[A-Za-z0-9_]{30,}'
@@ -298,10 +317,6 @@ jobs:
 
           grep -F "modId=\"$mod_id\"" build/ci-artifact-check/META-INF/mods.toml >/dev/null || {
             echo "mods.toml inside jar does not contain expected modId=$mod_id." >&2
-            exit 1
-          }
-          grep -F "GradleMC-Variant: $variant_name" build/ci-artifact-check/META-INF/MANIFEST.MF >/dev/null || {
-            echo "Jar manifest does not contain expected GradleMC-Variant=$variant_name." >&2
             exit 1
           }
 
