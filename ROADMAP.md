@@ -8,7 +8,7 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 
 | Loader | Version | Minecraft | Java | Artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.1` | `1.20.1` | `17` | `gradlemc-1.0.1-forge-1.20.1.jar` | Forge target `47.4.20` |
+| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 
 Current public focus:
@@ -21,6 +21,23 @@ Current public focus:
 - adaptive diagnostics correctness;
 - screenshot-backed README and docs;
 - release and CI discipline.
+
+---
+
+## Released: Forge `1.0.2` Hotfix
+
+`1.0.2` is the current public Forge `1.20.1` release.
+
+Release-surface goals:
+
+- keep Forge support claims locked to Forge `1.20.1`;
+- keep Forge artifact naming exact: `gradlemc-1.0.2-forge-1.20.1.jar`;
+- document the real hotfix scope: Quick Actions tab overlay fix;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from supported builds.
 
 ---
 
@@ -42,7 +59,7 @@ Release-surface goals:
 
 ## Released: Forge `1.0.1` Stabilization
 
-`1.0.1` is the current public Forge `1.20.1` release.
+`1.0.1` was the previous public Forge `1.20.1` release.
 
 Release-surface goals:
 
