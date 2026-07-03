@@ -17,7 +17,8 @@ Describe what this PR changes and why.
 
 - [ ] I kept Minecraft command literals lowercase.
 - [ ] I did not claim unsupported loader or Minecraft-version support.
-- [ ] I did not imply Fabric, NeoForge, Quilt, or future-version support unless it is fully implemented and verified.
+- [ ] I treated Forge `1.20.1` and Fabric `1.20.1` as the only current public loader targets.
+- [ ] I did not imply NeoForge, Quilt, Bedrock, or future-version support unless it is fully implemented and verified.
 - [ ] I did not add telemetry, analytics, cloud AI, LLMs, generative AI, embeddings, or online inference.
 - [ ] I kept the change focused and avoided unrelated rewrites.
 - [ ] I checked user-facing text for accuracy.
@@ -42,7 +43,7 @@ Paste the commands you ran:
 
 ```
 
-Suggested source checks from `GradleMC/Forge/Minecraft 1.20.1/`:
+Suggested Forge source checks from `GradleMC/Forge/Minecraft 1.20.1/`:
 
 ```sh
 ./gradlew clean build gradlemcSelfTest
@@ -54,6 +55,8 @@ Windows:
 gradlew.bat clean build gradlemcSelfTest
 ```
 
+For Fabric source changes, run the equivalent Fabric build and verification tasks from the Fabric source project.
+
 For docs-only changes, list the files reviewed and any screenshot links checked.
 
 ## Screenshots / Clips
@@ -64,8 +67,8 @@ Current committed screenshots live in [`Screenshots/`](../Screenshots/). The ful
 
 ## Review Checklist
 
-- [ ] Logs, reports, screenshots, and issue bundles were reviewed for accidental local/environment details.
-- [ ] No generated reports, local run folders, build output, or private files were committed.
+- [ ] I reviewed release-facing claims, screenshots, reports, and generated outputs before committing.
+- [ ] I did not commit generated build output or local run folders.
 
 ## Notes For Reviewers
 
