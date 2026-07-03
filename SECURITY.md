@@ -10,7 +10,7 @@ Security reports are for risks that could harm players, server owners, maintaine
 
 | Version / target | Security support |
 | --- | --- |
-| GradleMC `1.0.1` for Minecraft `1.20.1` Forge | Current public support target |
+| GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
 | Future `1.0.x` Forge or Fabric `1.20.1` releases | Supported after release |
 | NeoForge, Quilt, Bedrock, or other Minecraft versions | Not supported until actually implemented and released |
@@ -19,7 +19,7 @@ Security reports are for risks that could harm players, server owners, maintaine
 Current expected release artifacts:
 
 ```text
-gradlemc-1.0.1-forge-1.20.1.jar
+gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
 ```
 
