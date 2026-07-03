@@ -2,7 +2,7 @@
 
 This page is the full visual inventory for the screenshots currently committed to the repository.
 
-The screenshot assets live in [`../Screenshots/`](../Screenshots/). The folder name is capitalized, and GitHub paths are case-sensitive. Do not “clean up” links to lowercase unless the actual folder is renamed in the same change. Broken screenshot links are not polish; they are confetti for incompetence.
+The screenshot assets live in [`../Screenshots/`](../Screenshots/). The folder name is capitalized, and GitHub paths are case-sensitive. Do not “clean up” links to lowercase unless the actual folder is renamed in the same change.
 
 ---
 
@@ -43,21 +43,19 @@ The README uses a compact preview so the landing page does not become a scroll-t
 
 ## What These Screenshots Prove
 
-These screenshots are evidence for the currently documented GradleMC Forge `1.20.1` experience. They are useful for showing the UI and user-facing flow.
+These screenshots are evidence for the currently documented GradleMC `1.20.1` UI and user-facing flow. If a screenshot was captured from one loader, it should not be used to imply behavior was tested on another loader unless that loader was actually tested too.
 
-They do **not** prove support for Fabric, NeoForge, Quilt, future Minecraft versions, cloud AI, telemetry, or any feature that is not actually implemented. Screenshots are proof, not marketing fog.
+They do **not** prove support for NeoForge, Quilt, Bedrock, future Minecraft versions, cloud AI, telemetry, or any feature that is not actually implemented. Screenshots are proof, not marketing fog.
 
 ---
 
 ## Maintenance Rules
 
 - Keep screenshot links relative so they render on GitHub forks and branches.
-- Do not link to local Windows paths.
-- Do not expose private usernames, server addresses, tokens, or filesystem paths.
 - Keep the README preview small; use this page for the full gallery.
 - If screenshots are renamed, update `README.md`, this file, and `docs/SCREENSHOT_PLAN.md` in the same commit.
-- If screenshots are recaptured for a new release, verify the release jar, Minecraft version, Forge version, and command casing first.
-- Prefer descriptive filenames in future cleanup work, but only rename files when every reference is updated. Half-renames are how docs become haunted houses.
+- If screenshots are recaptured for a new release, verify the release jar, Minecraft version, loader version, and command casing first.
+- Prefer descriptive filenames in future cleanup work, but only rename files when every reference is updated.
 
 ---
 
