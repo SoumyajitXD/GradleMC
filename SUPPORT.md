@@ -28,7 +28,7 @@ Check these first:
    - Fabric for Minecraft `1.20.1`.
 3. You are using Java `17`.
 4. You are using the correct GradleMC jar for your loader:
-   - Forge: `gradlemc-1.0.1-forge-1.20.1.jar`.
+   - Forge: `gradlemc-1.0.2-forge-1.20.1.jar`.
    - Fabric: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 5. You tried the relevant command again after restarting the instance or server.
 6. You reviewed the GradleMC report before sharing it.
@@ -64,7 +64,7 @@ For GUI issues:
 /gradlemc gui
 ```
 
-Also mention whether the GUI keybind opens the screen.
+Also mention whether the GUI keybind opens the screen. For Forge `1.0.2`, include screenshots or clips if the Quick Actions tab still shows overlay or layout problems.
 
 ---
 
