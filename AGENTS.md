@@ -13,8 +13,11 @@ If instructions conflict, follow the active user task unless it would cause data
 - Project: GradleMC.
 - Product name: GradleMC.
 - Purpose: in-game diagnostics and stability checking for Minecraft modpacks.
-- Current public target: Minecraft Java Edition `1.20.1` on Forge.
-- Current public release line: `1.0.1`.
+- Current public targets: Minecraft Java Edition `1.20.1` on Forge and Fabric.
+- Current Forge public release line: `1.0.1`.
+- Current Fabric public release line: `1.0.0`.
+- Forge artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
+- Fabric artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - Java: `17`.
 - Mod ID: `gradlemc`.
 - Main package: `com.soumyajit.gradlemc`.
@@ -44,7 +47,7 @@ Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems
 | `ROADMAP.md` | Public support and future-work plan. |
 | `curseforge-description.html` | CurseForge description source. |
 
-Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the current repo surface. Use the standalone Forge path above unless the user explicitly moves the project again.
+Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the current repo surface. Use the standalone Forge path above for Forge work unless the user explicitly moves the project again.
 
 ---
 
@@ -55,9 +58,10 @@ Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the cu
 - Correct GUI command: `/gradlemc gui`.
 - Display name `GradleMC` is fine for titles, labels, logs, and prose. It is not fine as a Minecraft command root.
 - Preserve the `gradlemc` mod ID across source, metadata, resources, and docs.
-- Do not imply Fabric, NeoForge, Quilt, or non-`1.20.1` support unless it is actually implemented, built, tested, documented, and named correctly.
+- Forge `1.20.1` and Fabric `1.20.1` are the only current public loader targets.
+- Do not imply NeoForge, Quilt, Bedrock, or non-`1.20.1` support unless it is actually implemented, built, tested, documented, and named correctly.
 - Do not create fake jars or placeholder support claims.
-- Do not migrate Minecraft, Forge, ForgeGradle, Gradle wrapper, Java, mappings, or loader targets without explicit user instruction.
+- Do not migrate Minecraft, Forge, Fabric, build tools, Gradle wrapper, Java, mappings, or loader targets without explicit user instruction.
 - Do not add LLMs, generative AI, cloud APIs, external ML systems, telemetry, analytics, or phone-home behavior.
 - Do not add gameplay features during documentation, cleanup, release, or verification tasks.
 - Do not use internet-heavy Gradle tasks unless the user explicitly allows them.
@@ -68,7 +72,9 @@ Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the cu
 
 ## Source Metadata Discipline
 
-The public docs may describe the current public release, while the checked-in source project has its own `gradle.properties`. Before building or publishing anything, read:
+The public docs may describe the current public releases, while checked-in source projects have their own metadata files. Before building or publishing anything, read the loader-specific metadata.
+
+For the currently documented Forge source project, read:
 
 ```text
 GradleMC/Forge/Minecraft 1.20.1/gradle.properties
@@ -77,7 +83,7 @@ GradleMC/Forge/Minecraft 1.20.1/gradle.properties
 Check at least:
 
 - `minecraft_version`
-- `forge_version`
+- loader version or loader metadata
 - `mod_version`
 - `loader_name`
 - `variant_name`
@@ -89,7 +95,7 @@ If source metadata, public docs, release notes, and artifact name disagree, stop
 
 ## Build And Verification Commands
 
-Run commands from the source folder:
+Run commands from the currently documented Forge source folder:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
@@ -107,6 +113,7 @@ Rules:
 
 - Run `./gradlew build` after Java/resource changes unless the user asks not to or the task is docs-only.
 - Run `./gradlew gradlemcSelfTest` after diagnostics, scoring, path, report, or utility changes.
+- For Fabric work, run the equivalent Fabric build and verification commands from the Fabric source project.
 - Do not claim a build passed unless it was actually run and passed.
 - Do not claim runtime testing happened unless `runClient`, `runServer`, or equivalent testing was actually performed.
 - Do not run `--refresh-dependencies`, wrapper upgrades, dependency upgrades, or generated data tasks casually.
@@ -163,7 +170,7 @@ Rules:
 - FPS sampling is client-only.
 - Do not import `net.minecraft.client.*` in common/server classes.
 - Do not reference `Screen`, `GuiGraphics`, `Minecraft`, or `KeyMapping` from common/server command code.
-- Use `Dist.CLIENT` event subscribers or client bridge boundaries for client-only classloading.
+- Use loader-safe client boundaries for client-only classloading.
 - Opening the GUI from a server-side command must use a safe server-to-client packet flow.
 - GUI-triggered server actions should respect the same permissions as typed commands.
 - Escape must close custom screens.
