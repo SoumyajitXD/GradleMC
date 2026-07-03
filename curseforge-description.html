@@ -1,7 +1,7 @@
 <h2><span style="color: #8be9fd;">GradleMC</span></h2>
-<p><strong>In-game diagnostics, stability checks, and exportable troubleshooting reports for Minecraft Forge modpacks.</strong></p>
-<p>GradleMC helps players, pack makers, server owners, and testers understand what is happening inside a modded Minecraft instance before troubleshooting turns into blind guessing.</p>
-<p>This page is for <strong>GradleMC v1.0.1</strong>, built for <strong>Minecraft Java Edition 1.20.1</strong> on <strong>Forge</strong>.</p>
+<p><strong>In-game diagnostics, stability checks, and exportable troubleshooting reports for Minecraft Fabric modpacks.</strong></p>
+<p>GradleMC helps players, pack makers, server owners, and testers understand what is happening inside a modded Minecraft instance before troubleshooting turns into blind guessing, panic uninstalling, and sacrificing random mods to the crash-log gods.</p>
+<p>This page is for <strong>GradleMC v1.0.0</strong>, built for <strong>Minecraft Java Edition 1.20.1</strong> on <strong>Fabric</strong>.</p>
 <hr>
 <h3><span style="color: #50fa7b;">What GradleMC does</span></h3>
 <ul>
@@ -18,9 +18,9 @@
 <h3><span style="color: #ffb86c;">Quick start</span></h3>
 <ol>
 <li>Install <strong>Minecraft Java Edition 1.20.1</strong>.</li>
-<li>Install <strong>Forge 47.4.20</strong> or a compatible Forge 47.x setup.</li>
+<li>Install a compatible <strong>Fabric Loader</strong> setup for Minecraft 1.20.1.</li>
 <li>Use <strong>Java 17</strong>.</li>
-<li>Put <code>gradlemc-1.0.1-forge-1.20.1.jar</code> in the client or server <code>mods</code> folder.</li>
+<li>Put <code>gradlemc-fabric-1.20.1-1.0.0.jar</code> in the client or server <code>mods</code> folder.</li>
 </ol>
 <p>Install on the client for the GUI, keybind, overlay, and FPS testing. Install on the server for server-side commands, reports, TPS/MSPT sampling, passive worldgen observation, scans, issue bundles, Smart Diagnostics, and adaptive diagnostics state.</p>
 <hr>
@@ -28,7 +28,7 @@
 <ul>
 <li><code>/gradlemc gui</code> - open the diagnostics GUI.</li>
 <li><code>/gradlemc status</code> - show current GradleMC status and paths.</li>
-<li><code>/gradlemc version</code> - show GradleMC, Minecraft, Forge, Java, and loaded-mod context.</li>
+<li><code>/gradlemc version</code> - show GradleMC, Minecraft, Fabric, Java, and loaded-mod context.</li>
 <li><code>/gradlemc memory</code> - show JVM heap information.</li>
 <li><code>/gradlemc check</code> - run stability checks.</li>
 <li><code>/gradlemc export</code> - write a troubleshooting report.</li>
@@ -45,13 +45,13 @@
 <li>No hidden online inference.</li>
 <li>No broad private-file scans by default.</li>
 </ul>
-<p>Reports can still include local paths, mod names, Java details, and runtime context. Review exports before sharing them publicly.</p>
+<p>Reports can still include local paths, mod names, Java details, loader details, and runtime context. Review exports before sharing them publicly.</p>
 <hr>
 <h3><span style="color: #f1fa8c;">Current support limits</span></h3>
-<p><strong>This release supports Forge for Minecraft Java Edition 1.20.1.</strong></p>
-<p>Fabric, NeoForge, Quilt, Bedrock, and other Minecraft versions are not included in this artifact. Future ports are roadmap work until the code, build, runtime checks, docs, and artifact naming all agree.</p>
+<p><strong>This release supports Fabric for Minecraft Java Edition 1.20.1.</strong></p>
+<p>This artifact is specifically the Fabric 1.20.1 build. Forge builds are separate files. NeoForge, Quilt, Bedrock, and other Minecraft versions are not included in this artifact unless a separate matching GradleMC release exists for them.</p>
 <hr>
 <h3><span style="color: #8be9fd;">Best use case</span></h3>
-<p>GradleMC is best used when you need clearer evidence for crash, lag, support, or modpack stability conversations. It will not magically fix a broken pack, but it gives you better local information so you can stop guessing and start debugging with actual data.</p>
+<p>GradleMC is best used when you need clearer evidence for crash, lag, support, or modpack stability conversations. It will not magically fix a broken pack, because that would be witchcraft, not diagnostics. What it does give you is better local information so you can stop guessing and start debugging with actual data.</p>
 <hr>
-<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"><img src="https://media.forgecdn.net/attachments/description/1585182/description_3b6d263e-32c0-4fbe-bc6a-2b54c4f71ea7.png" alt="" width="850" height="478"></a></p>
+<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"><img src="https://media.forgecdn.net/attachments/description/1585182/description_3b6d263e-32c0-4fbe-bc6a-2b54c4f71ea7.png" alt="GradleMC preview image" width="850" height="478"></a></p>
