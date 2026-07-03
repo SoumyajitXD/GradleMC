@@ -6,27 +6,24 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 
 ## Release Identity
 
-Confirm the intended public release identity:
+| Loader | Public version | Minecraft | Java | Expected public artifact | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Forge | `1.0.1` | `1.20.1` | `17` | `gradlemc-1.0.1-forge-1.20.1.jar` | Forge target `47.4.20` |
+| Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 
-| Field | Expected for current public release |
+| Field | Expected |
 | --- | --- |
 | Mod ID | `gradlemc` |
 | Product name | GradleMC |
-| Public version | `1.0.1` |
-| Minecraft | `1.20.1` |
-| Loader | Forge |
-| Forge target | `47.4.20` |
-| Java | `17` |
-| Expected public artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
 | CurseForge Project ID | `1585182` |
 
-The standalone source folder is [`../GradleMC/Forge/Minecraft 1.20.1/`](../GradleMC/Forge/Minecraft%201.20.1/). Before exporting or publishing, check its `gradle.properties` values against the intended public release. If `mod_version`, `artifact_name`, README, release notes, and the jar filename disagree, stop. That is not a release; it is a bug with a ZIP extension.
+Before exporting or publishing any loader build, check its metadata against the intended public release. If version, loader, artifact name, README, release notes, and jar filename disagree, stop. That is not a release; it is a bug with a ZIP extension.
 
 ---
 
 ## Pre-Release Checks
 
-From the standalone Forge source folder:
+From the currently documented Forge source folder:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
@@ -42,7 +39,7 @@ gradlew.bat clean build gradlemcSelfTest
 
 Use Java `17`. Do not claim the build passed unless this was actually run and passed.
 
-If release automation is restored later, document the exact command here before relying on it. Dead commands in release docs are productivity taxidermy.
+For Fabric release work, run the equivalent Fabric build and verification commands from the Fabric source project. Do not paste Forge commands into Fabric release notes and call it done.
 
 ---
 
@@ -66,13 +63,14 @@ Test with the actual release jar:
 - [ ] `/gradlemc perf start 30` and `/gradlemc perf stop` work.
 - [ ] Client-only FPS tools do not load on dedicated servers.
 - [ ] Overlay remains disabled by default.
-- [ ] Reports do not include broad private-file dumps.
 
 ---
 
 ## Export
 
-Build first, then copy the built jar from:
+Build first, then copy the built jar from the loader-specific build output folder.
+
+For the currently documented Forge source project, build output is written under:
 
 ```text
 GradleMC/Forge/Minecraft 1.20.1/build/libs/
@@ -83,9 +81,10 @@ Verify:
 - [ ] artifact exists before export;
 - [ ] exported filename exactly matches the intended public artifact name;
 - [ ] jar metadata reports the intended GradleMC version;
+- [ ] jar metadata reports the intended loader target;
 - [ ] no stale old-folder paths appear in docs or scripts;
 - [ ] no generated local runtime reports are accidentally committed;
-- [ ] no placeholder Fabric, NeoForge, Quilt, or future-version jar is produced.
+- [ ] no placeholder NeoForge, Quilt, Bedrock, or future-version jar is produced.
 
 ---
 
@@ -96,8 +95,7 @@ The current committed screenshot set lives in [`../Screenshots/`](../Screenshots
 Before publishing or replacing screenshots:
 
 - [ ] screenshots are captured from the intended release jar;
-- [ ] screenshots show Forge `1.20.1`, not a future or unsupported port;
-- [ ] no private paths, usernames, server addresses, or secrets are visible;
+- [ ] screenshots do not imply an unsupported loader or future Minecraft version;
 - [ ] README preview images render on GitHub;
 - [ ] `docs/SCREENSHOTS.md` includes every committed screenshot;
 - [ ] `docs/SCREENSHOT_PLAN.md` matches the current screenshot paths;
@@ -123,15 +121,16 @@ Before publishing, check every public surface:
 
 Confirm these claims are still true:
 
-- [ ] Current public release target is Forge `1.20.1`.
-- [ ] Artifact name is `gradlemc-1.0.1-forge-1.20.1.jar` for the current public release.
+- [ ] Current public release targets are Forge `1.20.1` and Fabric `1.20.1`.
+- [ ] Forge artifact name is `gradlemc-1.0.1-forge-1.20.1.jar`.
+- [ ] Fabric artifact name is `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - [ ] Java `17` is stated where needed.
 - [ ] Commands are lowercase.
 - [ ] `/gradlemc gui` is lowercase.
 - [ ] Adaptive diagnostics are not described as LLMs or generative AI.
 - [ ] Smart Diagnostics are local rule-based diagnostics.
 - [ ] Profiler language does not imply Spark parity.
-- [ ] Future ports are roadmap entries, not release claims.
+- [ ] NeoForge, Quilt, Bedrock, and future Minecraft versions are roadmap entries, not release claims.
 
 ---
 
@@ -141,6 +140,7 @@ Confirm these claims are still true:
 - [ ] Attach or publish the correct jar through the intended platform.
 - [ ] Update `CHANGELOG.md`.
 - [ ] Update README if artifact/version changes.
+- [ ] Update support/security docs if supported targets change.
 - [ ] Update screenshot docs if screenshots change.
 - [ ] Update CurseForge description if public behavior or visuals change.
 - [ ] Watch GitHub issues and CurseForge comments for regressions.
@@ -159,8 +159,6 @@ Do not release if any of these are true:
 - dedicated server loads client-only code;
 - docs claim unsupported loaders or versions;
 - screenshots imply unsupported features or versions;
-- reports expose broad private data;
-- release jar was built from a dirty mystery state;
 - old folder names or stale paths still appear;
 - the release depends on “probably fine.”
 
