@@ -1,5 +1,3 @@
-# GradleMC
-
 <p align="center">
   <img src="GradleMC_logo.png" width="180" alt="GradleMC logo">
 </p>
@@ -27,9 +25,9 @@
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a>
   · <a href="#current-public-releases">Releases</a>
+  · <a href="#server-setup">Server Setup</a>
   · <a href="#features">Features</a>
   · <a href="#commands">Commands</a>
-  · <a href="#server-setup">Server Setup</a>
   · <a href="#screenshots">Screenshots</a>
   · <a href="#build-from-source">Build</a>
   · <a href="CHANGELOG.md">Changelog</a>
@@ -62,7 +60,7 @@ It does not magically repair broken packs. It gives you better information so yo
 | Telemetry | None |
 | Cloud AI / LLM / generative AI | None |
 
-> GradleMC currently claims public support for Minecraft Java Edition `1.20.1` on Forge and Fabric only. NeoForge, Quilt, Bedrock, and future Minecraft versions stay on the roadmap until the code, build, runtime checks, docs, and artifact names all agree.
+> GradleMC currently claims public support for Minecraft Java Edition `1.20.1` on Forge and Fabric only. NeoForge, Quilt, Bedrock, and future Minecraft versions stay on the roadmap until code, builds, runtime checks, docs, screenshots, and artifact names all agree. Fake support claims rot faster than milk in a furnace. 🔥
 
 ---
 
@@ -83,7 +81,7 @@ It does not magically repair broken packs. It gives you better information so yo
 
 | Install location | Use it for |
 | --- | --- |
-| Client | GUI, configurable keybind, overlay, local FPS sampling, client-side troubleshooting context. |
+| Client | GUI, configurable keybind, overlay, local FPS sampling, and client-side troubleshooting context. |
 | Server | Commands, reports, TPS/MSPT sampling, memory/environment checks, passive worldgen observation, issue bundles, Smart Diagnostics, and adaptive diagnostics state. |
 
 ---
@@ -291,8 +289,9 @@ For release/export checks, use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKL
 | --- | --- |
 | [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/) | Standalone Forge `1.20.1` mod source project. |
 | [`GradleMC/Fabric/Minecraft 1.20.1/`](GradleMC/Fabric/Minecraft%201.20.1/) | Standalone Fabric `1.20.1` mod source project. |
-| [`Screenshots/`](Screenshots/) | README and docs screenshot assets. |
+| [`GradleMC_logo.png`](GradleMC_logo.png) | README and mod branding asset. |
 | [`bisecthosting-banner.png`](bisecthosting-banner.png) | Server creation banner used in the README. |
+| [`Screenshots/`](Screenshots/) | README and docs screenshot assets. |
 | [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) | Full screenshot gallery. |
 | [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) | Screenshot maintenance guide. |
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Repository CI workflow. |
