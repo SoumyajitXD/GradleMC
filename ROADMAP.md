@@ -4,20 +4,16 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 
 ---
 
-## Current Supported Public Target
+## Current Supported Public Targets
 
-| Field | Value |
-| --- | --- |
-| Version | `1.0.1` |
-| Minecraft | `1.20.1` |
-| Loader | Forge |
-| Forge target | `47.4.20` |
-| Java | `17` |
-| Artifact | `gradlemc-1.0.1-forge-1.20.1.jar` |
+| Loader | Version | Minecraft | Java | Artifact | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Forge | `1.0.1` | `1.20.1` | `17` | `gradlemc-1.0.1-forge-1.20.1.jar` | Forge target `47.4.20` |
+| Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 
 Current public focus:
 
-- stable Forge `1.20.1` diagnostics;
+- stable Forge and Fabric `1.20.1` diagnostics;
 - trustworthy reports;
 - clean GUI and command UX;
 - bounded local performance and profiler evidence;
@@ -28,18 +24,35 @@ Current public focus:
 
 ---
 
-## Released: `1.0.1` Stabilization
+## Released: Fabric `1.20.1` `1.0.0`
+
+`1.0.0` is the current public Fabric `1.20.1` release.
+
+Release-surface goals:
+
+- treat Fabric `1.20.1` as a real public target, not a roadmap maybe-baby;
+- keep Fabric artifact naming exact: `gradlemc-fabric-1.20.1-1.0.0.jar`;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from supported builds.
+
+---
+
+## Released: Forge `1.0.1` Stabilization
 
 `1.0.1` is the current public Forge `1.20.1` release.
 
 Release-surface goals:
 
-- keep support claims locked to Forge `1.20.1`;
+- keep Forge support claims locked to Forge `1.20.1`;
+- keep Forge artifact naming exact: `gradlemc-1.0.1-forge-1.20.1.jar`;
 - keep command examples lowercase;
 - keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
 - keep profiler wording bounded and honest;
 - keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from the supported build.
+- use only real screenshots captured from supported builds.
 
 ---
 
@@ -70,7 +83,7 @@ Priority work:
 - polish command help and report summaries;
 - tighten export and report wording;
 - improve diagnostics confidence explanations;
-- verify dedicated-server behavior;
+- verify dedicated-server behavior on supported loaders;
 - keep screenshot docs synced with real UI;
 - keep CI strict;
 - update README and CurseForge copy only after behavior is verified.
@@ -99,7 +112,7 @@ Each item needs testing. A cool idea is not a release criterion.
 Possible future targets belong behind gates:
 
 - newer Forge versions;
-- Fabric candidates;
+- newer Fabric versions;
 - NeoForge candidates;
 - later Minecraft versions.
 
@@ -126,5 +139,5 @@ Until then, future targets are roadmap entries, not release claims.
 - No cloud AI.
 - No generative AI features.
 - No fake profiler parity claims.
-- No fake Fabric, NeoForge, Quilt, or future-version jars.
+- No fake NeoForge, Quilt, Bedrock, or future-version jars.
 - No branch sprawl as a substitute for planning.
