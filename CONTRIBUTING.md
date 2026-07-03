@@ -25,7 +25,7 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 - Minecraft command literals and examples must be lowercase.
 - Correct GUI command: `/gradlemc gui`.
 - Current supported public release targets: Forge `1.20.1` and Fabric `1.20.1`, Java `17`.
-- Current Forge artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
+- Current Forge artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
 - Current Fabric artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - Do not imply NeoForge, Quilt, Bedrock, or non-`1.20.1` support unless fully implemented and verified.
 - Do not add telemetry, analytics, remote services, generative AI, embeddings, or online inference.
