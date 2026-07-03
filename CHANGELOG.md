@@ -10,7 +10,7 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 | Loader | Current public version | Minecraft | Java | Expected artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.1` | `1.20.1` | `17` | `gradlemc-1.0.1-forge-1.20.1.jar` | Forge target `47.4.20` |
+| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 
 | Field | Value |
@@ -30,6 +30,36 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 - Updated `docs/SCREENSHOT_PLAN.md` from a future capture plan into a screenshot maintenance guide.
 - Updated release, contribution, roadmap, PR-template, and agent-facing docs for the current standalone source path: `GradleMC/Forge/Minecraft 1.20.1/`.
 - Removed stale `SOURCE CODE/` instructions from current contribution and build guidance.
+
+---
+
+## `1.0.2` - Forge `1.20.1`
+
+Published public Forge hotfix release for Minecraft Java Edition `1.20.1`.
+
+### Release identity
+
+- Release artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
+- Supported target remains Forge `1.20.1`.
+- Java target remains `17`.
+- Forge target remains `47.4.20`.
+- CurseForge Project ID remains `1585182`.
+
+### Fixed
+
+- Fixed the Quick Actions tab overlay issue where lower controls/text could visually overlap instead of laying out cleanly.
+
+### Documentation and publishing surface
+
+- Updated GitHub release-facing docs for the `1.0.2` Forge public release.
+- Updated `README.md`, `AGENTS.md`, `docs/RELEASE_CHECKLIST.md`, `ROADMAP.md`, and `curseforge-description.html` to point at `gradlemc-1.0.2-forge-1.20.1.jar`.
+- Kept public support claims limited to Minecraft `1.20.1` on Forge and Fabric.
+
+### Guardrails
+
+- No new loader, Minecraft version, telemetry, cloud AI, LLM, or generative AI support is claimed by this hotfix.
+- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
+- Profiler features remain bounded local evidence tools, not Spark parity.
 
 ---
 
@@ -58,7 +88,7 @@ Published the Fabric port for Minecraft Java Edition `1.20.1`.
 
 ---
 
-## `1.0.1`
+## `1.0.1` - Forge `1.20.1`
 
 Published public release for Minecraft Java Edition `1.20.1` on Forge.
 
