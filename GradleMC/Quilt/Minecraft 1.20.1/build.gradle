@@ -1,0 +1,85 @@
+plugins {
+    id 'maven-publish'
+    alias libs.plugins.quilt.loom
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        gradlemc {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+repositories {
+}
+
+dependencies {
+    minecraft libs.minecraft
+    mappings loom.officialMojangMappings()
+    modImplementation libs.quilt.loader
+    modImplementation libs.quilt.standard.libraries
+    modImplementation libs.quilted.fabric.api
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'group', project.group
+
+    filesMatching('quilt.mod.json') {
+        expand 'version': project.version, 'group': project.group
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+    manifest {
+        attributes([
+                'Specification-Title'     : 'GradleMC',
+                'Specification-Vendor'    : 'Soumyajit',
+                'Specification-Version'   : project.version,
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.version,
+                'Implementation-Vendor'   : 'Soumyajit',
+                'GradleMC-Mod-Id'         : 'gradlemc',
+                'GradleMC-Variant'        : 'quilt-1.20.1',
+                'GradleMC-Display-Variant': 'Quilt 1.20.1',
+                'GradleMC-Minecraft'      : libs.versions.minecraft.get(),
+                'GradleMC-Loader'         : 'Quilt'
+        ])
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
