@@ -13,6 +13,7 @@
   <img alt="Minecraft 1.20.1" src="https://img.shields.io/badge/Minecraft-1.20.1-brightgreen">
   <img alt="Forge release 1.0.2" src="https://img.shields.io/badge/Forge_release-1.0.2-orange">
   <img alt="Fabric release 1.0.0" src="https://img.shields.io/badge/Fabric_release-1.0.0-blueviolet">
+  <img alt="Quilt release 1.0.0" src="https://img.shields.io/badge/Quilt_release-1.0.0-purple">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-blue">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
@@ -36,7 +37,7 @@ GradleMC is a diagnostics mod for modded Minecraft. It helps players, modpack ma
 
 It provides an in-game control center, readable `/gradlemc` commands, stability checks, memory diagnostics, mod and environment inspection, bounded performance sampling, Smart Diagnostics, adaptive local diagnostics, and exportable reports.
 
-**Current public support:** Minecraft Java Edition `1.20.1` on Forge and Fabric. Other loaders and versions are not supported until the code, build, runtime behavior, docs, and artifact names all agree.
+**Current public support:** Minecraft Java Edition `1.20.1` on Forge, Fabric, and Quilt. Other loaders and versions are not supported until the code, build, runtime behavior, docs, and artifact names all agree.
 
 ---
 
@@ -46,6 +47,7 @@ It provides an in-game control center, readable `/gradlemc` commands, stability 
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `gradlemc-1.0.2-forge-1.20.1.jar` | `1.20.1` | `17` | Forge target `47.4.20`; hotfix for the Quick Actions tab overlay issue |
 | Fabric | `1.0.0` | `gradlemc-fabric-1.20.1-1.0.0.jar` | `1.20.1` | `17` | Fabric release |
+| Quilt | `1.0.0` | `gradlemc-quilt-1.20.1-1.0.0.jar` | `1.20.1` | `17` | Quilt release |
 
 | Field | Value |
 | --- | --- |
@@ -55,6 +57,8 @@ It provides an in-game control center, readable `/gradlemc` commands, stability 
 | Cloud AI or LLM usage | None |
 
 **Latest Forge release:** `1.0.2` is a Forge `1.20.1` hotfix release. It keeps the same public target and fixes the Quick Actions tab overlay issue instead of pretending to be a giant feature drop wearing sunglasses.
+
+**Latest Quilt release:** `1.0.0` brings the GradleMC `1.20.1` diagnostics surface to Quilt with the exact artifact `gradlemc-quilt-1.20.1-1.0.0.jar`.
 
 ---
 
@@ -163,7 +167,7 @@ More screenshots live in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
 - Not a crash-fixing bot.
 - Not Spark, VisualVM, or a deep profiler replacement.
 - Not an LLM, generative AI system, cloud AI service, telemetry feature, or analytics feature.
-- Not a public support claim for NeoForge, Quilt, Bedrock, or non-`1.20.1` Minecraft versions.
+- Not a public support claim for NeoForge, Bedrock, or non-`1.20.1` Minecraft versions.
 
 ---
 
@@ -184,6 +188,13 @@ cd "GradleMC/Fabric/Minecraft 1.20.1"
 ./gradlew build
 ```
 
+Quilt:
+
+```sh
+cd "GradleMC/Quilt/Minecraft 1.20.1"
+./gradlew build
+```
+
 Windows users can run `gradlew.bat` from the same project folders.
 
 Before publishing anything, make sure source metadata, public release version, docs, changelog, screenshots, and artifact names agree. Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/export work.
@@ -196,6 +207,7 @@ Before publishing anything, make sure source metadata, public release version, d
 | --- | --- |
 | [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/) | Forge `1.20.1` source project. |
 | [`GradleMC/Fabric/Minecraft 1.20.1/`](GradleMC/Fabric/Minecraft%201.20.1/) | Fabric `1.20.1` source project. |
+| [`GradleMC/Quilt/Minecraft 1.20.1/`](GradleMC/Quilt/Minecraft%201.20.1/) | Quilt `1.20.1` source project. |
 | [`Screenshots/`](Screenshots/) | README and documentation screenshots. |
 | [`bisecthosting-banner.png`](bisecthosting-banner.png) | Server hosting banner asset. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history. |
