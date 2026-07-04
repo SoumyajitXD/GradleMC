@@ -14,7 +14,7 @@ Use GitHub issues for:
 - Documentation mistakes.
 - Focused feature requests.
 
-Use discussions, community posts, or modpack support channels for general Minecraft, Forge, or Fabric troubleshooting that is not clearly caused by GradleMC.
+Use discussions, community posts, or modpack support channels for general Minecraft, Forge, Fabric, or Quilt troubleshooting that is not clearly caused by GradleMC.
 
 ---
 
@@ -26,10 +26,12 @@ Check these first:
 2. You are using a supported loader setup:
    - Forge `47.4.20` or a compatible Forge `47.x` setup.
    - Fabric for Minecraft `1.20.1`.
+   - Quilt for Minecraft `1.20.1`.
 3. You are using Java `17`.
 4. You are using the correct GradleMC jar for your loader:
    - Forge: `gradlemc-1.0.2-forge-1.20.1.jar`.
    - Fabric: `gradlemc-fabric-1.20.1-1.0.0.jar`.
+   - Quilt: `gradlemc-quilt-1.20.1-1.0.0.jar`.
 5. You tried the relevant command again after restarting the instance or server.
 6. You reviewed the GradleMC report before sharing it.
 
@@ -103,7 +105,6 @@ Review anything before posting it publicly.
 These are not support issues for the current releases:
 
 - NeoForge support.
-- Quilt support.
 - Bedrock support.
 - Minecraft versions other than `1.20.1`.
 - Replacing Spark or other deep profilers.
