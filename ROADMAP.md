@@ -10,10 +10,11 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
+| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 Current public focus:
 
-- stable Forge and Fabric `1.20.1` diagnostics;
+- stable Forge, Fabric, and Quilt `1.20.1` diagnostics;
 - trustworthy reports;
 - clean GUI and command UX;
 - bounded local performance and profiler evidence;
@@ -21,6 +22,22 @@ Current public focus:
 - adaptive diagnostics correctness;
 - screenshot-backed README and docs;
 - release and CI discipline.
+
+---
+
+## Released: Quilt `1.20.1` `1.0.0`
+
+`1.0.0` is the current public Quilt `1.20.1` release.
+
+Release-surface goals:
+
+- treat Quilt `1.20.1` as a real public target, not a roadmap hallucination with a jar filename taped to it;
+- keep Quilt artifact naming exact: `gradlemc-quilt-1.20.1-1.0.0.jar`;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from supported builds.
 
 ---
 
@@ -130,6 +147,7 @@ Possible future targets belong behind gates:
 
 - newer Forge versions;
 - newer Fabric versions;
+- newer Quilt versions;
 - NeoForge candidates;
 - later Minecraft versions.
 
@@ -156,5 +174,5 @@ Until then, future targets are roadmap entries, not release claims.
 - No cloud AI.
 - No generative AI features.
 - No fake profiler parity claims.
-- No fake NeoForge, Quilt, Bedrock, or future-version jars.
+- No fake NeoForge, Bedrock, or future-version jars.
 - No branch sprawl as a substitute for planning.
