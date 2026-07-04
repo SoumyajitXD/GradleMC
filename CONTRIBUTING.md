@@ -2,7 +2,7 @@
 
 Thanks for wanting to improve GradleMC. Focused contributions are welcome.
 
-GradleMC currently has public Minecraft Java Edition `1.20.1` targets for Forge and Fabric. The currently documented standalone Forge source project lives in [`GradleMC/Forge/Minecraft 1.20.1/`](GradleMC/Forge/Minecraft%201.20.1/). The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
+GradleMC currently has public Minecraft Java Edition `1.20.1` targets for Forge, Fabric, and Quilt. The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
 
 ---
 
@@ -24,11 +24,11 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 - Keep the mod ID as `gradlemc`.
 - Minecraft command literals and examples must be lowercase.
 - Correct GUI command: `/gradlemc gui`.
-- Current supported public release targets: Forge `1.20.1` and Fabric `1.20.1`, Java `17`.
+- Current supported public release targets: Forge `1.20.1`, Fabric `1.20.1`, and Quilt `1.20.1`, Java `17`.
 - Current Forge artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
 - Current Fabric artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
-- Do not imply NeoForge, Quilt, Bedrock, or non-`1.20.1` support unless fully implemented and verified.
-- Do not add telemetry, analytics, remote services, generative AI, embeddings, or online inference.
+- Current Quilt artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
+- Do not imply NeoForge, Bedrock, or non-`1.20.1` support unless fully implemented and verified.
 - Keep client-only code isolated from dedicated-server-safe code.
 - Do not commit generated build output, local run folders, logs, private files, or exported reports.
 - Prefer small, focused changes over broad rewrites.
@@ -37,7 +37,15 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 
 ## Local Setup
 
-From the repository root, the currently documented Forge build path is:
+Current loader source paths:
+
+```text
+GradleMC/Forge/Minecraft 1.20.1/
+GradleMC/Fabric/Minecraft 1.20.1/
+GradleMC/Quilt/Minecraft 1.20.1/
+```
+
+Build Forge:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
@@ -51,7 +59,7 @@ cd "GradleMC\Forge\Minecraft 1.20.1"
 gradlew.bat build
 ```
 
-Use Java `17` for the current `1.20.1` builds. For Fabric work, use the equivalent Fabric source project and verification commands.
+Use Java `17` for the current `1.20.1` builds. For Fabric or Quilt work, use the equivalent loader source project and verification commands.
 
 ---
 
@@ -73,7 +81,7 @@ cd "GradleMC\Forge\Minecraft 1.20.1"
 gradlew.bat clean build gradlemcSelfTest
 ```
 
-For Fabric source/resource changes, run the matching Fabric build and verification tasks from the Fabric source project.
+For Fabric or Quilt source/resource changes, run the matching loader build and verification tasks from that loader source project.
 
 Old validation commands from the removed `SOURCE CODE/` layout are not valid unless they are reintroduced in the current standalone project. Do not paste dead commands into docs, PRs, or release notes.
 
@@ -100,7 +108,7 @@ Current screenshots live in [`Screenshots/`](Screenshots/) and are documented in
 When adding or replacing screenshots:
 
 - use real screenshots from a supported `1.20.1` build;
-- avoid exposing local paths, private server details, usernames that should not be public, or sensitive values;
+- avoid exposing local paths or sensitive values;
 - keep README preview compact;
 - update `docs/SCREENSHOTS.md` for the full gallery;
 - update `docs/SCREENSHOT_PLAN.md` if paths, naming rules, or capture rules change.
