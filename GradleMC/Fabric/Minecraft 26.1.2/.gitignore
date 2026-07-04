@@ -1,0 +1,48 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+/build/
+/.gradle/
+/mcmodsrepo/
+
+# runtime output
+eclipse
+run/
+run-data/
+logs
+crash-reports/
+config/gradlemc/reports/
+gradlemc/reports/
+gradlemc/exports/
+gradlemc/issue-bundles/
+gradlemc/profiles/
+src/generated/resources/
+*.log
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+extracted-jar/
+jar-inspect/
+tmp-jar/
+__pycache__/
+*.py[cod]
+*.tmp
+*.bak
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

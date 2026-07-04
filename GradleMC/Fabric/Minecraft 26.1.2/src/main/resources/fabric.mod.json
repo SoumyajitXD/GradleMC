@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "gradlemc",
+  "version": "${version}",
+  "name": "GradleMC",
+  "description": "In-game diagnostics and stability checker for Minecraft modpacks.",
+  "authors": [
+    "Soumyajit"
+  ],
+  "license": "Apache-2.0",
+  "icon": "GradleMC_logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.soumyajit.gradlemc.fabric.GradleMCFabric"
+    ],
+    "client": [
+      "com.soumyajit.gradlemc.fabric.GradleMCFabricClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": ">=26.1.2 <26.1.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
