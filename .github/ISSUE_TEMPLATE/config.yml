@@ -8,7 +8,7 @@ contact_links:
     about: Use this for fake downloads, unsafe links, sensitive reports, or distribution-chain concerns.
   - name: Roadmap
     url: https://github.com/SoumyajitXD/GradleMC/blob/main/ROADMAP.md
-    about: Check planned work before requesting NeoForge, Quilt, future Minecraft versions, or major features.
+    about: Check planned work before requesting NeoForge, future Minecraft versions, or major features.
   - name: Release checklist
     url: https://github.com/SoumyajitXD/GradleMC/blob/main/docs/RELEASE_CHECKLIST.md
     about: Use this before publishing, exporting, or reviewing a release candidate.
