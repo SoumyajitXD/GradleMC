@@ -17,8 +17,8 @@ Describe what this PR changes and why.
 
 - [ ] I kept Minecraft command literals lowercase.
 - [ ] I did not claim unsupported loader or Minecraft-version support.
-- [ ] I treated Forge `1.20.1` and Fabric `1.20.1` as the only current public loader targets.
-- [ ] I did not imply NeoForge, Quilt, Bedrock, or future-version support unless it is fully implemented and verified.
+- [ ] I treated Forge `1.20.1`, Fabric `1.20.1`, and Quilt `1.20.1` as the current public loader targets.
+- [ ] I did not imply NeoForge, Bedrock, or future-version support unless it is fully implemented and verified.
 - [ ] I did not add telemetry, analytics, cloud AI, LLMs, generative AI, embeddings, or online inference.
 - [ ] I kept the change focused and avoided unrelated rewrites.
 - [ ] I checked user-facing text for accuracy.
@@ -55,7 +55,7 @@ Windows:
 gradlew.bat clean build gradlemcSelfTest
 ```
 
-For Fabric source changes, run the equivalent Fabric build and verification tasks from the Fabric source project.
+For Fabric or Quilt source changes, run the equivalent loader build and verification tasks from that loader source project.
 
 For docs-only changes, list the files reviewed and any screenshot links checked.
 

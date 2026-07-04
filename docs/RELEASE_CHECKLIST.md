@@ -10,6 +10,7 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
+| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 | Field | Expected |
 | --- | --- |
@@ -39,7 +40,7 @@ gradlew.bat clean build gradlemcSelfTest
 
 Use Java `17`. Do not claim the build passed unless this was actually run and passed.
 
-For Fabric release work, run the equivalent Fabric build and verification commands from the Fabric source project. Do not paste Forge commands into Fabric release notes and call it done.
+For Fabric or Quilt release work, run the equivalent loader build and verification commands from that loader source project. Do not paste Forge commands into other loader release notes and call it done.
 
 ---
 
@@ -77,6 +78,14 @@ For the currently documented Forge source project, build output is written under
 GradleMC/Forge/Minecraft 1.20.1/build/libs/
 ```
 
+Loader source project folders:
+
+```text
+GradleMC/Forge/Minecraft 1.20.1/
+GradleMC/Fabric/Minecraft 1.20.1/
+GradleMC/Quilt/Minecraft 1.20.1/
+```
+
 Verify:
 
 - [ ] artifact exists before export;
@@ -85,7 +94,7 @@ Verify:
 - [ ] jar metadata reports the intended loader target;
 - [ ] no stale old-folder paths appear in docs or scripts;
 - [ ] no generated local runtime reports are accidentally committed;
-- [ ] no placeholder NeoForge, Quilt, Bedrock, or future-version jar is produced.
+- [ ] no placeholder NeoForge, Bedrock, or future-version jar is produced.
 
 ---
 
@@ -122,16 +131,17 @@ Before publishing, check every public surface:
 
 Confirm these claims are still true:
 
-- [ ] Current public release targets are Forge `1.20.1` and Fabric `1.20.1`.
+- [ ] Current public release targets are Forge `1.20.1`, Fabric `1.20.1`, and Quilt `1.20.1`.
 - [ ] Forge artifact name is `gradlemc-1.0.2-forge-1.20.1.jar`.
 - [ ] Fabric artifact name is `gradlemc-fabric-1.20.1-1.0.0.jar`.
+- [ ] Quilt artifact name is `gradlemc-quilt-1.20.1-1.0.0.jar`.
 - [ ] Java `17` is stated where needed.
 - [ ] Commands are lowercase.
 - [ ] `/gradlemc gui` is lowercase.
 - [ ] Adaptive diagnostics are not described as LLMs or generative AI.
 - [ ] Smart Diagnostics are local rule-based diagnostics.
 - [ ] Profiler language does not imply Spark parity.
-- [ ] NeoForge, Quilt, Bedrock, and future Minecraft versions are roadmap entries, not release claims.
+- [ ] NeoForge, Bedrock, and future Minecraft versions are roadmap entries, not release claims.
 
 ---
 

@@ -12,6 +12,7 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
+| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 | Field | Value |
 | --- | --- |
@@ -30,6 +31,32 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 - Updated `docs/SCREENSHOT_PLAN.md` from a future capture plan into a screenshot maintenance guide.
 - Updated release, contribution, roadmap, PR-template, and agent-facing docs for the current standalone source path: `GradleMC/Forge/Minecraft 1.20.1/`.
 - Removed stale `SOURCE CODE/` instructions from current contribution and build guidance.
+
+---
+
+## `1.0.0` - Quilt `1.20.1`
+
+Published the Quilt port for Minecraft Java Edition `1.20.1`.
+
+### Release identity
+
+- Release artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
+- Supported target: Quilt `1.20.1`.
+- Java target remains `17`.
+- CurseForge Project ID remains `1585182`.
+
+### Documentation and publishing surface
+
+- Updated public GitHub docs so Quilt is no longer described as unsupported.
+- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, release checklist docs, PR template checks, screenshot guidance, issue contact text, and the repository CurseForge description source for the Quilt `1.20.1` release.
+- Kept support claims limited to Minecraft `1.20.1` on Forge, Fabric, and Quilt only.
+- Kept NeoForge, Bedrock, and future Minecraft versions out of current support claims.
+
+### Guardrails
+
+- The Quilt release is a real public target, not a roadmap placeholder.
+- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
+- Profiler features remain bounded local evidence tools, not Spark parity.
 
 ---
 

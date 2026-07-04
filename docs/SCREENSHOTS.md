@@ -45,7 +45,7 @@ The README uses a compact preview so the landing page does not become a scroll-t
 
 These screenshots are evidence for the currently documented GradleMC `1.20.1` UI and user-facing flow. If a screenshot was captured from one loader, it should not be used to imply behavior was tested on another loader unless that loader was actually tested too.
 
-They do **not** prove support for NeoForge, Quilt, Bedrock, future Minecraft versions, cloud AI, telemetry, or any feature that is not actually implemented. Screenshots are proof, not marketing fog.
+They do **not** prove support for NeoForge, Bedrock, future Minecraft versions, cloud AI, telemetry, or any feature that is not actually implemented. Screenshots are proof, not marketing fog.
 
 ---
 

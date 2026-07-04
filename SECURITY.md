@@ -12,8 +12,9 @@ Security reports are for risks that could harm players, server owners, maintaine
 | --- | --- |
 | GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
-| Future `1.0.x` Forge or Fabric `1.20.1` releases | Supported after release |
-| NeoForge, Quilt, Bedrock, or other Minecraft versions | Not supported until actually implemented and released |
+| GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | Current public support target |
+| Future `1.0.x` Forge, Fabric, or Quilt `1.20.1` releases | Supported after release |
+| NeoForge, Bedrock, or other Minecraft versions | Not supported until actually implemented and released |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
 
 Current expected release artifacts:
@@ -21,6 +22,7 @@ Current expected release artifacts:
 ```text
 gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
+gradlemc-quilt-1.20.1-1.0.0.jar
 ```
 
 ---
@@ -90,4 +92,4 @@ Review files before posting them publicly. Evidence is useful. Accidentally expo
 
 ## License Scope
 
-GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
+GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, Quilt, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
