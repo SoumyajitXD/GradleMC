@@ -43,9 +43,9 @@ The README uses a compact preview so the landing page does not become a scroll-t
 
 ## What These Screenshots Prove
 
-These screenshots are evidence for the currently documented GradleMC `1.20.1` UI and user-facing flow. If a screenshot was captured from one loader, it should not be used to imply behavior was tested on another loader unless that loader was actually tested too.
+These screenshots are evidence for the currently documented GradleMC UI and user-facing flow. If a screenshot was captured from one loader or Minecraft version, it should not be used to imply behavior was tested on another loader/version pair unless that target was actually tested too.
 
-They do **not** prove support for NeoForge, Bedrock, future Minecraft versions, cloud AI, telemetry, or any feature that is not actually implemented. Screenshots are proof, not marketing fog.
+They do **not** prove support for NeoForge, Bedrock, cloud AI, telemetry, or any loader/version pair that is not listed in the supported release matrix. Screenshots are proof, not marketing fog.
 
 ---
 
@@ -54,7 +54,7 @@ They do **not** prove support for NeoForge, Bedrock, future Minecraft versions, 
 - Keep screenshot links relative so they render on GitHub forks and branches.
 - Keep the README preview small; use this page for the full gallery.
 - If screenshots are renamed, update `README.md`, this file, and `docs/SCREENSHOT_PLAN.md` in the same commit.
-- If screenshots are recaptured for a new release, verify the release jar, Minecraft version, loader version, and command casing first.
+- If screenshots are recaptured for a new release, verify the release jar, Minecraft version, loader version, Java version, and command casing first.
 - Prefer descriptive filenames in future cleanup work, but only rename files when every reference is updated.
 
 ---
