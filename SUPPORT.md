@@ -22,16 +22,21 @@ Use discussions, community posts, or modpack support channels for general Minecr
 
 Check these first:
 
-1. You are using Minecraft Java Edition `1.20.1`.
+1. You are using a supported Minecraft Java Edition target:
+   - `1.20.1` for Forge, Fabric, or Quilt.
+   - `26.1.2` for Fabric.
 2. You are using a supported loader setup:
-   - Forge `47.4.20` or a compatible Forge `47.x` setup.
-   - Fabric for Minecraft `1.20.1`.
+   - Forge `47.4.20` or a compatible Forge `47.x` setup for Minecraft `1.20.1`.
+   - Fabric for Minecraft `1.20.1` or `26.1.2`.
    - Quilt for Minecraft `1.20.1`.
-3. You are using Java `17`.
-4. You are using the correct GradleMC jar for your loader:
-   - Forge: `gradlemc-1.0.2-forge-1.20.1.jar`.
-   - Fabric: `gradlemc-fabric-1.20.1-1.0.0.jar`.
-   - Quilt: `gradlemc-quilt-1.20.1-1.0.0.jar`.
+3. You are using the correct Java version:
+   - Java `17` for the Minecraft `1.20.1` releases.
+   - Java `25` for the Fabric `26.1.2` release.
+4. You are using the correct GradleMC jar for your loader and Minecraft version:
+   - Forge `1.20.1`: `gradlemc-1.0.2-forge-1.20.1.jar`.
+   - Fabric `26.1.2`: `gradlemc-fabric-26.1.2-1.0.0.jar`.
+   - Fabric `1.20.1`: `gradlemc-fabric-1.20.1-1.0.0.jar`.
+   - Quilt `1.20.1`: `gradlemc-quilt-1.20.1-1.0.0.jar`.
 5. You tried the relevant command again after restarting the instance or server.
 6. You reviewed the GradleMC report before sharing it.
 
@@ -106,7 +111,7 @@ These are not support issues for the current releases:
 
 - NeoForge support.
 - Bedrock support.
-- Minecraft versions other than `1.20.1`.
+- Minecraft, loader, or Java combinations not listed in the supported release matrix.
 - Replacing Spark or other deep profilers.
 - Adding telemetry or cloud features.
 - Debugging an entire modpack with no reproduction steps.
