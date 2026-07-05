@@ -11,6 +11,7 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 | Loader | Current public version | Minecraft | Java | Expected artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
+| Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
@@ -26,11 +27,33 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 ### Documentation
 
-- Added real GitHub screenshot previews to `README.md` using the committed `Screenshots/` assets.
-- Added `docs/SCREENSHOTS.md` as the full screenshot gallery.
-- Updated `docs/SCREENSHOT_PLAN.md` from a future capture plan into a screenshot maintenance guide.
-- Updated release, contribution, roadmap, PR-template, and agent-facing docs for the current standalone source path: `GradleMC/Forge/Minecraft 1.20.1/`.
-- Removed stale `SOURCE CODE/` instructions from current contribution and build guidance.
+- Kept screenshot, release, and contribution docs aligned with the current public release surface.
+
+---
+
+## `1.0.0` - Fabric `26.1.2`
+
+Published the Fabric port for Minecraft Java Edition `26.1.2`.
+
+### Release identity
+
+- Release artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
+- Supported target: Fabric `26.1.2`.
+- Java target: `25`.
+- CurseForge Project ID remains `1585182`.
+
+### Documentation and publishing surface
+
+- Updated public GitHub docs so Fabric `26.1.2` is no longer treated as an unsupported future target.
+- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, screenshot guidance, release checklist docs, the Fabric `26.1.2` port README, and the repository CurseForge description source for the Fabric `26.1.2` release.
+- Kept support claims limited to the explicitly listed public release targets: Forge `1.20.1`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
+- Kept NeoForge, Bedrock, and all unlisted loader/version pairs out of current support claims.
+
+### Guardrails
+
+- The Fabric `26.1.2` release is a real public target, not a roadmap placeholder.
+- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
+- Profiler features remain bounded local evidence tools, not Spark parity.
 
 ---
 
@@ -80,7 +103,7 @@ Published public Forge hotfix release for Minecraft Java Edition `1.20.1`.
 
 - Updated GitHub release-facing docs for the `1.0.2` Forge public release.
 - Updated `README.md`, `AGENTS.md`, `docs/RELEASE_CHECKLIST.md`, `ROADMAP.md`, and `curseforge-description.html` to point at `gradlemc-1.0.2-forge-1.20.1.jar`.
-- Kept public support claims limited to Minecraft `1.20.1` on Forge and Fabric.
+- Kept public support claims limited to Minecraft `1.20.1` on Forge and Fabric at that time.
 
 ### Guardrails
 
@@ -104,8 +127,8 @@ Published the Fabric port for Minecraft Java Edition `1.20.1`.
 ### Documentation and publishing surface
 
 - Updated public GitHub docs so Fabric is no longer described as unsupported.
-- Kept support claims limited to Minecraft `1.20.1` on Forge and Fabric only.
-- Kept NeoForge, Quilt, Bedrock, and future Minecraft versions out of current support claims.
+- Kept support claims limited to Minecraft `1.20.1` on Forge and Fabric only at that time.
+- Kept NeoForge, Quilt, Bedrock, and future Minecraft versions out of current support claims at that time.
 
 ### Guardrails
 
