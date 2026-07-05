@@ -9,12 +9,14 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 | Loader | Version | Minecraft | Java | Artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
+| Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 Current public focus:
 
 - stable Forge, Fabric, and Quilt `1.20.1` diagnostics;
+- stable Fabric `26.1.2` diagnostics;
 - trustworthy reports;
 - clean GUI and command UX;
 - bounded local performance and profiler evidence;
@@ -22,6 +24,23 @@ Current public focus:
 - adaptive diagnostics correctness;
 - screenshot-backed README and docs;
 - release and CI discipline.
+
+---
+
+## Released: Fabric `26.1.2` `1.0.0`
+
+`1.0.0` is the current public Fabric `26.1.2` release.
+
+Release-surface goals:
+
+- treat Fabric `26.1.2` as a real public target, not a roadmap entry with a filename taped on;
+- keep Fabric `26.1.2` artifact naming exact: `gradlemc-fabric-26.1.2-1.0.0.jar`;
+- keep Java `25` documented for this target;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from supported builds.
 
 ---
 
@@ -146,10 +165,10 @@ Each item needs testing. A cool idea is not a release criterion.
 Possible future targets belong behind gates:
 
 - newer Forge versions;
-- newer Fabric versions;
 - newer Quilt versions;
 - NeoForge candidates;
-- later Minecraft versions.
+- later Minecraft versions;
+- additional Fabric targets beyond the currently released `1.20.1` and `26.1.2` builds.
 
 A port is not real until all of this is true:
 
@@ -174,5 +193,6 @@ Until then, future targets are roadmap entries, not release claims.
 - No cloud AI.
 - No generative AI features.
 - No fake profiler parity claims.
-- No fake NeoForge, Bedrock, or future-version jars.
+- No fake NeoForge or Bedrock jars.
+- No unlisted loader/version support claims.
 - No branch sprawl as a substitute for planning.
