@@ -1,8 +1,6 @@
 # Security Policy
 
-GradleMC is a local Minecraft diagnostics mod. Most problems will be bugs, crashes, bad configs, mod conflicts, or support workflow issues. Annoying, yes. Security issues, usually no.
-
-Security reports are for risks that could harm players, server owners, maintainers, or the project distribution chain.
+GradleMC is a local Minecraft diagnostics mod. Most reports are normal bugs, crashes, bad configs, mod conflicts, or documentation issues. Security reports are for risks affecting users, maintainers, project distribution, or release integrity.
 
 ---
 
@@ -11,16 +9,18 @@ Security reports are for risks that could harm players, server owners, maintaine
 | Version / target | Security support |
 | --- | --- |
 | GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
+| GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | Current public support target |
-| Future `1.0.x` Forge, Fabric, or Quilt `1.20.1` releases | Supported after release |
-| NeoForge, Bedrock, or other Minecraft versions | Not supported until actually implemented and released |
+| Future `1.0.x` releases for listed supported targets | Supported after release |
+| NeoForge, Bedrock, or unlisted loader/version combinations | Not supported until actually implemented and released |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
 
 Current expected release artifacts:
 
 ```text
 gradlemc-1.0.2-forge-1.20.1.jar
+gradlemc-fabric-26.1.2-1.0.0.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
 gradlemc-quilt-1.20.1-1.0.0.jar
 ```
@@ -33,10 +33,8 @@ Open a GitHub issue if you find or suspect:
 
 - fake GradleMC downloads, mirrors, installers, or jar files;
 - tampered files pretending to be official GradleMC releases;
-- malicious links in issues, comments, documentation, release notes, or project pages;
-- accidental exposure of tokens, passwords, private server addresses, credentials, or private files;
-- project files that could mislead users into unsafe installation behavior;
-- unsafe instructions that encourage broad private-file scanning, full-folder dumping, or unsupported redistribution;
+- project links or documentation that could mislead users;
+- accidental exposure of sensitive project or user information;
 - supply-chain concerns around release references, build artifacts, attribution, dependency metadata, or license scope.
 
 Bring evidence: links, filenames, hashes if available, screenshots if useful, where you found the problem, and what made it suspicious.
@@ -68,25 +66,13 @@ For reports that are safe to discuss publicly, use GitHub Issues:
 
 - https://github.com/SoumyajitXD/GradleMC/issues
 
-Do **not** publicly post secrets, tokens, passwords, private server IPs, private logs, credentials, or anything that would make the situation worse by being indexed forever.
-
-If a report contains sensitive details, redact the sensitive parts before posting.
+Avoid posting sensitive details publicly. Redact anything private before sharing logs, reports, or screenshots.
 
 ---
 
 ## Logs, Reports, And Privacy
 
-GradleMC tries to avoid broad private-file scans, full logs, crash reports, full config folders, mod jars, and full mods-folder dumps by default. Even so, logs and exported reports can still contain:
-
-- usernames;
-- local file paths;
-- mod names;
-- Java details;
-- server addresses;
-- runtime context;
-- private modpack or server information.
-
-Review files before posting them publicly. Evidence is useful. Accidentally exposing yourself is not a feature.
+Logs and exported reports can include local paths, mod names, Java details, loader details, runtime context, and server or modpack information. Review files before posting them publicly.
 
 ---
 
