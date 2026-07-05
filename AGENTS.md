@@ -13,22 +13,25 @@ If instructions conflict, follow the active user task unless it would cause data
 - Project: GradleMC.
 - Product name: GradleMC.
 - Purpose: in-game diagnostics and stability checking for Minecraft modpacks.
-- Current public targets: Minecraft Java Edition `1.20.1` on Forge, Fabric, and Quilt.
-- Current Forge public release line: `1.0.2`.
-- Current Fabric public release line: `1.0.0`.
-- Current Quilt public release line: `1.0.0`.
+- Current public targets: Minecraft Java Edition `1.20.1` on Forge, Fabric, and Quilt, plus Minecraft Java Edition `26.1.2` on Fabric.
+- Current Forge public release line: `1.0.2` for Minecraft `1.20.1`.
+- Current Fabric public release line: `1.0.0` for Minecraft `1.20.1` and `26.1.2`.
+- Current Quilt public release line: `1.0.0` for Minecraft `1.20.1`.
 - Forge artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
-- Fabric artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
+- Fabric `26.1.2` artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
+- Fabric `1.20.1` artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - Quilt artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
-- Java: `17`.
+- Java: `17` for the `1.20.1` builds; `25` for the Fabric `26.1.2` build.
 - Mod ID: `gradlemc`.
 - Main package: `com.soumyajit.gradlemc`.
-- Main mod class: `com.soumyajit.gradlemc.GradleMC`.
+- Main mod class for the Forge `1.20.1` project: `com.soumyajit.gradlemc.GradleMC`.
 - License: Apache-2.0.
 
 GradleMC includes lowercase `/gradlemc` commands, a client diagnostics GUI, a configurable GUI keybind, optional disabled-by-default stats overlay, local reports, local risk rules, Smart Diagnostics, bounded performance/FPS/worldgen diagnostics, profiler foundations, and adaptive diagnostics.
 
 Forge `1.0.2` is a Forge `1.20.1` hotfix release for `gradlemc-1.0.2-forge-1.20.1.jar`. Its public release note is narrow: it fixes the Quick Actions tab overlay issue. Do not inflate it into a fake feature release. That is how docs become fan fiction with markdown.
+
+Fabric `26.1.2` `1.0.0` is a Fabric release for `gradlemc-fabric-26.1.2-1.0.0.jar`. Treat it as a real public target and keep Java `25` attached to that target.
 
 Quilt `1.0.0` is a Quilt `1.20.1` release for `gradlemc-quilt-1.20.1-1.0.0.jar`. Treat it as a real public target, not a half-supported ghost target.
 
@@ -46,6 +49,7 @@ Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems
 | `GradleMC/Forge/Minecraft 1.20.1/gradle.properties` | Minecraft, Forge, mod, and artifact metadata for the local source build. |
 | `GradleMC/Forge/Minecraft 1.20.1/build.gradle` | ForgeGradle build. |
 | `GradleMC/Fabric/Minecraft 1.20.1/` | Current standalone Fabric `1.20.1` source project. |
+| `GradleMC/Fabric/Minecraft 26.1.2/` | Current standalone Fabric `26.1.2` source project. |
 | `GradleMC/Quilt/Minecraft 1.20.1/` | Current standalone Quilt `1.20.1` source project. |
 | `Screenshots/` | Committed screenshot assets, currently `0.png` through `13.png`. |
 | `docs/SCREENSHOTS.md` | Full screenshot gallery. |
@@ -66,8 +70,8 @@ Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the cu
 - Correct GUI command: `/gradlemc gui`.
 - Display name `GradleMC` is fine for titles, labels, logs, and prose. It is not fine as a Minecraft command root.
 - Preserve the `gradlemc` mod ID across source, metadata, resources, and docs.
-- Forge `1.20.1`, Fabric `1.20.1`, and Quilt `1.20.1` are the current public loader targets.
-- Do not imply NeoForge, Bedrock, or non-`1.20.1` support unless it is actually implemented, built, tested, documented, and named correctly.
+- Forge `1.20.1`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1` are the current public loader/version targets.
+- Do not imply NeoForge, Bedrock, or unlisted loader/version support unless it is actually implemented, built, tested, documented, and named correctly.
 - Do not create fake jars or placeholder support claims.
 - Do not migrate Minecraft, Forge, Fabric, Quilt, build tools, Gradle wrapper, Java, mappings, or loader targets without explicit user instruction.
 - Do not add LLMs, generative AI, cloud APIs, external ML systems, telemetry, analytics, or phone-home behavior.
@@ -82,10 +86,17 @@ Do not resurrect stale `SOURCE CODE/` paths. That folder was removed from the cu
 
 The public docs may describe the current public releases, while checked-in source projects have their own metadata files. Before building or publishing anything, read the loader-specific metadata.
 
-For the currently documented Forge source project, read:
+For the Forge `1.20.1` source project, read:
 
 ```text
 GradleMC/Forge/Minecraft 1.20.1/gradle.properties
+```
+
+For the Fabric `26.1.2` source project, read:
+
+```text
+GradleMC/Fabric/Minecraft 26.1.2/gradle.properties
+GradleMC/Fabric/Minecraft 26.1.2/src/main/resources/fabric.mod.json
 ```
 
 Check at least:
@@ -105,21 +116,28 @@ If source metadata, public docs, release notes, and artifact name disagree, stop
 
 Run commands from the relevant loader source folder.
 
-Forge:
+Forge `1.20.1`:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
 ./gradlew clean build gradlemcSelfTest
 ```
 
-Fabric:
+Fabric `1.20.1`:
 
 ```sh
 cd "GradleMC/Fabric/Minecraft 1.20.1"
 ./gradlew build
 ```
 
-Quilt:
+Fabric `26.1.2`:
+
+```sh
+cd "GradleMC/Fabric/Minecraft 26.1.2"
+./gradlew build
+```
+
+Quilt `1.20.1`:
 
 ```sh
 cd "GradleMC/Quilt/Minecraft 1.20.1"
@@ -132,6 +150,7 @@ Rules:
 
 - Run `./gradlew build` after Java/resource changes unless the user asks not to or the task is docs-only.
 - Run `./gradlew gradlemcSelfTest` after diagnostics, scoring, path, report, or utility changes where that task exists for the loader.
+- Use Java `17` for `1.20.1` release work and Java `25` for Fabric `26.1.2` release work.
 - For Fabric or Quilt work, run the equivalent loader build and verification commands from that loader source project.
 - Do not claim a build passed unless it was actually run and passed.
 - Do not claim runtime testing happened unless `runClient`, `runServer`, or equivalent testing was actually performed.
@@ -232,6 +251,7 @@ Rules:
 - Do not publish from a dirty mystery state.
 - Do not claim support for a target until the code, build, runtime check, docs, screenshots, and artifact naming all agree.
 - For Forge `1.0.2`, keep public wording honest: it is a Forge `1.20.1` hotfix for the Quick Actions tab overlay issue, not a broad compatibility or feature milestone.
+- For Fabric `26.1.2` `1.0.0`, keep public wording honest: it is a Fabric `26.1.2` release with artifact `gradlemc-fabric-26.1.2-1.0.0.jar` and Java `25`.
 - For Quilt `1.0.0`, keep public wording honest: it is a Quilt `1.20.1` release with artifact `gradlemc-quilt-1.20.1-1.0.0.jar`.
 
 If something is uncertain, say it clearly. Guessing in release docs is how users become unpaid QA.
