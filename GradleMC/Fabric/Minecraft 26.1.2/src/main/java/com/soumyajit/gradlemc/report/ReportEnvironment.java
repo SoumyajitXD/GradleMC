@@ -15,7 +15,7 @@ final class ReportEnvironment {
         return List.of(
                 "Product: " + GradleMC.PRODUCT_NAME,
                 "Version: " + modVersion(),
-                "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT,
+                "Variant: " + GradleMC.currentDisplayVariant(),
                 "Minecraft: " + SharedConstants.getCurrentVersion().name(),
                 "Loader: " + GradleMC.CURRENT_LOADER_NAME,
                 "Fabric Loader: " + loaderVersion(),

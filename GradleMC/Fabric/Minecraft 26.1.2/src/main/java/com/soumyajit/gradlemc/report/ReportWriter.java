@@ -43,7 +43,7 @@ public class ReportWriter {
         lines.add("-----------");
         lines.add("Product: " + GradleMC.PRODUCT_NAME);
         lines.add("Version: " + modVersion());
-        lines.add("Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT);
+        lines.add("Variant: " + GradleMC.currentDisplayVariant());
         lines.add("Minecraft: " + SharedConstants.getCurrentVersion().name());
         lines.add("Loader: " + GradleMC.CURRENT_LOADER_NAME);
         lines.add("Fabric Loader: " + loaderVersion());

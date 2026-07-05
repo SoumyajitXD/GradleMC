@@ -362,7 +362,7 @@ public final class GradleMcCommands {
         send(source, "GradleMC status:");
         send(source, "Product: " + GradleMC.PRODUCT_NAME);
         send(source, "Version: " + gradleMcVersion());
-        send(source, "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT);
+        send(source, "Variant: " + GradleMC.currentDisplayVariant());
         send(source, "Reports: " + enabledLabel(GradleMCConfig.REPORTS_ENABLED.get())
                 + ", rule checks: " + enabledLabel(GradleMCConfig.ENABLE_RULE_CHECKS.get())
                 + ", smart diagnostics: " + enabledLabel(GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()));
@@ -384,10 +384,10 @@ public final class GradleMcCommands {
     }
 
     private static int showVersion(CommandSourceStack source) {
-        send(source, GradleMC.PRODUCT_NAME + " v" + gradleMcVersion() + " - " + GradleMC.CURRENT_DISPLAY_VARIANT);
+        send(source, GradleMC.PRODUCT_NAME + " v" + gradleMcVersion() + " - " + GradleMC.currentDisplayVariant());
         send(source, "Product: " + GradleMC.PRODUCT_NAME);
         send(source, "Version: " + gradleMcVersion());
-        send(source, "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT);
+        send(source, "Variant: " + GradleMC.currentDisplayVariant());
         send(source, "Minecraft: " + SharedConstants.getCurrentVersion().name());
         send(source, "Loader: " + GradleMC.CURRENT_LOADER_NAME);
         send(source, "Fabric Loader: " + FabricLoader.getInstance().getModContainer("fabricloader")

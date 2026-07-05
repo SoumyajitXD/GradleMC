@@ -17,10 +17,10 @@ public class JavaVersionCheck implements StabilityCheck {
     @Override
     public List<CheckResult> run(CheckContext context) {
         int feature = Runtime.version().feature();
-        Severity severity = feature >= 17 ? Severity.PASS : Severity.FAIL;
-        String suggestion = feature >= 17
-                ? "Java meets the Minecraft 1.20.1 baseline."
-                : "Run this modpack with Java 17 or newer.";
+        Severity severity = feature >= 25 ? Severity.PASS : Severity.FAIL;
+        String suggestion = feature >= 25
+                ? "Java meets the Minecraft 26.1.2 baseline."
+                : "Run this modpack with Java 25 or newer.";
         return List.of(CheckResult.of(
                 severity,
                 CheckCategory.JAVA,

@@ -126,7 +126,7 @@ public class IssueBundleExporter {
         RuntimeSnapshots.MemorySnapshot memory = RuntimeSnapshots.memory();
         return "Product: " + GradleMC.PRODUCT_NAME + "\n"
                 + "Version: " + modVersion() + "\n"
-                + "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT + "\n"
+                + "Variant: " + GradleMC.currentDisplayVariant() + "\n"
                 + "Minecraft: " + SharedConstants.getCurrentVersion().name() + "\n"
                 + "Loader: " + GradleMC.CURRENT_LOADER_NAME + "\n"
                 + "Fabric Loader: " + loaderVersion() + "\n"
