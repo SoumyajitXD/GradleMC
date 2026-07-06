@@ -46,13 +46,13 @@ Before publishing or replacing the jar, verify with the actual built artifact:
 ## Tooling notes
 
 - Uses `net.fabricmc.fabric-loom` with the `26.1.x` unobfuscated setup.
-- Uses standard Gradle `implementation` dependencies for Fabric Loader and Fabric API.
+- Uses standard Gradle dependencies for Fabric Loader and Fabric API.
 - Uses Java `25` source/target compatibility and Gradle `9.5.1`.
-- Fabric Loader `0.19.3` was selected because Fabric Meta reports it as a stable loader compatible with Minecraft `26.1.2`.
-- Fabric API `0.154.0+26.1.2` was selected because it is a `26.1.2`-compatible artifact already present in the `26.1.2` starter metadata and resolves from Fabric Maven.
+- Fabric Loader `0.19.3` is the selected loader for this port.
+- Fabric API `0.154.0+26.1.2` is the selected Fabric API artifact for this port.
 
 ## Known limits
 
 - This port preserves the GradleMC Fabric `1.20.1` diagnostics, GUI, keybinds, reports, profiling, and mod inspection behavior as far as the `26.1.2` APIs allow.
 - Client launch should be run with Java `25`.
-- This README does not claim NeoForge, Bedrock, Quilt `26.1.2`, Forge `26.1.2`, or any unlisted target.
+- This README does not claim NeoForge, Bedrock, Quilt `26.1.2`, or any unlisted target.
