@@ -8,6 +8,7 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 
 | Loader | Version | Minecraft | Java | Artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
+| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge target `26.1.2-64.0.11`; Forge `26.1.2` release |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
@@ -16,7 +17,7 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 Current public focus:
 
 - stable Forge, Fabric, and Quilt `1.20.1` diagnostics;
-- stable Fabric `26.1.2` diagnostics;
+- stable Forge and Fabric `26.1.2` diagnostics;
 - trustworthy reports;
 - clean GUI and command UX;
 - bounded local performance and profiler evidence;
@@ -24,6 +25,24 @@ Current public focus:
 - adaptive diagnostics correctness;
 - screenshot-backed README and docs;
 - release and CI discipline.
+
+---
+
+## Released: Forge `26.1.2` `1.0.0`
+
+`1.0.0` is the current public Forge `26.1.2` release.
+
+Release-surface goals:
+
+- treat Forge `26.1.2` as a real public target, not a roadmap entry with a fake mustache;
+- keep Forge `26.1.2` artifact naming exact: `gradlemc-forge-26.1.2-1.0.0.jar`;
+- keep Forge target metadata documented as `26.1.2-64.0.11`;
+- keep Java `25` documented for this target;
+- keep command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
+- keep profiler wording bounded and honest;
+- keep CurseForge and GitHub docs synced;
+- use only real screenshots captured from supported builds.
 
 ---
 
@@ -66,8 +85,8 @@ Release-surface goals:
 
 Release-surface goals:
 
-- keep Forge support claims locked to Forge `1.20.1`;
-- keep Forge artifact naming exact: `gradlemc-1.0.2-forge-1.20.1.jar`;
+- keep Forge `1.20.1` support claims locked to Forge `1.20.1`;
+- keep Forge `1.20.1` artifact naming exact: `gradlemc-1.0.2-forge-1.20.1.jar`;
 - document the real hotfix scope: Quick Actions tab overlay fix;
 - keep command examples lowercase;
 - keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
@@ -164,7 +183,7 @@ Each item needs testing. A cool idea is not a release criterion.
 
 Possible future targets belong behind gates:
 
-- newer Forge versions;
+- additional Forge targets beyond the currently released `1.20.1` and `26.1.2` builds;
 - newer Quilt versions;
 - NeoForge candidates;
 - later Minecraft versions;
