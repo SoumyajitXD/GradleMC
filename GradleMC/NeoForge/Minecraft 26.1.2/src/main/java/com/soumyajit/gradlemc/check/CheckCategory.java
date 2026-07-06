@@ -2,7 +2,7 @@ package com.soumyajit.gradlemc.check;
 
 public enum CheckCategory {
     JAVA,
-    FORGE,
+    LOADER,
     MODS,
     CONFIG,
     PERFORMANCE,

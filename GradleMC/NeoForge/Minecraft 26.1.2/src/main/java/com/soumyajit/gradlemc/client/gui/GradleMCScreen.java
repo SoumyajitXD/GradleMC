@@ -135,26 +135,34 @@ public class GradleMCScreen extends Screen {
 
     private void buildQuickActionWidgets(int x, int y, int width) {
         GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
-        int col = Math.max(112, (width - GAP * 2) / 3);
-        int rowY = y;
-        addCommandButton("screen.gradlemc.action.status", "gradlemc status", x, rowY, col, "screen.gradlemc.tooltip.status");
-        addCommandButton("screen.gradlemc.action.memory", "gradlemc memory", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.memory");
-        addCommandButton("screen.gradlemc.action.smart_score", "gradlemc smart score", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.smart_score");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.action.smart_advice", "gradlemc smart advice", x, rowY, col, "screen.gradlemc.tooltip.smart_advice");
-        addCommandButton("screen.gradlemc.action.smart_explain", "gradlemc smart explain", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.smart_explain");
-        addCommandButton("screen.gradlemc.action.ai_status", "gradlemc ai status", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.ai_status");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.action.mods_count", "gradlemc mods count", x, rowY, col, "screen.gradlemc.tooltip.mods_count");
-        addCommandButton("screen.gradlemc.action.export", "gradlemc export", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.export");
-        addCommandButton("screen.gradlemc.action.issue_bundle", "gradlemc issuebundle create", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.issue_bundle");
-        rowY += BUTTON_HEIGHT + GAP;
+        GridSpec grid = grid(width, 3, 88);
+        boolean compact = grid.columnWidth() < 112;
+        int item = 0;
+        addQuickCommandButton("screen.gradlemc.action.status", "Status", compact, "gradlemc status", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.status");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.memory", "Memory", compact, "gradlemc memory", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.memory");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.smart_score", "Score", compact, "gradlemc smart score", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.smart_score");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.smart_advice", "Advice", compact, "gradlemc smart advice", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.smart_advice");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.smart_explain", "Explain", compact, "gradlemc smart explain", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.smart_explain");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.ai_status", "AI State", compact, "gradlemc ai status", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.ai_status");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.mods_count", "Mods", compact, "gradlemc mods count", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.mods_count");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.export", "Export", compact, "gradlemc export", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.export");
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.issue_bundle", "Bundle", compact, "gradlemc issuebundle create", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.issue_bundle");
+        item++;
 
-        EditBox modSearch = new EditBox(font, x, rowY, col, BUTTON_HEIGHT, Component.translatable("screen.gradlemc.input.mod_search"));
+        EditBox modSearch = new EditBox(font, gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT, Component.translatable("screen.gradlemc.input.mod_search"));
         modSearch.setValue(modSearchText);
         modSearch.setResponder(value -> modSearchText = value);
         modSearch.setHint(Component.translatable("screen.gradlemc.input.mod_search"));
         addRenderableWidget(modSearch);
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.search"), button -> {
                     String query = modSearchText.trim();
                     if (query.isEmpty()) {
@@ -163,130 +171,145 @@ public class GradleMCScreen extends Screen {
                         runServerCommand("gradlemc mods search " + query);
                     }
                 })
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.mod_search")))
                 .build());
-        addCommandButton("screen.gradlemc.action.latest_report", "gradlemc reports latest", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.latest_report");
-        rowY += BUTTON_HEIGHT + GAP;
+        item++;
+        addQuickCommandButton("screen.gradlemc.action.latest_report", "Latest", compact, "gradlemc reports latest", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.latest_report");
+        item++;
 
-        addRenderableWidget(Button.builder(Component.literal("Entities: " + entityRadius), button -> {
+        addRenderableWidget(Button.builder(Component.literal((compact ? "Ent: " : "Entities: ") + entityRadius), button -> {
                     entityRadius = nextRadius(entityRadius);
                     rebuildGuiWidgets();
-                }).bounds(x, rowY, col, BUTTON_HEIGHT)
+                }).bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_entities"), button -> runServerCommand("gradlemc entities " + entityRadius))
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+        item++;
+        addRenderableWidget(Button.builder(quickLabel("screen.gradlemc.action.scan_entities", "Scan Ent", compact), button -> runServerCommand("gradlemc entities " + entityRadius))
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.entities")))
                 .build());
-        addRenderableWidget(Button.builder(Component.literal("Block entities: " + blockEntityRadius), button -> {
+        item++;
+        addRenderableWidget(Button.builder(Component.literal((compact ? "Block: " : "Block entities: ") + blockEntityRadius), button -> {
                     blockEntityRadius = nextRadius(blockEntityRadius);
                     rebuildGuiWidgets();
-                }).bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                }).bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
-        rowY += BUTTON_HEIGHT + GAP;
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_block_entities"), button -> runServerCommand("gradlemc blockentities " + blockEntityRadius))
-                .bounds(x, rowY, col, BUTTON_HEIGHT)
+        item++;
+        addRenderableWidget(Button.builder(quickLabel("screen.gradlemc.action.scan_block_entities", "Scan Block", compact), button -> runServerCommand("gradlemc blockentities " + blockEntityRadius))
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.block_entities")))
                 .build());
-        addDurationButton("FPS", x + col + GAP, rowY, col, true);
-        Button startFps = Button.builder(Component.translatable("screen.gradlemc.action.start_selected_fps"), button -> startFps(selectedFpsDuration))
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+        item++;
+        addDurationButton("FPS", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), true);
+        item++;
+        Button startFps = Button.builder(quickLabel("screen.gradlemc.action.start_selected_fps", "Start FPS", compact), button -> startFps(selectedFpsDuration))
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.fps_start")))
                 .build();
         startFps.active = !state.fpsTestRunning();
         addRenderableWidget(startFps);
-        rowY += BUTTON_HEIGHT + GAP;
-        addDurationButton("Perf", x, rowY, col, false);
-        Button startPerf = commandButton(Component.translatable("screen.gradlemc.action.start_selected_perf"),
-                "gradlemc perf start " + selectedPerfDuration, x + col + GAP, rowY, col, "screen.gradlemc.tooltip.perf_start");
+        item++;
+        addDurationButton("Perf", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), false);
+        item++;
+        Button startPerf = commandButton(quickLabel("screen.gradlemc.action.start_selected_perf", "Start Perf", compact),
+                "gradlemc perf start " + selectedPerfDuration, gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.perf_start");
         startPerf.active = !state.performanceTestRunning();
         addRenderableWidget(startPerf);
-        addDurationButton("Worldgen", x + (col + GAP) * 2, rowY, col, false);
-        rowY += BUTTON_HEIGHT + GAP;
-        Button startWorldgen = commandButton(Component.translatable("screen.gradlemc.action.start_selected_worldgen"),
-                "gradlemc worldgen start " + selectedWorldgenDuration, x, rowY, col, "screen.gradlemc.tooltip.worldgen_start");
+        item++;
+        addDurationButton("Worldgen", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), false);
+        item++;
+        Button startWorldgen = commandButton(quickLabel("screen.gradlemc.action.start_selected_worldgen", "Start WG", compact),
+                "gradlemc worldgen start " + selectedWorldgenDuration, gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.worldgen_start");
         startWorldgen.active = !state.worldgenObservationRunning();
         addRenderableWidget(startWorldgen);
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.open_folder"), button -> openOutputFolder())
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+        item++;
+        addRenderableWidget(Button.builder(quickLabel("screen.gradlemc.action.open_folder", "Folder", compact), button -> openOutputFolder())
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.open_folder")))
                 .build());
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.copy_latest_path"), button -> copyLatestPath())
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+        item++;
+        addRenderableWidget(Button.builder(quickLabel("screen.gradlemc.action.copy_latest_path", "Copy Path", compact), button -> copyLatestPath())
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.copy_path")))
                 .build());
-        markWidgetContentBottom(rowY);
+        item++;
+        markWidgetContentBottom(gridLastRowY(y, grid, item));
     }
 
     private void buildTestWidgets(int x, int y, int width) {
         GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
-        int col = Math.max(106, (width - GAP * 3) / 4);
-        int rowY = y;
+        GridSpec grid = grid(width, 4, 106);
+        int item = 0;
         for (int duration : DURATIONS) {
             Button button = Button.builder(Component.literal(duration + "s FPS"), ignored -> startFps(duration))
-                    .bounds(x + (durationIndex(duration, DURATIONS) * (col + GAP)), rowY, col, BUTTON_HEIGHT)
+                    .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                     .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.fps_start")))
                     .build();
             button.active = !state.fpsTestRunning();
             addRenderableWidget(button);
+            item++;
         }
-        rowY += BUTTON_HEIGHT + GAP;
         for (int duration : DURATIONS) {
             Button button = commandButton(Component.literal(duration + "s perf"), "gradlemc perf start " + duration,
-                    x + (durationIndex(duration, DURATIONS) * (col + GAP)), rowY, col, "screen.gradlemc.tooltip.perf_start");
+                    gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.perf_start");
             button.active = !state.performanceTestRunning();
             addRenderableWidget(button);
+            item++;
         }
-        rowY += BUTTON_HEIGHT + GAP;
         for (int duration : WORLDGEN_DURATIONS) {
             Button button = commandButton(Component.literal(duration + "s worldgen"), "gradlemc worldgen start " + duration,
-                    x + (durationIndex(duration, WORLDGEN_DURATIONS) * (col + GAP)), rowY, col, "screen.gradlemc.tooltip.worldgen_start");
+                    gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.worldgen_start");
             button.active = !state.worldgenObservationRunning();
             addRenderableWidget(button);
+            item++;
         }
-        rowY += BUTTON_HEIGHT + GAP;
         Button stopFps = Button.builder(Component.translatable("screen.gradlemc.action.stop_fps"), ignored -> {
             FpsTestManager.stopFromClient();
             rebuildGuiWidgets();
-        }).bounds(x, rowY, col, BUTTON_HEIGHT).build();
+        }).bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT).build();
         stopFps.active = state.fpsTestRunning();
         addRenderableWidget(stopFps);
-        Button stopPerf = commandButton(Component.translatable("screen.gradlemc.action.stop_perf"), "gradlemc perf stop", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.stop");
+        item++;
+        Button stopPerf = commandButton(Component.translatable("screen.gradlemc.action.stop_perf"), "gradlemc perf stop", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.stop");
         stopPerf.active = state.performanceTestRunning();
         addRenderableWidget(stopPerf);
-        Button stopWorldgen = commandButton(Component.translatable("screen.gradlemc.action.stop_worldgen"), "gradlemc worldgen stop", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.stop");
+        item++;
+        Button stopWorldgen = commandButton(Component.translatable("screen.gradlemc.action.stop_worldgen"), "gradlemc worldgen stop", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.stop");
         stopWorldgen.active = state.worldgenObservationRunning();
         addRenderableWidget(stopWorldgen);
-        markWidgetContentBottom(rowY);
+        item++;
+        markWidgetContentBottom(gridLastRowY(y, grid, item));
     }
 
     private void buildProfilerWidgets(int x, int y, int width) {
-        int col = Math.max(112, (width - GAP * 2) / 3);
-        int rowY = y;
+        GridSpec grid = grid(width, 3, 112);
+        int item = 0;
         addRenderableWidget(Button.builder(Component.literal("Mode: " + profilerMode()), button -> {
                     selectedProfilerModeIndex = (selectedProfilerModeIndex + 1) % PROFILER_MODES.length;
                     rebuildGuiWidgets();
                 })
-                .bounds(x, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.mode")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.literal("Duration: " + selectedProfilerDuration + "s"), button -> {
                     selectedProfilerDuration = nextOf(selectedProfilerDuration, PROFILER_DURATIONS);
                     rebuildGuiWidgets();
                 })
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.duration")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.literal("Interval: " + selectedProfilerInterval + "ms"), button -> {
                     selectedProfilerInterval = nextOf(selectedProfilerInterval, PROFILER_INTERVALS);
                     rebuildGuiWidgets();
                 })
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.interval")))
                 .build());
-        rowY += BUTTON_HEIGHT + GAP;
+        item++;
         addRenderableWidget(Button.builder(Component.literal("Thread: " + profilerThreadLabel()), button -> {
                     selectedProfilerThreadIndex = (selectedProfilerThreadIndex + 1) % PROFILER_THREADS.length;
                     profilerThreadPattern = switch (PROFILER_THREADS[selectedProfilerThreadIndex]) {
@@ -297,26 +320,28 @@ public class GradleMCScreen extends Screen {
                     };
                     rebuildGuiWidgets();
                 })
-                .bounds(x, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.thread")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.literal("Slow tick: " + selectedProfilerThreshold + "ms"), button -> {
                     selectedProfilerThreshold = nextOf(selectedProfilerThreshold, PROFILER_THRESHOLDS);
                     rebuildGuiWidgets();
                 })
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.threshold")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.literal("Slow-only: " + onOff(profilerOnlySlowTicks)), button -> {
                     profilerOnlySlowTicks = !profilerOnlySlowTicks;
                     rebuildGuiWidgets();
                 })
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.slow_only")))
                 .build());
-        rowY += BUTTON_HEIGHT + GAP;
+        item++;
         if ("custom".equals(PROFILER_THREADS[selectedProfilerThreadIndex])) {
-            EditBox threadPattern = new EditBox(font, x, rowY, col, BUTTON_HEIGHT, Component.literal("Thread pattern"));
+            EditBox threadPattern = new EditBox(font, gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT, Component.literal("Thread pattern"));
             threadPattern.setValue(profilerThreadPattern);
             threadPattern.setResponder(value -> profilerThreadPattern = value);
             threadPattern.setHint(Component.literal("thread pattern"));
@@ -326,87 +351,109 @@ public class GradleMCScreen extends Screen {
                         profilerIncludeSleeping = !profilerIncludeSleeping;
                         rebuildGuiWidgets();
                     })
-                    .bounds(x, rowY, col, BUTTON_HEIGHT)
+                    .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                     .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.sleeping")))
                     .build());
         }
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.profiler.start"), button -> runServerCommand(profilerStartCommand()))
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.start")))
                 .build());
-        addCommandButton("screen.gradlemc.profiler.status", "gradlemc profiler status", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.profiler.tooltip.status");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.profiler.stop", "gradlemc profiler stop", x, rowY, col, "screen.gradlemc.profiler.tooltip.stop");
-        addCommandButton("screen.gradlemc.profiler.cancel", "gradlemc profiler cancel", x + col + GAP, rowY, col, "screen.gradlemc.profiler.tooltip.cancel");
-        addCommandButton("screen.gradlemc.profiler.summary", "gradlemc profiler summary", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.profiler.tooltip.summary");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.profiler.latest", "gradlemc profiler latest", x, rowY, col, "screen.gradlemc.profiler.tooltip.latest");
+        item++;
+        addCommandButton("screen.gradlemc.profiler.status", "gradlemc profiler status", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.profiler.tooltip.status");
+        item++;
+        addCommandButton("screen.gradlemc.profiler.stop", "gradlemc profiler stop", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.profiler.tooltip.stop");
+        item++;
+        addCommandButton("screen.gradlemc.profiler.cancel", "gradlemc profiler cancel", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.profiler.tooltip.cancel");
+        item++;
+        addCommandButton("screen.gradlemc.profiler.summary", "gradlemc profiler summary", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.profiler.tooltip.summary");
+        item++;
+        addCommandButton("screen.gradlemc.profiler.latest", "gradlemc profiler latest", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.profiler.tooltip.latest");
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.profiler.open_folder"), button -> openProfilesFolder())
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.open")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.profiler.copy_path"), button -> copyLatestProfilePath())
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.copy_path")))
                 .build());
-        markWidgetContentBottom(rowY);
+        item++;
+        markWidgetContentBottom(gridLastRowY(y, grid, item));
     }
 
     private void buildReportWidgets(int x, int y, int width) {
-        int col = Math.max(120, (width - GAP * 2) / 3);
-        addCommandButton("screen.gradlemc.action.view_summary", "gradlemc reports latest", x, y, col, "screen.gradlemc.tooltip.latest_report");
+        GridSpec grid = grid(width, 3, 120);
+        int item = 0;
+        addCommandButton("screen.gradlemc.action.view_summary", "gradlemc reports latest", gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), "screen.gradlemc.tooltip.latest_report");
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.copy_path"), button -> copyLatestPath())
-                .bounds(x + col + GAP, y, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.copy_path")))
                 .build());
+        item++;
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.open_folder"), button -> openOutputFolder())
-                .bounds(x + (col + GAP) * 2, y, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.open_folder")))
                 .build());
-        markWidgetContentBottom(y);
+        item++;
+        markWidgetContentBottom(gridLastRowY(y, grid, item));
     }
 
     private void buildSettingWidgets(int x, int y, int width) {
-        int col = Math.max(120, (width - GAP * 2) / 3);
-        int rowY = y;
+        GridSpec grid = grid(width, 3, 120);
+        int item = 0;
         addSettingButton(toggleLabel("screen.gradlemc.setting.overlay_enabled", GradleMCConfig.OVERLAY_ENABLED.get()),
-                () -> OverlayConfigActions.toggleEnabled(), x, rowY, col);
-        addSettingButton(Component.literal("Mode: " + modeLabel()), () -> OverlayConfigActions.toggleMode(), x + col + GAP, rowY, col);
-        addSettingButton(Component.literal("Position: " + positionLabel()), () -> OverlayConfigActions.cyclePosition(), x + (col + GAP) * 2, rowY, col);
-        rowY += BUTTON_HEIGHT + GAP;
+                () -> OverlayConfigActions.toggleEnabled(), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
+        addSettingButton(Component.literal("Mode: " + modeLabel()), () -> OverlayConfigActions.toggleMode(), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
+        addSettingButton(Component.literal("Position: " + positionLabel()), () -> OverlayConfigActions.cyclePosition(), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.fps", GradleMCConfig.OVERLAY_SHOW_FPS.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_FPS, !GradleMCConfig.OVERLAY_SHOW_FPS.get()), x, rowY, col);
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_FPS, !GradleMCConfig.OVERLAY_SHOW_FPS.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.one_percent_low", GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW, !GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()), x + col + GAP, rowY, col);
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW, !GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.point_one_low", GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW, !GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get()), x + (col + GAP) * 2, rowY, col);
-        rowY += BUTTON_HEIGHT + GAP;
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW, !GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.jvm_memory", GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY, !GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()), x, rowY, col);
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY, !GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.system_memory", GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY, !GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY.get()), x + col + GAP, rowY, col);
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY, !GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.cpu", GradleMCConfig.OVERLAY_SHOW_CPU.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_CPU, !GradleMCConfig.OVERLAY_SHOW_CPU.get()), x + (col + GAP) * 2, rowY, col);
-        rowY += BUTTON_HEIGHT + GAP;
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_CPU, !GradleMCConfig.OVERLAY_SHOW_CPU.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.gpu_name", GradleMCConfig.OVERLAY_SHOW_GPU_NAME.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_GPU_NAME, !GradleMCConfig.OVERLAY_SHOW_GPU_NAME.get()), x, rowY, col);
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_SHOW_GPU_NAME, !GradleMCConfig.OVERLAY_SHOW_GPU_NAME.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         Button gpuUsage = Button.builder(Component.literal("GPU usage: unavailable"), button -> {
                 })
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.settings.gpu_note")))
                 .build();
         gpuUsage.active = false;
         addRenderableWidget(gpuUsage);
+        item++;
         addSettingButton(toggleLabel("screen.gradlemc.setting.background", GradleMCConfig.OVERLAY_BACKGROUND_ENABLED.get()),
-                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_BACKGROUND_ENABLED, !GradleMCConfig.OVERLAY_BACKGROUND_ENABLED.get()), x + (col + GAP) * 2, rowY, col);
-        rowY += BUTTON_HEIGHT + GAP;
+                () -> OverlayConfigActions.setBoolean(GradleMCConfig.OVERLAY_BACKGROUND_ENABLED, !GradleMCConfig.OVERLAY_BACKGROUND_ENABLED.get()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(Component.literal("Scale: " + String.format(Locale.ROOT, "%.2f", GradleMCConfig.OVERLAY_SCALE.get())),
-                () -> OverlayConfigActions.setScale(nextScale()), x, rowY, col);
+                () -> OverlayConfigActions.setScale(nextScale()), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(Component.literal("Window: " + GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get() + "s"),
-                () -> OverlayConfigActions.setSamplingWindow(nextOf(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get(), new int[]{30, 60, 120})), x + col + GAP, rowY, col);
+                () -> OverlayConfigActions.setSamplingWindow(nextOf(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get(), new int[]{30, 60, 120})), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
         addSettingButton(Component.literal("Update: " + GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get() + "ms"),
-                () -> OverlayConfigActions.setUpdateInterval(nextOf(GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get(), new int[]{250, 500, 1000})), x + (col + GAP) * 2, rowY, col);
-        markWidgetContentBottom(rowY);
+                () -> OverlayConfigActions.setUpdateInterval(nextOf(GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get(), new int[]{250, 500, 1000})), gridX(x, grid, item), gridY(y, grid, item), grid.columnWidth());
+        item++;
+        markWidgetContentBottom(gridLastRowY(y, grid, item));
     }
 
     private void markWidgetContentBottom(int rowY) {
@@ -425,6 +472,14 @@ public class GradleMCScreen extends Screen {
 
     private void addCommandButton(String labelKey, String command, int x, int y, int width, String tooltipKey) {
         addRenderableWidget(commandButton(Component.translatable(labelKey), command, x, y, width, tooltipKey));
+    }
+
+    private void addQuickCommandButton(String labelKey, String compactLabel, boolean compact, String command, int x, int y, int width, String tooltipKey) {
+        addRenderableWidget(commandButton(quickLabel(labelKey, compactLabel, compact), command, x, y, width, tooltipKey));
+    }
+
+    private Component quickLabel(String labelKey, String compactLabel, boolean compact) {
+        return compact ? Component.literal(compactLabel) : Component.translatable(labelKey);
     }
 
     private Button commandButton(Component label, String command, int x, int y, int width, String tooltipKey) {
@@ -449,6 +504,27 @@ public class GradleMCScreen extends Screen {
                 .bounds(x, y, width, BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.duration")))
                 .build());
+    }
+
+    private GridSpec grid(int width, int preferredColumns, int minColumnWidth) {
+        int columns = Math.max(1, Math.min(preferredColumns, (width + GAP) / (minColumnWidth + GAP)));
+        int columnWidth = Math.max(64, (width - GAP * (columns - 1)) / columns);
+        return new GridSpec(columns, columnWidth);
+    }
+
+    private int gridX(int x, GridSpec grid, int itemIndex) {
+        return x + (itemIndex % grid.columns()) * (grid.columnWidth() + GAP);
+    }
+
+    private int gridY(int y, GridSpec grid, int itemIndex) {
+        return y + (itemIndex / grid.columns()) * (BUTTON_HEIGHT + GAP);
+    }
+
+    private int gridLastRowY(int y, GridSpec grid, int itemCount) {
+        if (itemCount <= 0) {
+            return y;
+        }
+        return gridY(y, grid, itemCount - 1);
     }
 
     @Override
@@ -964,6 +1040,9 @@ public class GradleMCScreen extends Screen {
         private int width() {
             return right - left;
         }
+    }
+
+    private record GridSpec(int columns, int columnWidth) {
     }
 
     private interface ContentLine {

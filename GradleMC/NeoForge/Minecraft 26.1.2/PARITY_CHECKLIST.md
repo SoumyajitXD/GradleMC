@@ -11,7 +11,7 @@ Implemented feature checklist:
 
 - `/gradlemc`: present through NeoForge `RegisterCommandsEvent` on `NeoForge.EVENT_BUS`.
 - `/gradlemc help`: lists GUI, status, checks, config/rules, adaptive diagnostics, reports, performance, worldgen, mods, entities, files, and profiler commands.
-- `/gradlemc version`: reports GradleMC `1.0.0`, loader `NeoForge`, Minecraft `26.1.2`, and NeoForge `26.1.2.77`.
+- `/gradlemc version`: reports GradleMC `1.0.0`, loader `NeoForge`, Minecraft `26.1.2`, and NeoForge `26.1.2.78`.
 - `/gradlemc gui`: server-safe command path sends a NeoForge client-bound payload to the player client.
 - Diagnostics GUI: present with overview, quick actions, tests, profiler, reports, adaptive diagnostics, settings, commands, and about sections.
 - GUI keybind: present through NeoForge `RegisterKeyMappingsEvent`; key translations are included.
