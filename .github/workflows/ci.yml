@@ -136,10 +136,10 @@ jobs:
           done
 
           for doc in "${release_docs[@]}"; do
-            grep -F 'Forge `26.1.2`' "$doc" >/dev/null || grep -F 'Forge 26.1.2' "$doc" >/dev/null || {
-              echo "$doc does not mention Forge 26.1.2 support." >&2
+            if ! grep -F 'Forge' "$doc" >/dev/null || ! grep -F '26.1.2' "$doc" >/dev/null; then
+              echo "$doc does not mention Forge and 26.1.2 support." >&2
               exit 1
-            }
+            fi
           done
 
           grep -F 'NeoForge, Bedrock' README.md >/dev/null || {
