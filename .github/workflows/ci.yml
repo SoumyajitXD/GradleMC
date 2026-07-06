@@ -146,7 +146,7 @@ jobs:
             echo "README.md must keep unsupported loader guardrails visible." >&2
             exit 1
           }
-          grep -F 'No telemetry' README.md >/dev/null || {
+          grep -F '| Telemetry | None |' README.md >/dev/null || {
             echo "README.md must keep privacy guardrails visible." >&2
             exit 1
           }
