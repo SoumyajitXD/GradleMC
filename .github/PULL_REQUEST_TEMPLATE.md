@@ -17,7 +17,7 @@ Describe what this PR changes and why.
 
 - [ ] I kept Minecraft command literals lowercase.
 - [ ] I did not claim unsupported loader or Minecraft-version support.
-- [ ] I treated Forge `1.20.1`, Fabric `1.20.1`, and Quilt `1.20.1` as the current public loader targets.
+- [ ] I treated Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1` as the current public loader targets.
 - [ ] I did not imply NeoForge, Bedrock, or future-version support unless it is fully implemented and verified.
 - [ ] I did not add telemetry, analytics, cloud AI, LLMs, generative AI, embeddings, or online inference.
 - [ ] I kept the change focused and avoided unrelated rewrites.
@@ -43,19 +43,21 @@ Paste the commands you ran:
 
 ```
 
-Suggested Forge source checks from `GradleMC/Forge/Minecraft 1.20.1/`:
+Suggested Forge `26.1.2` source check:
 
 ```sh
+cd "GradleMC/Forge/Minecraft 26.1.2"
+./gradlew clean build
+```
+
+Suggested Forge `1.20.1` source check:
+
+```sh
+cd "GradleMC/Forge/Minecraft 1.20.1"
 ./gradlew clean build gradlemcSelfTest
 ```
 
-Windows:
-
-```bat
-gradlew.bat clean build gradlemcSelfTest
-```
-
-For Fabric or Quilt source changes, run the equivalent loader build and verification tasks from that loader source project.
+For Fabric or Quilt source changes, run the matching loader build and verification tasks from that loader source project. Use Java `25` for Forge/Fabric `26.1.2` work and Java `17` for current `1.20.1` work.
 
 For docs-only changes, list the files reviewed and any screenshot links checked.
 
