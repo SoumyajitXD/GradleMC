@@ -1,5 +1,6 @@
 package com.soumyajit.gradlemc.client.gui;
 
+import com.soumyajit.gradlemc.GradleMC;
 import com.soumyajit.gradlemc.ai.SmartAIStatus;
 import com.soumyajit.gradlemc.client.FpsTestManager;
 import com.soumyajit.gradlemc.client.gui.model.GradleMCGuiState;
@@ -561,7 +562,8 @@ public class GradleMCScreen extends Screen {
         int y = layout.top() + 10;
         graphics.text(font, title, x, y, TEXT);
         graphics.text(font, Component.translatable("screen.gradlemc.subtitle"), x, y + 13, MUTED);
-        graphics.text(font, Component.translatable("screen.gradlemc.header.version", fallback(state.modVersion())), x, y + 27, DIM);
+        graphics.text(font, Component.literal(GradleMC.PRODUCT_NAME + " " + fallback(state.modVersion())
+                + " for " + GradleMC.CURRENT_DISPLAY_VARIANT), x, y + 27, DIM);
         if (layout.width() >= 500) {
             renderBadge(graphics, layout.right() - MARGIN - 130, y + 4,
                     Component.literal("Stability: ").append(technicalScore(state.guiStatus())),

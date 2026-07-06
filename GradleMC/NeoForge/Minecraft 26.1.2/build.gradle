@@ -18,6 +18,10 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
+sourceSets.main.java {
+    srcDir layout.buildDirectory.dir('generated/sources/gradlemcInfo/java')
+}
+
 repositories {
     mavenCentral()
 }
@@ -88,6 +92,44 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
         expand replaceProperties
     }
+}
+
+def generatedInfoDir = layout.buildDirectory.dir('generated/sources/gradlemcInfo/java/com/soumyajit/gradlemc')
+
+tasks.register('generateGradleMcInfo') {
+    inputs.properties([
+            product_name        : product_name,
+            mod_id              : mod_id,
+            minecraft_version   : minecraft_version,
+            loader_name         : loader_name,
+            variant_name        : variant_name,
+            display_variant_name: display_variant_name
+    ])
+    outputs.dir(generatedInfoDir)
+
+    doLast {
+        def outputDir = generatedInfoDir.get().asFile
+        outputDir.mkdirs()
+        def escape = { value -> String.valueOf(value).replace('\\', '\\\\').replace('"', '\\"') }
+        new File(outputDir, 'GeneratedGradleMCInfo.java').text = """package com.soumyajit.gradlemc;
+
+public final class GeneratedGradleMCInfo {
+    public static final String PRODUCT_NAME = "${escape(product_name)}";
+    public static final String MOD_ID = "${escape(mod_id)}";
+    public static final String LOADER_NAME = "${escape(loader_name)}";
+    public static final String MINECRAFT_VERSION = "${escape(minecraft_version)}";
+    public static final String VARIANT_ID = "${escape(variant_name)}";
+    public static final String DISPLAY_VARIANT = "${escape(display_variant_name)}";
+
+    private GeneratedGradleMCInfo() {
+    }
+}
+"""
+    }
+}
+
+tasks.named('compileJava', JavaCompile).configure {
+    dependsOn tasks.named('generateGradleMcInfo')
 }
 
 tasks.named('jar', Jar).configure {

@@ -24,12 +24,12 @@ import org.slf4j.Logger;
 
 @Mod(GradleMC.MOD_ID)
 public class GradleMC {
-    public static final String PRODUCT_NAME = "GradleMC";
-    public static final String MOD_ID = "gradlemc";
-    public static final String CURRENT_LOADER_NAME = "NeoForge";
-    public static final String CURRENT_MINECRAFT_VERSION = "26.1.2";
-    public static final String CURRENT_VARIANT_ID = "neoforge-26.1.2";
-    public static final String CURRENT_DISPLAY_VARIANT = "NeoForge 26.1.2";
+    public static final String PRODUCT_NAME = GeneratedGradleMCInfo.PRODUCT_NAME;
+    public static final String MOD_ID = GeneratedGradleMCInfo.MOD_ID;
+    public static final String CURRENT_LOADER_NAME = GeneratedGradleMCInfo.LOADER_NAME;
+    public static final String CURRENT_MINECRAFT_VERSION = GeneratedGradleMCInfo.MINECRAFT_VERSION;
+    public static final String CURRENT_VARIANT_ID = GeneratedGradleMCInfo.VARIANT_ID;
+    public static final String CURRENT_DISPLAY_VARIANT = GeneratedGradleMCInfo.DISPLAY_VARIANT;
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public GradleMC(IEventBus modEventBus, ModContainer modContainer) {
@@ -45,7 +45,7 @@ public class GradleMC {
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) -> GradleMcProfilerService.onServerTickStart(event));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> GradleMcProfilerService.onServerTickEnd(event));
         registerClientHooks(modEventBus);
-        LOGGER.info("GradleMC NeoForge 26.1.2 loaded");
+        LOGGER.info("{} {} loaded", PRODUCT_NAME, CURRENT_DISPLAY_VARIANT);
     }
 
     private static void registerClientHooks(IEventBus modEventBus) {
