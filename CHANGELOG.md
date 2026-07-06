@@ -10,6 +10,7 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 | Loader | Current public version | Minecraft | Java | Expected artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
+| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2` release; Forge target `26.1.2-64.0.11` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
@@ -28,6 +29,33 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 ### Documentation
 
 - Kept screenshot, release, and contribution docs aligned with the current public release surface.
+
+---
+
+## `1.0.0` - Forge `26.1.2`
+
+Published the Forge port for Minecraft Java Edition `26.1.2`.
+
+### Release identity
+
+- Release artifact: `gradlemc-forge-26.1.2-1.0.0.jar`.
+- Supported target: Forge `26.1.2`.
+- Forge coordinate: `26.1.2-64.0.11`.
+- Java target: `25`.
+- CurseForge Project ID remains `1585182`.
+
+### Documentation and publishing surface
+
+- Updated public GitHub docs so Forge `26.1.2` is no longer treated as an unsupported future target.
+- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, `docs/RELEASE_CHECKLIST.md`, `docs/SCREENSHOT_PLAN.md`, `.github/PULL_REQUEST_TEMPLATE.md`, the Forge `26.1.2` source README, and the repository CurseForge description source for the Forge `26.1.2` release.
+- Kept support claims limited to the explicitly listed public release targets: Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
+- Kept NeoForge, Bedrock, and all unlisted loader/version pairs out of current support claims.
+
+### Guardrails
+
+- The Forge `26.1.2` release is a real public target, not a roadmap placeholder with a jar name taped to its forehead.
+- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
+- Profiler features remain bounded local evidence tools, not Spark parity.
 
 ---
 
