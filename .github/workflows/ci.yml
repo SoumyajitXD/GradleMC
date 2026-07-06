@@ -215,35 +215,35 @@ jobs:
       matrix:
         include:
           - name: Forge 26.1.2
-            project-dir: GradleMC/Forge/Minecraft 26.1.2
+            project_dir: GradleMC/Forge/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected-artifact: gradlemc-forge-26.1.2-1.0.0.jar
-            metadata-kind: forge
+            expected_artifact: gradlemc-forge-26.1.2-1.0.0.jar
+            metadata_kind: forge
           - name: Forge 1.20.1
-            project-dir: GradleMC/Forge/Minecraft 1.20.1
+            project_dir: GradleMC/Forge/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
-            expected-artifact: gradlemc-1.0.2-forge-1.20.1.jar
-            metadata-kind: forge
+            expected_artifact: gradlemc-1.0.2-forge-1.20.1.jar
+            metadata_kind: forge
           - name: Fabric 26.1.2
-            project-dir: GradleMC/Fabric/Minecraft 26.1.2
+            project_dir: GradleMC/Fabric/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected-artifact: gradlemc-fabric-26.1.2-1.0.0.jar
-            metadata-kind: fabric
+            expected_artifact: gradlemc-fabric-26.1.2-1.0.0.jar
+            metadata_kind: fabric
           - name: Fabric 1.20.1
-            project-dir: GradleMC/Fabric/Minecraft 1.20.1
+            project_dir: GradleMC/Fabric/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected-artifact: gradlemc-fabric-1.20.1-1.0.0.jar
-            metadata-kind: fabric
+            expected_artifact: gradlemc-fabric-1.20.1-1.0.0.jar
+            metadata_kind: fabric
           - name: Quilt 1.20.1
-            project-dir: GradleMC/Quilt/Minecraft 1.20.1
+            project_dir: GradleMC/Quilt/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected-artifact: gradlemc-quilt-1.20.1-1.0.0.jar
-            metadata-kind: quilt
+            expected_artifact: gradlemc-quilt-1.20.1-1.0.0.jar
+            metadata_kind: quilt
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
@@ -255,14 +255,14 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: gradle
           cache-dependency-path: |
-            ${{ matrix.project-dir }}/**/*.gradle
-            ${{ matrix.project-dir }}/**/*.gradle.kts
-            ${{ matrix.project-dir }}/gradle.properties
-            ${{ matrix.project-dir }}/gradle/wrapper/gradle-wrapper.properties
+            ${{ matrix.project_dir }}/**/*.gradle
+            ${{ matrix.project_dir }}/**/*.gradle.kts
+            ${{ matrix.project_dir }}/gradle.properties
+            ${{ matrix.project_dir }}/gradle/wrapper/gradle-wrapper.properties
 
       - name: Prepare Gradle wrapper
         shell: bash
-        working-directory: ${{ matrix.project-dir }}
+        working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
           sed -i 's/\r$//' ./gradlew
@@ -296,7 +296,7 @@ jobs:
 
       - name: Validate source metadata
         shell: bash
-        working-directory: ${{ matrix.project-dir }}
+        working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
 
@@ -309,7 +309,7 @@ jobs:
           [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
           [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
 
-          case "${{ matrix.metadata-kind }}" in
+          case "${{ matrix.metadata_kind }}" in
             forge)
               mod_id="$(get_property mod_id)"
               loader_name="$(get_property loader_name)"
@@ -318,36 +318,36 @@ jobs:
               [[ "$mod_id" == "gradlemc" ]] || { echo "Unexpected Forge mod_id: $mod_id" >&2; exit 1; }
               [[ "$loader_name" == "forge" || "$loader_name" == "Forge" ]] || { echo "Unexpected Forge loader_name: $loader_name" >&2; exit 1; }
               [[ "$variant_name" == "forge-$minecraft_version" ]] || { echo "Unexpected Forge variant_name: $variant_name" >&2; exit 1; }
-              [[ "$artifact_name" == "${{ matrix.expected-artifact }}" ]] || { echo "Unexpected Forge artifact_name: $artifact_name" >&2; exit 1; }
+              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected Forge artifact_name: $artifact_name" >&2; exit 1; }
               ;;
             fabric|quilt)
               archives_base_name="$(get_property archives_base_name)"
               artifact_name="${archives_base_name}-${mod_version}.jar"
-              [[ "$artifact_name" == "${{ matrix.expected-artifact }}" ]] || { echo "Unexpected ${matrix.metadata-kind} artifact: $artifact_name" >&2; exit 1; }
+              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} artifact: $artifact_name" >&2; exit 1; }
               ;;
             *)
-              echo "Unknown metadata kind: ${{ matrix.metadata-kind }}" >&2
+              echo "Unknown metadata kind: ${{ matrix.metadata_kind }}" >&2
               exit 1
               ;;
           esac
 
           echo "minecraft_version=$minecraft_version"
           echo "mod_version=$mod_version"
-          echo "expected_artifact=${{ matrix.expected-artifact }}"
+          echo "expected_artifact=${{ matrix.expected_artifact }}"
 
       - name: Build and verify
         shell: bash
-        working-directory: ${{ matrix.project-dir }}
+        working-directory: ${{ matrix.project_dir }}
         run: ${{ matrix.command }}
 
       - name: Verify built artifact
         id: verify-artifact
         shell: bash
-        working-directory: ${{ matrix.project-dir }}
+        working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
 
-          artifact_name="${{ matrix.expected-artifact }}"
+          artifact_name="${{ matrix.expected_artifact }}"
           jar_path="build/libs/$artifact_name"
 
           [[ -f "$jar_path" ]] || {
@@ -360,7 +360,7 @@ jobs:
           jar tf "$jar_path" >/dev/null
           mkdir -p build/ci-artifact-check
 
-          case "${{ matrix.metadata-kind }}" in
+          case "${{ matrix.metadata_kind }}" in
             forge)
               (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta)
               for required_entry in META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta; do
@@ -401,7 +401,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.verify-artifact.outputs.artifact-name }}
-          path: ${{ matrix.project-dir }}/build/libs/${{ steps.verify-artifact.outputs.artifact-name }}
+          path: ${{ matrix.project_dir }}/build/libs/${{ steps.verify-artifact.outputs.artifact-name }}
           if-no-files-found: error
           retention-days: 14
 
@@ -411,7 +411,7 @@ jobs:
         with:
           name: gradle-failure-reports-${{ matrix.name }}
           path: |
-            ${{ matrix.project-dir }}/build/reports/**
-            ${{ matrix.project-dir }}/build/test-results/**
+            ${{ matrix.project_dir }}/build/reports/**
+            ${{ matrix.project_dir }}/build/test-results/**
           if-no-files-found: ignore
           retention-days: 7
