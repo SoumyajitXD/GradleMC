@@ -14,7 +14,7 @@ Status:
 - `/gradlemc gui`: server-safe command path sends a Forge networking packet to the player client.
 - Diagnostics GUI: present with overview, quick actions, tests, profiler, reports, adaptive diagnostics, settings, commands, and about sections.
 - GUI keybind: present through Forge `RegisterKeyMappingsEvent`; key translations are included.
-- Quick actions tab: present and routed through existing command/client paths.
+- Quick actions tab: present, routed through existing command/client paths, and uses a responsive widget grid so narrow GUI widths do not cut off the controls.
 - FPS/performance display: present through client FPS rolling stats and server performance sampling.
 - Memory diagnostics: present in command, GUI state, checks, reports, and profiler memory-lite output.
 - Loaded mod inspection: present with Forge `ModList`/`IModInfo` implementation.
@@ -36,9 +36,14 @@ Forge-specific adaptations:
 
 Automatic verification performed:
 
-- `clean processResources compileJava test check build`
+- Official Forge files page checked: MC 26.1.2 latest is Forge `26.1.2-64.0.11`, matching this port's pinned coordinate.
+- `./gradlew.bat -version` confirmed Gradle 9.5.0 on Java 25.0.3.
+- `clean processResources compileJava`
+- `clean build`
+- `runData`
 - Extracted jar metadata and searched for stale active `1.20.1` strings.
-- Dedicated server smoke reached `Done (...)` and logged `GradleMC command scaffold loaded`.
-- Client smoke logged `GradleMC client hooks registered` and `GradleMC command scaffold loaded`.
+- Dedicated server smoke reached `Done (...)`, loaded Forge `64.0.11` for MC `26.1.2`, and logged `GradleMC command scaffold loaded`.
+- Client smoke logged `GradleMC client hooks registered`, `GradleMC command scaffold loaded`, initialized rendering/audio assets, and only showed Mojang Realms auth noise unrelated to GradleMC.
+- Final jar inspected as a valid zip with Forge `mods.toml`, Forge manifest attributes, Minecraft `26.1.2`, mod version `1.0.0`, and no Fabric/NeoForge/Quilt metadata resources.
 
-Manual in-game verification still requires an interactive Minecraft session for typing `/gradlemc`, opening every GUI tab, pressing the configured keybind, and checking visual layout.
+Manual in-game verification still requires an interactive Minecraft session for typing `/gradlemc`, opening `/gradlemc gui`, pressing the configured keybind, exercising report export from a player context, and visually checking every GUI tab.

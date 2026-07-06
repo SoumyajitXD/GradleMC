@@ -135,26 +135,23 @@ public class GradleMCScreen extends Screen {
 
     private void buildQuickActionWidgets(int x, int y, int width) {
         GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
-        int col = Math.max(112, (width - GAP * 2) / 3);
-        int rowY = y;
-        addCommandButton("screen.gradlemc.action.status", "gradlemc status", x, rowY, col, "screen.gradlemc.tooltip.status");
-        addCommandButton("screen.gradlemc.action.memory", "gradlemc memory", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.memory");
-        addCommandButton("screen.gradlemc.action.smart_score", "gradlemc smart score", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.smart_score");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.action.smart_advice", "gradlemc smart advice", x, rowY, col, "screen.gradlemc.tooltip.smart_advice");
-        addCommandButton("screen.gradlemc.action.smart_explain", "gradlemc smart explain", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.smart_explain");
-        addCommandButton("screen.gradlemc.action.ai_status", "gradlemc ai status", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.ai_status");
-        rowY += BUTTON_HEIGHT + GAP;
-        addCommandButton("screen.gradlemc.action.mods_count", "gradlemc mods count", x, rowY, col, "screen.gradlemc.tooltip.mods_count");
-        addCommandButton("screen.gradlemc.action.export", "gradlemc export", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.export");
-        addCommandButton("screen.gradlemc.action.issue_bundle", "gradlemc issuebundle create", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.issue_bundle");
-        rowY += BUTTON_HEIGHT + GAP;
+        WidgetGrid grid = new WidgetGrid(x, y, width, 3, 112);
+        grid.addCommand("screen.gradlemc.action.status", "gradlemc status", "screen.gradlemc.tooltip.status");
+        grid.addCommand("screen.gradlemc.action.memory", "gradlemc memory", "screen.gradlemc.tooltip.memory");
+        grid.addCommand("screen.gradlemc.action.smart_score", "gradlemc smart score", "screen.gradlemc.tooltip.smart_score");
+        grid.addCommand("screen.gradlemc.action.smart_advice", "gradlemc smart advice", "screen.gradlemc.tooltip.smart_advice");
+        grid.addCommand("screen.gradlemc.action.smart_explain", "gradlemc smart explain", "screen.gradlemc.tooltip.smart_explain");
+        grid.addCommand("screen.gradlemc.action.ai_status", "gradlemc ai status", "screen.gradlemc.tooltip.ai_status");
+        grid.addCommand("screen.gradlemc.action.mods_count", "gradlemc mods count", "screen.gradlemc.tooltip.mods_count");
+        grid.addCommand("screen.gradlemc.action.export", "gradlemc export", "screen.gradlemc.tooltip.export");
+        grid.addCommand("screen.gradlemc.action.issue_bundle", "gradlemc issuebundle create", "screen.gradlemc.tooltip.issue_bundle");
 
-        EditBox modSearch = new EditBox(font, x, rowY, col, BUTTON_HEIGHT, Component.translatable("screen.gradlemc.input.mod_search"));
+        EditBox modSearch = new EditBox(font, grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT, Component.translatable("screen.gradlemc.input.mod_search"));
         modSearch.setValue(modSearchText);
         modSearch.setResponder(value -> modSearchText = value);
         modSearch.setHint(Component.translatable("screen.gradlemc.input.mod_search"));
         addRenderableWidget(modSearch);
+        grid.advance();
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.search"), button -> {
                     String query = modSearchText.trim();
                     if (query.isEmpty()) {
@@ -163,61 +160,70 @@ public class GradleMCScreen extends Screen {
                         runServerCommand("gradlemc mods search " + query);
                     }
                 })
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.mod_search")))
                 .build());
-        addCommandButton("screen.gradlemc.action.latest_report", "gradlemc reports latest", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.latest_report");
-        rowY += BUTTON_HEIGHT + GAP;
+        grid.advance();
+        grid.addCommand("screen.gradlemc.action.latest_report", "gradlemc reports latest", "screen.gradlemc.tooltip.latest_report");
 
         addRenderableWidget(Button.builder(Component.literal("Entities: " + entityRadius), button -> {
                     entityRadius = nextRadius(entityRadius);
                     rebuildGuiWidgets();
-                }).bounds(x, rowY, col, BUTTON_HEIGHT)
+                }).bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
+        grid.advance();
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_entities"), button -> runServerCommand("gradlemc entities " + entityRadius))
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.entities")))
                 .build());
+        grid.advance();
         addRenderableWidget(Button.builder(Component.literal("Block entities: " + blockEntityRadius), button -> {
                     blockEntityRadius = nextRadius(blockEntityRadius);
                     rebuildGuiWidgets();
-                }).bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                }).bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
-        rowY += BUTTON_HEIGHT + GAP;
+        grid.advance();
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_block_entities"), button -> runServerCommand("gradlemc blockentities " + blockEntityRadius))
-                .bounds(x, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.block_entities")))
                 .build());
-        addDurationButton("FPS", x + col + GAP, rowY, col, true);
+        grid.advance();
+        addDurationButton("FPS", grid.cellX(), grid.rowY(), grid.cellWidth(), true);
+        grid.advance();
         Button startFps = Button.builder(Component.translatable("screen.gradlemc.action.start_selected_fps"), button -> startFps(selectedFpsDuration))
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.fps_start")))
                 .build();
         startFps.active = !state.fpsTestRunning();
         addRenderableWidget(startFps);
-        rowY += BUTTON_HEIGHT + GAP;
-        addDurationButton("Perf", x, rowY, col, false);
+        grid.advance();
+        addDurationButton("Perf", grid.cellX(), grid.rowY(), grid.cellWidth(), false);
+        grid.advance();
         Button startPerf = commandButton(Component.translatable("screen.gradlemc.action.start_selected_perf"),
-                "gradlemc perf start " + selectedPerfDuration, x + col + GAP, rowY, col, "screen.gradlemc.tooltip.perf_start");
+                "gradlemc perf start " + selectedPerfDuration, grid.cellX(), grid.rowY(), grid.cellWidth(), "screen.gradlemc.tooltip.perf_start");
         startPerf.active = !state.performanceTestRunning();
         addRenderableWidget(startPerf);
-        addDurationButton("Worldgen", x + (col + GAP) * 2, rowY, col, false);
-        rowY += BUTTON_HEIGHT + GAP;
+        grid.advance();
+        addDurationButton("Worldgen", grid.cellX(), grid.rowY(), grid.cellWidth(), false);
+        grid.advance();
         Button startWorldgen = commandButton(Component.translatable("screen.gradlemc.action.start_selected_worldgen"),
-                "gradlemc worldgen start " + selectedWorldgenDuration, x, rowY, col, "screen.gradlemc.tooltip.worldgen_start");
+                "gradlemc worldgen start " + selectedWorldgenDuration, grid.cellX(), grid.rowY(), grid.cellWidth(), "screen.gradlemc.tooltip.worldgen_start");
         startWorldgen.active = !state.worldgenObservationRunning();
         addRenderableWidget(startWorldgen);
+        grid.advance();
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.open_folder"), button -> openOutputFolder())
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.open_folder")))
                 .build());
+        grid.advance();
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.copy_latest_path"), button -> copyLatestPath())
-                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .bounds(grid.cellX(), grid.rowY(), grid.cellWidth(), BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.copy_path")))
                 .build());
-        markWidgetContentBottom(rowY);
+        grid.advance();
+        widgetContentBottom = Math.max(widgetContentBottom, grid.bottom());
     }
 
     private void buildTestWidgets(int x, int y, int width) {
@@ -963,6 +969,54 @@ public class GradleMCScreen extends Screen {
                           int mainTop, int mainHeight, int contentLeft, int contentWidth) {
         private int width() {
             return right - left;
+        }
+    }
+
+    private final class WidgetGrid {
+        private final int x;
+        private final int y;
+        private final int columns;
+        private final int cellWidth;
+        private int index;
+
+        private WidgetGrid(int x, int y, int width, int preferredColumns, int minCellWidth) {
+            this.x = x;
+            this.y = y;
+            this.columns = Math.max(1, Math.min(preferredColumns, Math.max(1, (width + GAP) / (minCellWidth + GAP))));
+            this.cellWidth = Math.max(60, (width - GAP * (columns - 1)) / columns);
+        }
+
+        private int cellX() {
+            return x + column() * (cellWidth + GAP);
+        }
+
+        private int rowY() {
+            return y + row() * (BUTTON_HEIGHT + GAP);
+        }
+
+        private int cellWidth() {
+            return cellWidth;
+        }
+
+        private int bottom() {
+            return index == 0 ? y : y + row() * (BUTTON_HEIGHT + GAP);
+        }
+
+        private void advance() {
+            index++;
+        }
+
+        private void addCommand(String labelKey, String command, String tooltipKey) {
+            addCommandButton(labelKey, command, cellX(), rowY(), cellWidth, tooltipKey);
+            advance();
+        }
+
+        private int column() {
+            return index % columns;
+        }
+
+        private int row() {
+            return index / columns;
         }
     }
 

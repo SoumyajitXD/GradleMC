@@ -395,7 +395,7 @@ public final class GradleMcCommands {
     }
 
     private static int showVersion(CommandSourceStack source) {
-        send(source, GradleMC.PRODUCT_NAME + " v" + gradleMcVersion() + " - " + GradleMC.CURRENT_DISPLAY_VARIANT);
+        send(source, GradleMC.PRODUCT_NAME + " " + gradleMcVersion() + " for " + GradleMC.CURRENT_DISPLAY_VARIANT);
         send(source, "Product: " + GradleMC.PRODUCT_NAME);
         send(source, "Version: " + gradleMcVersion());
         send(source, "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT);
