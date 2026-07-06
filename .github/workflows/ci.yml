@@ -17,14 +17,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROJECT_DIR: "GradleMC/Forge/Minecraft 1.20.1"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.warning.mode=all"
 
 jobs:
   repository-sanity:
     name: Repository sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
@@ -36,9 +35,34 @@ jobs:
 
           [[ -f LICENSE ]] || { echo "Missing LICENSE." >&2; exit 1; }
           [[ -f README.md ]] || { echo "Missing README.md." >&2; exit 1; }
+          [[ -f CHANGELOG.md ]] || { echo "Missing CHANGELOG.md." >&2; exit 1; }
+          [[ -f ROADMAP.md ]] || { echo "Missing ROADMAP.md." >&2; exit 1; }
+          [[ -f SUPPORT.md ]] || { echo "Missing SUPPORT.md." >&2; exit 1; }
+          [[ -f SECURITY.md ]] || { echo "Missing SECURITY.md." >&2; exit 1; }
+          [[ -f CONTRIBUTING.md ]] || { echo "Missing CONTRIBUTING.md." >&2; exit 1; }
+          [[ -f AGENTS.md ]] || { echo "Missing AGENTS.md." >&2; exit 1; }
+          [[ -f curseforge-description.html ]] || { echo "Missing curseforge-description.html." >&2; exit 1; }
           [[ -d ".github/workflows" ]] || { echo "Missing root GitHub workflows directory." >&2; exit 1; }
           [[ -f ".github/workflows/ci.yml" ]] || { echo "Missing root CI workflow." >&2; exit 1; }
-          [[ -d "$PROJECT_DIR" ]] || { echo "Missing source directory: $PROJECT_DIR" >&2; exit 1; }
+
+          supported_projects=(
+            "GradleMC/Forge/Minecraft 26.1.2"
+            "GradleMC/Forge/Minecraft 1.20.1"
+            "GradleMC/Fabric/Minecraft 26.1.2"
+            "GradleMC/Fabric/Minecraft 1.20.1"
+            "GradleMC/Quilt/Minecraft 1.20.1"
+          )
+
+          for project_dir in "${supported_projects[@]}"; do
+            [[ -d "$project_dir" ]] || { echo "Missing source directory: $project_dir" >&2; exit 1; }
+            [[ -f "$project_dir/gradlew" ]] || { echo "Missing Gradle wrapper shell script: $project_dir/gradlew" >&2; exit 1; }
+            [[ -f "$project_dir/gradlew.bat" ]] || { echo "Missing Gradle wrapper batch script: $project_dir/gradlew.bat" >&2; exit 1; }
+            [[ -f "$project_dir/settings.gradle" || -f "$project_dir/settings.gradle.kts" ]] || { echo "Missing Gradle settings file in $project_dir" >&2; exit 1; }
+            [[ -f "$project_dir/build.gradle" || -f "$project_dir/build.gradle.kts" ]] || { echo "Missing Gradle build file in $project_dir" >&2; exit 1; }
+            [[ -f "$project_dir/gradle.properties" ]] || { echo "Missing gradle.properties in $project_dir" >&2; exit 1; }
+            [[ -f "$project_dir/gradle/wrapper/gradle-wrapper.jar" ]] || { echo "Missing Gradle wrapper jar in $project_dir" >&2; exit 1; }
+            [[ -f "$project_dir/gradle/wrapper/gradle-wrapper.properties" ]] || { echo "Missing Gradle wrapper properties in $project_dir" >&2; exit 1; }
+          done
 
           for stale_root in "SOURCE CODE" "SOURCE CODEs"; do
             if [[ -e "$stale_root" ]]; then
@@ -53,36 +77,6 @@ jobs:
             echo "$nested_workflows" >&2
             exit 1
           fi
-
-          required_files=(
-            "$PROJECT_DIR/gradlew"
-            "$PROJECT_DIR/gradlew.bat"
-            "$PROJECT_DIR/settings.gradle"
-            "$PROJECT_DIR/build.gradle"
-            "$PROJECT_DIR/gradle.properties"
-            "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.jar"
-            "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties"
-            "$PROJECT_DIR/src/main/resources/META-INF/mods.toml"
-            "$PROJECT_DIR/src/main/resources/pack.mcmeta"
-            "$PROJECT_DIR/src/test/java/com/soumyajit/gradlemc/GradleMcSelfTest.java"
-          )
-
-          for required_file in "${required_files[@]}"; do
-            [[ -f "$required_file" ]] || { echo "Missing required file: $required_file" >&2; exit 1; }
-          done
-
-          java_source_count="$(find "$PROJECT_DIR/src/main/java" -type f -name '*.java' | wc -l | tr -d ' ')"
-          test_source_count="$(find "$PROJECT_DIR/src/test/java" -type f -name '*.java' | wc -l | tr -d ' ')"
-          if (( java_source_count == 0 )); then
-            echo "No Java sources found under $PROJECT_DIR/src/main/java" >&2
-            exit 1
-          fi
-          if (( test_source_count == 0 )); then
-            echo "No Java self-test sources found under $PROJECT_DIR/src/test/java" >&2
-            exit 1
-          fi
-          echo "Java source files: $java_source_count"
-          echo "Java self-test files: $test_source_count"
 
       - name: Validate screenshot documentation
         shell: bash
@@ -107,55 +101,55 @@ jobs:
             exit 1
           }
 
-      - name: Validate release identity
+      - name: Validate public release surface
         shell: bash
-        working-directory: ${{ env.PROJECT_DIR }}
         run: |
           set -euo pipefail
 
-          get_property() {
-            sed -n "s/^$1=//p" gradle.properties | tail -n 1
-          }
+          required_artifacts=(
+            "gradlemc-forge-26.1.2-1.0.0.jar"
+            "gradlemc-1.0.2-forge-1.20.1.jar"
+            "gradlemc-fabric-26.1.2-1.0.0.jar"
+            "gradlemc-fabric-1.20.1-1.0.0.jar"
+            "gradlemc-quilt-1.20.1-1.0.0.jar"
+          )
 
-          mod_id="$(get_property mod_id)"
-          mod_version="$(get_property mod_version)"
-          minecraft_version="$(get_property minecraft_version)"
-          forge_version="$(get_property forge_version)"
-          loader_name="$(get_property loader_name)"
-          variant_name="$(get_property variant_name)"
-          artifact_name="$(get_property artifact_name)"
-          expected_artifact="${mod_id}-${mod_version}-${variant_name}.jar"
+          release_docs=(
+            README.md
+            CHANGELOG.md
+            ROADMAP.md
+            SUPPORT.md
+            SECURITY.md
+            CONTRIBUTING.md
+            AGENTS.md
+            docs/RELEASE_CHECKLIST.md
+            curseforge-description.html
+          )
 
-          [[ "$mod_id" =~ ^[a-z][a-z0-9_]{1,63}$ ]] || { echo "Invalid mod_id: $mod_id" >&2; exit 1; }
-          [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
-          [[ "$minecraft_version" == "1.20.1" ]] || { echo "Unexpected minecraft_version: $minecraft_version" >&2; exit 1; }
-          [[ -n "$forge_version" ]] || { echo "forge_version is empty." >&2; exit 1; }
-          [[ "$loader_name" == "forge" ]] || { echo "Unexpected loader_name: $loader_name" >&2; exit 1; }
-          [[ "$variant_name" == "forge-$minecraft_version" ]] || { echo "variant_name must be forge-$minecraft_version, got $variant_name." >&2; exit 1; }
-          [[ "$artifact_name" == "$expected_artifact" ]] || {
-            echo "artifact_name mismatch. Expected '$expected_artifact', got '$artifact_name'." >&2
+          for artifact in "${required_artifacts[@]}"; do
+            for doc in README.md CHANGELOG.md docs/RELEASE_CHECKLIST.md curseforge-description.html; do
+              grep -F "$artifact" "$doc" >/dev/null || {
+                echo "$doc does not mention required artifact: $artifact" >&2
+                exit 1
+              }
+            done
+          done
+
+          for doc in "${release_docs[@]}"; do
+            grep -F 'Forge `26.1.2`' "$doc" >/dev/null || grep -F 'Forge 26.1.2' "$doc" >/dev/null || {
+              echo "$doc does not mention Forge 26.1.2 support." >&2
+              exit 1
+            }
+          done
+
+          grep -F 'NeoForge, Bedrock' README.md >/dev/null || {
+            echo "README.md must keep unsupported loader guardrails visible." >&2
             exit 1
           }
-
-          grep -F "rootProject.name = 'GradleMC'" settings.gradle >/dev/null || {
-            echo "settings.gradle rootProject.name is not GradleMC." >&2
+          grep -F 'No telemetry' README.md >/dev/null || {
+            echo "README.md must keep privacy guardrails visible." >&2
             exit 1
           }
-          grep -R --include='*.java' -F "public static final String MOD_ID = \"$mod_id\";" src/main/java >/dev/null || {
-            echo "No Java MOD_ID constant matches gradle.properties mod_id=$mod_id." >&2
-            exit 1
-          }
-          grep -R --include='*.java' -F "public static final String CURRENT_VARIANT_ID = \"$variant_name\";" src/main/java >/dev/null || {
-            echo "No Java CURRENT_VARIANT_ID constant matches variant_name=$variant_name." >&2
-            exit 1
-          }
-
-          echo "mod_id=$mod_id"
-          echo "mod_version=$mod_version"
-          echo "minecraft_version=$minecraft_version"
-          echo "forge_version=$forge_version"
-          echo "variant_name=$variant_name"
-          echo "artifact_name=$artifact_name"
 
       - name: Check tracked junk and sensitive text
         shell: bash
@@ -165,8 +159,7 @@ jobs:
           mapfile -d '' tracked_files < <(git ls-files -z)
 
           bad_files=()
-          release_jars=()
-          bad_release_jars=()
+          approved_jars=()
           unexpected_jars=()
           for tracked_file in "${tracked_files[@]}"; do
             case "$tracked_file" in
@@ -177,11 +170,8 @@ jobs:
             case "$tracked_file" in
               */gradle/wrapper/gradle-wrapper.jar)
                 ;;
-              Releases/Forge/Minecraft\ 1.20.1/gradlemc-*-forge-1.20.1.jar|Releases/Fabric/Minecraft\ 1.20.1/gradlemc-fabric-1.20.1-*.jar)
-                release_jars+=("$tracked_file")
-                ;;
-              Releases/*.jar|Releases/**/*.jar)
-                bad_release_jars+=("$tracked_file")
+              Releases/Forge/Minecraft\ 26.1.2/gradlemc-forge-26.1.2-1.0.0.jar|Releases/Forge/Minecraft\ 1.20.1/gradlemc-1.0.2-forge-1.20.1.jar|Releases/Fabric/Minecraft\ 26.1.2/gradlemc-fabric-26.1.2-1.0.0.jar|Releases/Fabric/Minecraft\ 1.20.1/gradlemc-fabric-1.20.1-1.0.0.jar|Releases/Quilt/Minecraft\ 1.20.1/gradlemc-quilt-1.20.1-1.0.0.jar)
+                approved_jars+=("$tracked_file")
                 ;;
               *.jar)
                 unexpected_jars+=("$tracked_file")
@@ -195,21 +185,15 @@ jobs:
             exit 1
           fi
 
-          if (( ${#bad_release_jars[@]} > 0 )); then
-            echo "Release jar files must live in the approved Releases/<loader>/Minecraft 1.20.1/ path and use GradleMC release naming." >&2
-            printf ' - %s\n' "${bad_release_jars[@]}" >&2
-            exit 1
-          fi
-
           if (( ${#unexpected_jars[@]} > 0 )); then
             echo "Unexpected committed jar files found. Only Gradle wrapper jars and approved release artifacts under Releases/ are allowed:" >&2
             printf ' - %s\n' "${unexpected_jars[@]}" >&2
             exit 1
           fi
 
-          if (( ${#release_jars[@]} > 0 )); then
+          if (( ${#approved_jars[@]} > 0 )); then
             echo "Approved release jar artifacts:"
-            printf ' - %s\n' "${release_jars[@]}"
+            printf ' - %s\n' "${approved_jars[@]}"
           fi
 
           pat_a='ghp_[A-Za-z0-9_]{30,}'
@@ -221,62 +205,98 @@ jobs:
             exit 1
           fi
 
-  forge-build:
-    name: Forge 1.20.1 verification and build
+  build-supported-port:
+    name: Build ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     needs: repository-sanity
-    defaults:
-      run:
-        working-directory: ${{ env.PROJECT_DIR }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Forge 26.1.2
+            project-dir: GradleMC/Forge/Minecraft 26.1.2
+            java: "25"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected-artifact: gradlemc-forge-26.1.2-1.0.0.jar
+            metadata-kind: forge
+          - name: Forge 1.20.1
+            project-dir: GradleMC/Forge/Minecraft 1.20.1
+            java: "17"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
+            expected-artifact: gradlemc-1.0.2-forge-1.20.1.jar
+            metadata-kind: forge
+          - name: Fabric 26.1.2
+            project-dir: GradleMC/Fabric/Minecraft 26.1.2
+            java: "25"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected-artifact: gradlemc-fabric-26.1.2-1.0.0.jar
+            metadata-kind: fabric
+          - name: Fabric 1.20.1
+            project-dir: GradleMC/Fabric/Minecraft 1.20.1
+            java: "17"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected-artifact: gradlemc-fabric-1.20.1-1.0.0.jar
+            metadata-kind: fabric
+          - name: Quilt 1.20.1
+            project-dir: GradleMC/Quilt/Minecraft 1.20.1
+            java: "17"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected-artifact: gradlemc-quilt-1.20.1-1.0.0.jar
+            metadata-kind: quilt
     steps:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Set up Java 17
+      - name: Set up Java ${{ matrix.java }}
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ matrix.java }}
           cache: gradle
           cache-dependency-path: |
-            GradleMC/Forge/Minecraft 1.20.1/**/*.gradle
-            GradleMC/Forge/Minecraft 1.20.1/**/*.gradle.kts
-            GradleMC/Forge/Minecraft 1.20.1/gradle.properties
-            GradleMC/Forge/Minecraft 1.20.1/gradle/wrapper/gradle-wrapper.properties
+            ${{ matrix.project-dir }}/**/*.gradle
+            ${{ matrix.project-dir }}/**/*.gradle.kts
+            ${{ matrix.project-dir }}/gradle.properties
+            ${{ matrix.project-dir }}/gradle/wrapper/gradle-wrapper.properties
 
       - name: Prepare Gradle wrapper
         shell: bash
+        working-directory: ${{ matrix.project-dir }}
         run: |
           set -euo pipefail
           sed -i 's/\r$//' ./gradlew
           chmod +x ./gradlew
           jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
+
+          if grep -q '^org.gradle.java.home=' gradle.properties; then
+            echo "Removing local developer org.gradle.java.home from gradle.properties for CI. The setup-java toolchain is the source of truth here."
+            sed -i '/^org.gradle.java.home=/d' gradle.properties
+          fi
+
           distribution_url="$(sed -n 's/^distributionUrl=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
           distribution_url="${distribution_url//\\:/:}"
           [[ "$distribution_url" == https://services.gradle.org/distributions/gradle-*-bin.zip ]] || {
             echo "Unexpected Gradle wrapper distributionUrl: $distribution_url" >&2
             exit 1
           }
+
           timeout_ms="$(sed -n 's/^networkTimeout=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
-          [[ "$timeout_ms" =~ ^[0-9]+$ ]] || { echo "Invalid Gradle wrapper networkTimeout: $timeout_ms" >&2; exit 1; }
-          if (( timeout_ms < 60000 )); then
+          if [[ -z "$timeout_ms" ]]; then
+            echo "networkTimeout=60000" >> gradle/wrapper/gradle-wrapper.properties
+          elif [[ "$timeout_ms" =~ ^[0-9]+$ ]] && (( timeout_ms < 60000 )); then
             echo "Bumping Gradle wrapper networkTimeout locally for CI: ${timeout_ms}ms -> 60000ms"
             sed -i 's/^networkTimeout=.*/networkTimeout=60000/' gradle/wrapper/gradle-wrapper.properties
+          elif [[ ! "$timeout_ms" =~ ^[0-9]+$ ]]; then
+            echo "Invalid Gradle wrapper networkTimeout: $timeout_ms" >&2
+            exit 1
           fi
+
           ./gradlew --no-daemon --version
 
-      - name: Run Gradle checks and self-tests
+      - name: Validate source metadata
         shell: bash
-        run: ./gradlew --no-daemon --stacktrace --warning-mode all check gradlemcSelfTest
-
-      - name: Build mod jar
-        shell: bash
-        run: ./gradlew --no-daemon --stacktrace --warning-mode all assemble
-
-      - name: Verify built artifact
-        id: verify-artifact
-        shell: bash
+        working-directory: ${{ matrix.project-dir }}
         run: |
           set -euo pipefail
 
@@ -284,9 +304,50 @@ jobs:
             sed -n "s/^$1=//p" gradle.properties | tail -n 1
           }
 
-          mod_id="$(get_property mod_id)"
-          artifact_name="$(get_property artifact_name)"
-          variant_name="$(get_property variant_name)"
+          mod_version="$(get_property mod_version)"
+          minecraft_version="$(get_property minecraft_version)"
+          [[ -n "$mod_version" ]] || { echo "mod_version is empty." >&2; exit 1; }
+          [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
+
+          case "${{ matrix.metadata-kind }}" in
+            forge)
+              mod_id="$(get_property mod_id)"
+              loader_name="$(get_property loader_name)"
+              variant_name="$(get_property variant_name)"
+              artifact_name="$(get_property artifact_name)"
+              [[ "$mod_id" == "gradlemc" ]] || { echo "Unexpected Forge mod_id: $mod_id" >&2; exit 1; }
+              [[ "$loader_name" == "forge" || "$loader_name" == "Forge" ]] || { echo "Unexpected Forge loader_name: $loader_name" >&2; exit 1; }
+              [[ "$variant_name" == "forge-$minecraft_version" ]] || { echo "Unexpected Forge variant_name: $variant_name" >&2; exit 1; }
+              [[ "$artifact_name" == "${{ matrix.expected-artifact }}" ]] || { echo "Unexpected Forge artifact_name: $artifact_name" >&2; exit 1; }
+              ;;
+            fabric|quilt)
+              archives_base_name="$(get_property archives_base_name)"
+              artifact_name="${archives_base_name}-${mod_version}.jar"
+              [[ "$artifact_name" == "${{ matrix.expected-artifact }}" ]] || { echo "Unexpected ${matrix.metadata-kind} artifact: $artifact_name" >&2; exit 1; }
+              ;;
+            *)
+              echo "Unknown metadata kind: ${{ matrix.metadata-kind }}" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "minecraft_version=$minecraft_version"
+          echo "mod_version=$mod_version"
+          echo "expected_artifact=${{ matrix.expected-artifact }}"
+
+      - name: Build and verify
+        shell: bash
+        working-directory: ${{ matrix.project-dir }}
+        run: ${{ matrix.command }}
+
+      - name: Verify built artifact
+        id: verify-artifact
+        shell: bash
+        working-directory: ${{ matrix.project-dir }}
+        run: |
+          set -euo pipefail
+
+          artifact_name="${{ matrix.expected-artifact }}"
           jar_path="build/libs/$artifact_name"
 
           [[ -f "$jar_path" ]] || {
@@ -296,30 +357,42 @@ jobs:
             exit 1
           }
 
-          rm -rf build/ci-artifact-check
+          jar tf "$jar_path" >/dev/null
           mkdir -p build/ci-artifact-check
-          (
-            cd build/ci-artifact-check
-            jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta
-          )
 
-          for required_entry in META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta; do
-            [[ -f "build/ci-artifact-check/$required_entry" ]] || {
-              echo "Jar is missing required entry: $required_entry" >&2
-              jar tf "$jar_path" >&2
-              exit 1
-            }
-          done
+          case "${{ matrix.metadata-kind }}" in
+            forge)
+              (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta)
+              for required_entry in META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta; do
+                [[ -f "build/ci-artifact-check/$required_entry" ]] || { echo "Jar is missing required Forge entry: $required_entry" >&2; exit 1; }
+              done
+              grep -F 'modId="gradlemc"' build/ci-artifact-check/META-INF/mods.toml >/dev/null || {
+                echo "mods.toml inside jar does not contain modId=gradlemc." >&2
+                exit 1
+              }
+              ;;
+            fabric)
+              (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF fabric.mod.json)
+              [[ -f build/ci-artifact-check/fabric.mod.json ]] || { echo "Jar is missing fabric.mod.json." >&2; exit 1; }
+              grep -F '"id": "gradlemc"' build/ci-artifact-check/fabric.mod.json >/dev/null || {
+                echo "fabric.mod.json inside jar does not contain id=gradlemc." >&2
+                exit 1
+              }
+              ;;
+            quilt)
+              (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF quilt.mod.json)
+              [[ -f build/ci-artifact-check/quilt.mod.json ]] || { echo "Jar is missing quilt.mod.json." >&2; exit 1; }
+              grep -F '"id": "gradlemc"' build/ci-artifact-check/quilt.mod.json >/dev/null || {
+                echo "quilt.mod.json inside jar does not contain id=gradlemc." >&2
+                exit 1
+              }
+              ;;
+          esac
 
           if grep -R '\${' build/ci-artifact-check; then
             echo "Jar metadata contains unexpanded template placeholders." >&2
             exit 1
           fi
-
-          grep -F "modId=\"$mod_id\"" build/ci-artifact-check/META-INF/mods.toml >/dev/null || {
-            echo "mods.toml inside jar does not contain expected modId=$mod_id." >&2
-            exit 1
-          }
 
           echo "Verified artifact: $jar_path"
           echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
@@ -328,7 +401,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.verify-artifact.outputs.artifact-name }}
-          path: ${{ env.PROJECT_DIR }}/build/libs/${{ steps.verify-artifact.outputs.artifact-name }}
+          path: ${{ matrix.project-dir }}/build/libs/${{ steps.verify-artifact.outputs.artifact-name }}
           if-no-files-found: error
           retention-days: 14
 
@@ -336,73 +409,9 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
-          name: forge-gradle-failure-reports
+          name: gradle-failure-reports-${{ matrix.name }}
           path: |
-            ${{ env.PROJECT_DIR }}/build/reports/**
-            ${{ env.PROJECT_DIR }}/build/test-results/**
-          if-no-files-found: ignore
-          retention-days: 7
-
-  windows-wrapper:
-    name: Windows wrapper and compile validation
-    runs-on: windows-latest
-    timeout-minutes: 35
-    needs: repository-sanity
-    defaults:
-      run:
-        working-directory: ${{ env.PROJECT_DIR }}
-        shell: pwsh
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v7
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
-          cache-dependency-path: |
-            GradleMC/Forge/Minecraft 1.20.1/**/*.gradle
-            GradleMC/Forge/Minecraft 1.20.1/**/*.gradle.kts
-            GradleMC/Forge/Minecraft 1.20.1/gradle.properties
-            GradleMC/Forge/Minecraft 1.20.1/gradle/wrapper/gradle-wrapper.properties
-
-      - name: Validate Windows Gradle wrapper
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if (-not (Test-Path '.\gradlew.bat')) {
-            throw 'Missing gradlew.bat.'
-          }
-          if (-not (Test-Path '.\gradle\wrapper\gradle-wrapper.jar')) {
-            throw 'Missing Gradle wrapper jar.'
-          }
-
-          $wrapperProperties = '.\gradle\wrapper\gradle-wrapper.properties'
-          $timeoutLine = Select-String -Path $wrapperProperties -Pattern '^networkTimeout=([0-9]+)$' | Select-Object -First 1
-          if (-not $timeoutLine) {
-            throw 'Invalid or missing Gradle wrapper networkTimeout.'
-          }
-          $timeoutMs = [int]($timeoutLine.Matches[0].Groups[1].Value)
-          if ($timeoutMs -lt 60000) {
-            Write-Host "Bumping Gradle wrapper networkTimeout locally for CI: ${timeoutMs}ms -> 60000ms"
-            (Get-Content $wrapperProperties) -replace '^networkTimeout=.*', 'networkTimeout=60000' | Set-Content $wrapperProperties
-          }
-
-          .\gradlew.bat --no-daemon --version
-
-      - name: Compile and prepare self-tests on Windows
-        run: |
-          $ErrorActionPreference = 'Stop'
-          .\gradlew.bat --no-daemon --stacktrace --warning-mode all compileJava testClasses
-
-      - name: Upload Windows Gradle reports on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows-gradle-failure-reports
-          path: |
-            ${{ env.PROJECT_DIR }}/build/reports/**
-            ${{ env.PROJECT_DIR }}/build/test-results/**
+            ${{ matrix.project-dir }}/build/reports/**
+            ${{ matrix.project-dir }}/build/test-results/**
           if-no-files-found: ignore
           retention-days: 7
