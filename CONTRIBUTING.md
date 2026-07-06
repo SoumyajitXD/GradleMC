@@ -2,7 +2,7 @@
 
 Thanks for wanting to improve GradleMC. Focused contributions are welcome.
 
-GradleMC currently has public Minecraft Java Edition `1.20.1` targets for Forge, Fabric, and Quilt, plus a Fabric `26.1.2` target. The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
+GradleMC currently has public Minecraft Java Edition `1.20.1` targets for Forge, Fabric, and Quilt, plus `26.1.2` targets for Forge and Fabric. The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
 
 ---
 
@@ -24,9 +24,10 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 - Keep the mod ID as `gradlemc`.
 - Minecraft command literals and examples must be lowercase.
 - Correct GUI command: `/gradlemc gui`.
-- Current supported public release targets: Forge `1.20.1`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
-- Use Java `17` for current `1.20.1` builds and Java `25` for the Fabric `26.1.2` build.
-- Current Forge artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
+- Current supported public release targets: Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
+- Use Java `17` for current `1.20.1` builds and Java `25` for current Forge/Fabric `26.1.2` builds.
+- Current Forge `26.1.2` artifact: `gradlemc-forge-26.1.2-1.0.0.jar`.
+- Current Forge `1.20.1` artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
 - Current Fabric `26.1.2` artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
 - Current Fabric `1.20.1` artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
 - Current Quilt artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
@@ -42,10 +43,18 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 Current loader source paths:
 
 ```text
+GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Forge/Minecraft 1.20.1/
-GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/
+```
+
+Build Forge `26.1.2`:
+
+```sh
+cd "GradleMC/Forge/Minecraft 26.1.2"
+./gradlew build
 ```
 
 Build Forge `1.20.1`:
@@ -55,17 +64,17 @@ cd "GradleMC/Forge/Minecraft 1.20.1"
 ./gradlew build
 ```
 
-Build Fabric `1.20.1`:
-
-```sh
-cd "GradleMC/Fabric/Minecraft 1.20.1"
-./gradlew build
-```
-
 Build Fabric `26.1.2`:
 
 ```sh
 cd "GradleMC/Fabric/Minecraft 26.1.2"
+./gradlew build
+```
+
+Build Fabric `1.20.1`:
+
+```sh
+cd "GradleMC/Fabric/Minecraft 1.20.1"
 ./gradlew build
 ```
 
@@ -84,7 +93,21 @@ On Windows, run `gradlew.bat` from the same source folder.
 
 For docs-only changes, manually check the edited Markdown links and any release-facing claims. If screenshots changed, confirm README and `docs/SCREENSHOTS.md` render the intended files from `Screenshots/`.
 
-For Forge source/resource changes, run:
+For Forge `26.1.2` source/resource changes, run:
+
+```sh
+cd "GradleMC/Forge/Minecraft 26.1.2"
+./gradlew clean build
+```
+
+On Windows:
+
+```bat
+cd "GradleMC\Forge\Minecraft 26.1.2"
+gradlew.bat clean build
+```
+
+For Forge `1.20.1` source/resource changes, run:
 
 ```sh
 cd "GradleMC/Forge/Minecraft 1.20.1"
@@ -98,7 +121,7 @@ cd "GradleMC\Forge\Minecraft 1.20.1"
 gradlew.bat clean build gradlemcSelfTest
 ```
 
-For Fabric or Quilt source/resource changes, run the matching loader build and verification tasks from that loader source project. Fabric `26.1.2` work must be verified from `GradleMC/Fabric/Minecraft 26.1.2/` with Java `25`.
+For Fabric or Quilt source/resource changes, run the matching loader build and verification tasks from that loader source project. Forge/Fabric `26.1.2` work must be verified from the matching `GradleMC/<Loader>/Minecraft 26.1.2/` folder with Java `25`.
 
 Old validation commands from the removed `SOURCE CODE/` layout are not valid unless they are reintroduced in the current standalone project. Do not paste dead commands into docs, PRs, or release notes.
 
