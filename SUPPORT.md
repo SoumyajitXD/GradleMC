@@ -24,15 +24,17 @@ Check these first:
 
 1. You are using a supported Minecraft Java Edition target:
    - `1.20.1` for Forge, Fabric, or Quilt.
-   - `26.1.2` for Fabric.
+   - `26.1.2` for Forge or Fabric.
 2. You are using a supported loader setup:
    - Forge `47.4.20` or a compatible Forge `47.x` setup for Minecraft `1.20.1`.
+   - Forge `26.1.2-64.0.11` for Minecraft `26.1.2`.
    - Fabric for Minecraft `1.20.1` or `26.1.2`.
    - Quilt for Minecraft `1.20.1`.
 3. You are using the correct Java version:
    - Java `17` for the Minecraft `1.20.1` releases.
-   - Java `25` for the Fabric `26.1.2` release.
+   - Java `25` for the Forge/Fabric `26.1.2` releases.
 4. You are using the correct GradleMC jar for your loader and Minecraft version:
+   - Forge `26.1.2`: `gradlemc-forge-26.1.2-1.0.0.jar`.
    - Forge `1.20.1`: `gradlemc-1.0.2-forge-1.20.1.jar`.
    - Fabric `26.1.2`: `gradlemc-fabric-26.1.2-1.0.0.jar`.
    - Fabric `1.20.1`: `gradlemc-fabric-1.20.1-1.0.0.jar`.
@@ -71,7 +73,7 @@ For GUI issues:
 /gradlemc gui
 ```
 
-Also mention whether the GUI keybind opens the screen. For Forge `1.0.2`, include screenshots or clips if the Quick Actions tab still shows overlay or layout problems.
+Also mention whether the GUI keybind opens the screen. For Forge `1.20.1` `1.0.2`, include screenshots or clips if the Quick Actions tab still shows overlay or layout problems. For Forge `26.1.2` `1.0.0`, mention Java `25`, Forge `26.1.2-64.0.11`, and the exact jar filename.
 
 ---
 
