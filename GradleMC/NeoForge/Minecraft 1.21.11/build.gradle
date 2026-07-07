@@ -1,0 +1,200 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = "gradlemc-neoforge-1.21.11"
+}
+
+// Mojang ships Java 21 to end users in modern 1.21.x releases, so this port targets Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+sourceSets.main.java {
+    srcDir layout.buildDirectory.dir('generated/sources/gradlemcInfo/java')
+}
+
+repositories {
+    mavenCentral()
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        configureEach {
+            gameDirectory = project.file('run')
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+
+        client {
+            client()
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            clientData()
+            gameDirectory = project.file('run-data')
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').absolutePath, '--existing', file('src/main/resources/').absolutePath
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            product_name           : product_name,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            loader_name            : loader_name,
+            variant_name           : variant_name,
+            display_variant_name   : display_variant_name,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
+}
+
+def generatedInfoDir = layout.buildDirectory.dir('generated/sources/gradlemcInfo/java/com/soumyajit/gradlemc')
+
+tasks.register('generateGradleMcInfo') {
+    inputs.properties([
+            product_name        : product_name,
+            mod_id              : mod_id,
+            minecraft_version   : minecraft_version,
+            loader_name         : loader_name,
+            variant_name        : variant_name,
+            display_variant_name: display_variant_name
+    ])
+    outputs.dir(generatedInfoDir)
+
+    doLast {
+        def outputDir = generatedInfoDir.get().asFile
+        outputDir.mkdirs()
+        def escape = { value -> String.valueOf(value).replace('\\', '\\\\').replace('"', '\\"') }
+        new File(outputDir, 'GeneratedGradleMCInfo.java').text = """package com.soumyajit.gradlemc;
+
+public final class GeneratedGradleMCInfo {
+    public static final String PRODUCT_NAME = "${escape(product_name)}";
+    public static final String MOD_ID = "${escape(mod_id)}";
+    public static final String LOADER_NAME = "${escape(loader_name)}";
+    public static final String MINECRAFT_VERSION = "${escape(minecraft_version)}";
+    public static final String VARIANT_ID = "${escape(variant_name)}";
+    public static final String DISPLAY_VARIANT = "${escape(display_variant_name)}";
+
+    private GeneratedGradleMCInfo() {
+    }
+}
+"""
+    }
+}
+
+tasks.named('compileJava', JavaCompile).configure {
+    dependsOn tasks.named('generateGradleMcInfo')
+}
+
+tasks.register('gradlemcSelfTest', JavaExec) {
+    group = 'verification'
+    description = 'Runs dependency-free GradleMC scoring and path self-tests.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'com.soumyajit.gradlemc.GradleMcSelfTest'
+}
+
+tasks.named('test', Test).configure {
+    failOnNoDiscoveredTests = false
+}
+
+tasks.named('jar', Jar).configure {
+    archiveFileName = artifact_name
+
+    manifest {
+        attributes([
+                'Specification-Title'     : product_name,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : product_name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'GradleMC-Mod-Id'         : mod_id,
+                'GradleMC-Variant'        : variant_name,
+                'GradleMC-Display-Variant': display_variant_name,
+                'GradleMC-Minecraft'      : minecraft_version,
+                'GradleMC-Loader'         : loader_name
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
