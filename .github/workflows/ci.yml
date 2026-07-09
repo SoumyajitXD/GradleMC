@@ -46,14 +46,20 @@ jobs:
           [[ -f ".github/workflows/ci.yml" ]] || { echo "Missing root CI workflow." >&2; exit 1; }
 
           supported_projects=(
+            "GradleMC/Forge/Minecraft 1.21.11"
             "GradleMC/Forge/Minecraft 26.1.2"
             "GradleMC/Forge/Minecraft 1.20.1"
+            "GradleMC/Fabric/Minecraft 1.21.11"
             "GradleMC/Fabric/Minecraft 26.1.2"
             "GradleMC/Fabric/Minecraft 1.20.1"
+            "GradleMC/NeoForge/Minecraft 1.21.11"
+            "GradleMC/NeoForge/Minecraft 26.1.2"
             "GradleMC/Quilt/Minecraft 1.20.1"
           )
 
+          declare -A supported_project_lookup=()
           for project_dir in "${supported_projects[@]}"; do
+            supported_project_lookup["$project_dir"]=1
             [[ -d "$project_dir" ]] || { echo "Missing source directory: $project_dir" >&2; exit 1; }
             [[ -f "$project_dir/gradlew" ]] || { echo "Missing Gradle wrapper shell script: $project_dir/gradlew" >&2; exit 1; }
             [[ -f "$project_dir/gradlew.bat" ]] || { echo "Missing Gradle wrapper batch script: $project_dir/gradlew.bat" >&2; exit 1; }
@@ -62,6 +68,16 @@ jobs:
             [[ -f "$project_dir/gradle.properties" ]] || { echo "Missing gradle.properties in $project_dir" >&2; exit 1; }
             [[ -f "$project_dir/gradle/wrapper/gradle-wrapper.jar" ]] || { echo "Missing Gradle wrapper jar in $project_dir" >&2; exit 1; }
             [[ -f "$project_dir/gradle/wrapper/gradle-wrapper.properties" ]] || { echo "Missing Gradle wrapper properties in $project_dir" >&2; exit 1; }
+          done
+
+          mapfile -d '' discovered_project_properties < <(find GradleMC -path 'GradleMC/*/Minecraft */gradle.properties' -type f -print0 | sort -z)
+          [[ ${#discovered_project_properties[@]} -gt 0 ]] || { echo "No GradleMC source projects discovered." >&2; exit 1; }
+          for project_properties in "${discovered_project_properties[@]}"; do
+            discovered_project="${project_properties%/gradle.properties}"
+            if [[ -z "${supported_project_lookup[$discovered_project]+x}" ]]; then
+              echo "Source project exists but is not covered by CI: $discovered_project" >&2
+              exit 1
+            fi
           done
 
           for stale_root in "SOURCE CODE" "SOURCE CODEs"; do
@@ -142,8 +158,12 @@ jobs:
             fi
           done
 
-          grep -F 'NeoForge, Bedrock' README.md >/dev/null || {
-            echo "README.md must keep unsupported loader guardrails visible." >&2
+          grep -F 'Bedrock' README.md >/dev/null || {
+            echo "README.md must keep unsupported platform guardrails visible." >&2
+            exit 1
+          }
+          grep -F 'any loader/version pair not listed in the supported release table' README.md >/dev/null || {
+            echo "README.md must keep unsupported loader/version guardrails visible." >&2
             exit 1
           }
           grep -F '| Telemetry | None |' README.md >/dev/null || {
@@ -214,6 +234,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: Forge 1.21.11
+            project_dir: GradleMC/Forge/Minecraft 1.21.11
+            java: "21"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
+            expected_artifact: gradlemc-forge-1.21.11-1.0.0.jar
+            metadata_kind: forge
           - name: Forge 26.1.2
             project_dir: GradleMC/Forge/Minecraft 26.1.2
             java: "25"
@@ -226,6 +252,12 @@ jobs:
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
             expected_artifact: gradlemc-1.0.2-forge-1.20.1.jar
             metadata_kind: forge
+          - name: Fabric 1.21.11
+            project_dir: GradleMC/Fabric/Minecraft 1.21.11
+            java: "21"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected_artifact: gradlemc-fabric-1.21.11-1.0.0.jar
+            metadata_kind: fabric
           - name: Fabric 26.1.2
             project_dir: GradleMC/Fabric/Minecraft 26.1.2
             java: "25"
@@ -238,6 +270,18 @@ jobs:
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             expected_artifact: gradlemc-fabric-1.20.1-1.0.0.jar
             metadata_kind: fabric
+          - name: NeoForge 1.21.11
+            project_dir: GradleMC/NeoForge/Minecraft 1.21.11
+            java: "21"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
+            expected_artifact: gradlemc-neoforge-1.21.11-1.0.0.jar
+            metadata_kind: neoforge
+          - name: NeoForge 26.1.2
+            project_dir: GradleMC/NeoForge/Minecraft 26.1.2
+            java: "25"
+            command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
+            expected_artifact: gradlemc-neoforge-26.1.2-1.0.0.jar
+            metadata_kind: neoforge
           - name: Quilt 1.20.1
             project_dir: GradleMC/Quilt/Minecraft 1.20.1
             java: "17"
@@ -310,15 +354,19 @@ jobs:
           [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty." >&2; exit 1; }
 
           case "${{ matrix.metadata_kind }}" in
-            forge)
+            forge|neoforge)
               mod_id="$(get_property mod_id)"
               loader_name="$(get_property loader_name)"
               variant_name="$(get_property variant_name)"
               artifact_name="$(get_property artifact_name)"
-              [[ "$mod_id" == "gradlemc" ]] || { echo "Unexpected Forge mod_id: $mod_id" >&2; exit 1; }
-              [[ "$loader_name" == "forge" || "$loader_name" == "Forge" ]] || { echo "Unexpected Forge loader_name: $loader_name" >&2; exit 1; }
-              [[ "$variant_name" == "forge-$minecraft_version" ]] || { echo "Unexpected Forge variant_name: $variant_name" >&2; exit 1; }
-              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected Forge artifact_name: $artifact_name" >&2; exit 1; }
+              [[ "$mod_id" == "gradlemc" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} mod_id: $mod_id" >&2; exit 1; }
+              if [[ "${{ matrix.metadata_kind }}" == "forge" ]]; then
+                [[ "$loader_name" == "forge" || "$loader_name" == "Forge" ]] || { echo "Unexpected Forge loader_name: $loader_name" >&2; exit 1; }
+              else
+                [[ "$loader_name" == "neoforge" || "$loader_name" == "NeoForge" ]] || { echo "Unexpected NeoForge loader_name: $loader_name" >&2; exit 1; }
+              fi
+              [[ "$variant_name" == "${{ matrix.metadata_kind }}-$minecraft_version" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} variant_name: $variant_name" >&2; exit 1; }
+              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} artifact_name: $artifact_name" >&2; exit 1; }
               ;;
             fabric|quilt)
               archives_base_name="$(get_property archives_base_name)"
@@ -368,6 +416,16 @@ jobs:
               done
               grep -F 'modId="gradlemc"' build/ci-artifact-check/META-INF/mods.toml >/dev/null || {
                 echo "mods.toml inside jar does not contain modId=gradlemc." >&2
+                exit 1
+              }
+              ;;
+            neoforge)
+              (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/neoforge.mods.toml pack.mcmeta)
+              for required_entry in META-INF/MANIFEST.MF META-INF/neoforge.mods.toml pack.mcmeta; do
+                [[ -f "build/ci-artifact-check/$required_entry" ]] || { echo "Jar is missing required NeoForge entry: $required_entry" >&2; exit 1; }
+              done
+              grep -F 'modId="gradlemc"' build/ci-artifact-check/META-INF/neoforge.mods.toml >/dev/null || {
+                echo "neoforge.mods.toml inside jar does not contain modId=gradlemc." >&2
                 exit 1
               }
               ;;
