@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Validate repository layout
         shell: bash
@@ -57,9 +57,16 @@ jobs:
             "GradleMC/Quilt/Minecraft 1.20.1"
           )
 
-          declare -A supported_project_lookup=()
+          supported_projects_file="$(mktemp)"
+          discovered_projects_file="$(mktemp)"
+          cleanup_project_lists() {
+            rm -f "$supported_projects_file" "$discovered_projects_file"
+          }
+          trap cleanup_project_lists EXIT
+
+          printf '%s\n' "${supported_projects[@]}" | sort > "$supported_projects_file"
+
           for project_dir in "${supported_projects[@]}"; do
-            supported_project_lookup["$project_dir"]=1
             [[ -d "$project_dir" ]] || { echo "Missing source directory: $project_dir" >&2; exit 1; }
             [[ -f "$project_dir/gradlew" ]] || { echo "Missing Gradle wrapper shell script: $project_dir/gradlew" >&2; exit 1; }
             [[ -f "$project_dir/gradlew.bat" ]] || { echo "Missing Gradle wrapper batch script: $project_dir/gradlew.bat" >&2; exit 1; }
@@ -70,15 +77,20 @@ jobs:
             [[ -f "$project_dir/gradle/wrapper/gradle-wrapper.properties" ]] || { echo "Missing Gradle wrapper properties in $project_dir" >&2; exit 1; }
           done
 
-          mapfile -d '' discovered_project_properties < <(find GradleMC -path 'GradleMC/*/Minecraft */gradle.properties' -type f -print0 | sort -z)
-          [[ ${#discovered_project_properties[@]} -gt 0 ]] || { echo "No GradleMC source projects discovered." >&2; exit 1; }
-          for project_properties in "${discovered_project_properties[@]}"; do
-            discovered_project="${project_properties%/gradle.properties}"
-            if [[ -z "${supported_project_lookup[$discovered_project]+x}" ]]; then
-              echo "Source project exists but is not covered by CI: $discovered_project" >&2
-              exit 1
-            fi
-          done
+          find GradleMC -path 'GradleMC/*/Minecraft */gradle.properties' -type f -print \
+            | sed 's#/gradle.properties$##' \
+            | sort > "$discovered_projects_file"
+
+          [[ -s "$discovered_projects_file" ]] || { echo "No GradleMC source projects discovered." >&2; exit 1; }
+
+          if ! diff -u "$supported_projects_file" "$discovered_projects_file"; then
+            echo "CI source-project coverage is out of sync with the repository layout." >&2
+            echo "Every GradleMC source project with gradle.properties must be listed in supported_projects and the build matrix." >&2
+            exit 1
+          fi
+
+          echo "CI-covered source projects:"
+          cat "$supported_projects_file"
 
           for stale_root in "SOURCE CODE" "SOURCE CODEs"; do
             if [[ -e "$stale_root" ]]; then
@@ -290,10 +302,10 @@ jobs:
             metadata_kind: quilt
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Java ${{ matrix.java }}
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -456,7 +468,7 @@ jobs:
           echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
 
       - name: Upload built jar
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.verify-artifact.outputs.artifact-name }}
           path: ${{ matrix.project_dir }}/build/libs/${{ steps.verify-artifact.outputs.artifact-name }}
@@ -465,7 +477,7 @@ jobs:
 
       - name: Upload Gradle reports on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: gradle-failure-reports-${{ matrix.name }}
           path: |
