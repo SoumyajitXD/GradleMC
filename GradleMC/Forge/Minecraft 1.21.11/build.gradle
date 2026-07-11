@@ -21,6 +21,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 // Include generated resources
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.test.compileClasspath += sourceSets.main.output
+sourceSets.test.runtimeClasspath += sourceSets.main.output
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
