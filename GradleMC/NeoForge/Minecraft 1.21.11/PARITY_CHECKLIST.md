@@ -1,10 +1,8 @@
 # GradleMC NeoForge 1.21.11 Parity Checklist
 
-Baseline references:
-
-- `C:\MinecraftJavaMods\GradleMC\GradleMCNeoForge26.1.2`
-- `C:\MinecraftJavaMods\GradleMC\GradleMCForge1.21.11`
-- `C:\MinecraftJavaMods\GradleMC\GradleMCFabric1.21.11`
+Baseline references are the sibling GradleMC NeoForge 26.1.2, Forge 1.21.11,
+and Fabric 1.21.11 source projects. Paths are intentionally relative so this
+checklist remains portable between development machines.
 
 Implemented feature checklist:
 

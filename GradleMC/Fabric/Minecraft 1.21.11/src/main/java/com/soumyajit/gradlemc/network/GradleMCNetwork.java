@@ -47,10 +47,6 @@ public final class GradleMCNetwork {
         ServerPlayNetworking.send(player, new SyncSmartAIStatusPacket(status, guiStatus));
     }
 
-    public static void requestSmartAIStatus() {
-        // TODO Fabric port: wire GUI refreshes through the client source set.
-    }
-
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(GradleMC.MOD_ID, path);
     }

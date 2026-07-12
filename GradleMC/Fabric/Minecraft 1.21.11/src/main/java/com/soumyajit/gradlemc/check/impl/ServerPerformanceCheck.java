@@ -7,11 +7,12 @@ import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.check.StabilityCheck;
 
 import java.util.List;
+import java.util.Locale;
 
-public class PerformancePlaceholderCheck implements StabilityCheck {
+public final class ServerPerformanceCheck implements StabilityCheck {
     @Override
     public String name() {
-        return "Performance placeholder";
+        return "Server performance";
     }
 
     @Override
@@ -25,13 +26,17 @@ public class PerformancePlaceholderCheck implements StabilityCheck {
                     "Run performance diagnostics from an active server command context."
             ));
         }
-        double averageTickTime = (context.server().getAverageTickTimeNanos() / 1_000_000.0D);
+        double averageTickTime = Math.max(0.0D, context.server().getAverageTickTimeNanos() / 1_000_000.0D);
+        Severity severity = averageTickTime >= 50.0D ? Severity.FAIL
+                : averageTickTime >= 40.0D ? Severity.WARN : Severity.PASS;
         return List.of(CheckResult.of(
-                Severity.INFO,
+                severity,
                 CheckCategory.PERFORMANCE,
-                "Server tick sample",
-                "Average tick time is approximately " + String.format("%.2f", averageTickTime) + " ms",
-                "Use this only as a lightweight snapshot until a bounded benchmark command is implemented."
+                "Server tick health",
+                String.format(Locale.ROOT, "Average server tick time is %.2f ms", averageTickTime),
+                severity == Severity.PASS
+                        ? "No sustained server-tick pressure is visible in this lightweight snapshot."
+                        : "Use /gradlemc perf start <seconds> for a bounded sample before changing the modpack."
         ));
     }
 }

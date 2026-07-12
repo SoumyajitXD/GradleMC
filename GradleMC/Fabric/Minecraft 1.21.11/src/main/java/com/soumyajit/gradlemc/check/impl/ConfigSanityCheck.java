@@ -5,6 +5,7 @@ import com.soumyajit.gradlemc.check.CheckContext;
 import com.soumyajit.gradlemc.check.CheckResult;
 import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.check.StabilityCheck;
+import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.rules.RiskRuleLoader;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 
@@ -66,13 +67,13 @@ public class ConfigSanityCheck implements StabilityCheck {
         ));
 
         scanConfigFiles(configDir, results);
-        Path gradleMcConfig = configDir.resolve("gradlemc-common.toml").normalize();
+        Path gradleMcConfig = GradleMCConfig.path();
         results.add(CheckResult.of(
                 Files.isRegularFile(gradleMcConfig) ? Severity.PASS : Severity.INFO,
                 CheckCategory.CONFIG,
-                "GradleMC config file " + (Files.isRegularFile(gradleMcConfig) ? "is present" : "will use Fabric defaults until config persistence is ported"),
+                "GradleMC config file " + (Files.isRegularFile(gradleMcConfig) ? "is present" : "is missing"),
                 gradleMcConfig.toString(),
-                "Fabric port currently uses safe built-in defaults; GradleMC does not auto-edit user configs."
+                "GradleMC writes validated client settings atomically and falls back to safe defaults when values are invalid."
         ));
         Path rulesPath = RiskRuleLoader.rulesPath();
         results.add(CheckResult.of(

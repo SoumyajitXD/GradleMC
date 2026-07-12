@@ -82,7 +82,7 @@ public final class GradleMCConfig {
                 .comment("Maximum accepted radius for bounded scan commands.")
                 .defineInRange("maxScanRadius", 256, 32, 512);
         DEFAULT_PERF_SECONDS = builder
-                .comment("Default duration for future bounded performance sampling.")
+                .comment("Default duration for bounded performance sampling.")
                 .defineInRange("defaultPerfSeconds", 60, 5, 600);
         MAX_PERF_SECONDS = builder
                 .comment("Maximum accepted duration for performance commands.")

@@ -3,6 +3,7 @@ package com.soumyajit.gradlemc.client;
 import com.mojang.brigadier.Command;
 import com.soumyajit.gradlemc.metrics.FpsTestResult;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
+import com.soumyajit.gradlemc.command.FpsTestCommandBridge;
 import com.soumyajit.gradlemc.report.FpsTestReportWriter;
 import com.soumyajit.gradlemc.smart.AdaptiveBaselineStore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
@@ -29,6 +30,10 @@ public final class FpsTestManager {
     }
 
     public static int start(CommandSourceStack source, int seconds) {
+        if (!validDuration(seconds)) {
+            source.sendFailure(Component.literal(durationError()));
+            return 0;
+        }
         if (currentSession != null) {
             source.sendFailure(Component.literal("An FPS test is already running. Use /gradlemc testfps stop first."));
             return 0;
@@ -57,6 +62,10 @@ public final class FpsTestManager {
     }
 
     public static boolean startFromClient(int seconds) {
+        if (!validDuration(seconds)) {
+            sendClientMessage(Component.literal(durationError()));
+            return false;
+        }
         if (currentSession != null) {
             sendClientMessage(Component.literal("An FPS test is already running. Use the stop button or /gradlemc testfps stop first."));
             return false;
@@ -145,6 +154,15 @@ public final class FpsTestManager {
     private static String safeMessage(Exception exception) {
         String message = exception.getMessage();
         return message == null || message.isBlank() ? exception.getClass().getSimpleName() : message;
+    }
+
+    private static boolean validDuration(int seconds) {
+        return seconds >= FpsTestCommandBridge.MIN_SECONDS && seconds <= FpsTestCommandBridge.maxSeconds();
+    }
+
+    private static String durationError() {
+        return "FPS test duration must be between " + FpsTestCommandBridge.MIN_SECONDS
+                + " and " + FpsTestCommandBridge.maxSeconds() + " seconds.";
     }
 
     private static final class Session {

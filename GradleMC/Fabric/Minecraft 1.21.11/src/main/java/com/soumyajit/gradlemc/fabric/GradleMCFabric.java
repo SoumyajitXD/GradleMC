@@ -3,6 +3,7 @@ package com.soumyajit.gradlemc.fabric;
 import com.soumyajit.gradlemc.GradleMC;
 import com.soumyajit.gradlemc.ai.AdaptiveSmartAIManager;
 import com.soumyajit.gradlemc.command.GradleMcCommands;
+import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
@@ -16,6 +17,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 public final class GradleMCFabric implements ModInitializer {
     @Override
     public void onInitialize() {
+        GradleMCConfig.SPEC.load();
         GradleMCNetwork.register();
         CommandRegistrationCallback.EVENT.register(GradleMcCommands::register);
         ServerTickEvents.END_SERVER_TICK.register(AdaptiveSmartAIManager::onEndServerTick);

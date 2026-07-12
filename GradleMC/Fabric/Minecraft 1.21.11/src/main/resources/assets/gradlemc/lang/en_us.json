@@ -16,7 +16,7 @@
   "screen.gradlemc.overview.open_note": "Open this panel with /gradlemc gui or the configured GradleMC keybind.",
   "screen.gradlemc.smart_ai.explain": "Adaptive diagnostics use local rule-based scoring and adaptive thresholds. They do not use generative AI, cloud AI, online inference, telemetry, embeddings, or external ML services.",
   "screen.gradlemc.smart_ai.signals": "Tracked Signals",
-  "screen.gradlemc.settings.read_only": "These settings are shown read-only. Edit gradlemc-common.toml or use supported commands where available.",
+  "screen.gradlemc.settings.read_only": "These settings use config/gradlemc.properties and supported in-game controls.",
   "screen.gradlemc.settings.overlay_note": "Overlay settings are local client preferences and are saved to the GradleMC config.",
   "screen.gradlemc.settings.gpu_note": "GPU usage is not shown unless a reliable provider exists. GradleMC only shows renderer/name metadata from OpenGL.",
   "screen.gradlemc.quick_actions.description": "Run common GradleMC diagnostics from buttons. Server commands still use normal command permission checks.",

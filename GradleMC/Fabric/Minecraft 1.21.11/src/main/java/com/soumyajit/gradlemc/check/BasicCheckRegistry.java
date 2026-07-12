@@ -7,6 +7,7 @@ import com.soumyajit.gradlemc.check.impl.MemoryInfoCheck;
 import com.soumyajit.gradlemc.check.impl.ConfigSanityCheck;
 import com.soumyajit.gradlemc.check.impl.ReportDirectoryCheck;
 import com.soumyajit.gradlemc.check.impl.RiskRuleCheck;
+import com.soumyajit.gradlemc.check.impl.ServerPerformanceCheck;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public final class BasicCheckRegistry {
         return List.of(
                 new JavaVersionCheck(),
                 new MemoryInfoCheck(),
+                new ServerPerformanceCheck(),
                 new LoadedModsCheck(),
                 new ReportDirectoryCheck(),
                 new ConfigSanityCheck(),

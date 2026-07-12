@@ -31,6 +31,19 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
+tasks.register('gradlemcSelfTest', JavaExec) {
+	group = 'verification'
+	description = 'Runs dependency-free GradleMC defaults and bounds self-tests.'
+	dependsOn tasks.named('testClasses')
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.soumyajit.gradlemc.GradleMcSelfTest'
+}
+
+tasks.named('test', Test).configure {
+	dependsOn tasks.named('gradlemcSelfTest')
+	failOnNoDiscoveredTests = false
+}
+
 processResources {
 	def version = project.version
 	inputs.property "version", version

@@ -505,7 +505,7 @@ public final class GradleMcCommands {
 
     private static int createIssueBundle(CommandSourceStack source) {
         if (!GradleMCConfig.ISSUE_BUNDLE_ENABLED.get()) {
-            source.sendFailure(Component.literal("Issue bundles are disabled in gradlemc-common.toml."));
+            source.sendFailure(Component.literal("Issue bundles are disabled in gradlemc.properties."));
             return 0;
         }
         try {
@@ -610,7 +610,7 @@ public final class GradleMcCommands {
 
     private static int showConfigPath(CommandSourceStack source) {
         send(source, "Minecraft config directory: " + GradleMcPaths.configDirectory());
-        send(source, "GradleMC config: " + GradleMcPaths.configDirectory().resolve("gradlemc-common.toml").normalize());
+        send(source, "GradleMC config: " + GradleMCConfig.path());
         send(source, "GradleMC output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()));
         return Command.SINGLE_SUCCESS;
     }
@@ -687,7 +687,7 @@ public final class GradleMcCommands {
 
     private static int showSmartHelp(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in gradlemc.properties.");
             return 0;
         }
         AdaptiveBaseline baseline = AdaptiveBaselineStore.load();
@@ -700,7 +700,7 @@ public final class GradleMcCommands {
 
     private static int smartScore(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in gradlemc.properties.");
             return 0;
         }
         AdaptiveBaselineStore.updateMemorySnapshot();
@@ -726,7 +726,7 @@ public final class GradleMcCommands {
 
     private static int smartAdvice(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in gradlemc.properties.");
             return 0;
         }
         StabilityScore score = currentSmartScore(source);
@@ -747,7 +747,7 @@ public final class GradleMcCommands {
 
     private static int smartExplain(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in gradlemc.properties.");
             return 0;
         }
         StabilityScore score = currentSmartScore(source);
@@ -802,7 +802,7 @@ public final class GradleMcCommands {
 
     private static int smartThresholds(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in gradlemc.properties.");
             return 0;
         }
         AdaptiveBaseline baseline = AdaptiveBaselineStore.load();
@@ -822,7 +822,7 @@ public final class GradleMcCommands {
 
     private static int exportReport(CommandSourceStack source) {
         if (!GradleMCConfig.REPORTS_ENABLED.get()) {
-            source.sendFailure(Component.literal("GradleMC reports are disabled in gradlemc-common.toml."));
+            source.sendFailure(Component.literal("GradleMC reports are disabled in gradlemc.properties."));
             return 0;
         }
         Report report = buildReport(source, "GradleMC exported diagnostics", List.of(
@@ -1161,6 +1161,19 @@ public final class GradleMcCommands {
     }
 
     private static boolean hasPermission(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+        if (player != null) {
+            if (source.getServer().isSingleplayerOwner(player.nameAndId())) {
+                return true;
+            }
+            PermissionSet profilePermissions = source.getServer().getProfilePermissions(player.nameAndId());
+            if (profilePermissions == PermissionSet.ALL_PERMISSIONS) {
+                return true;
+            }
+            if (profilePermissions instanceof LevelBasedPermissionSet levelBased) {
+                return levelBased.level().isEqualOrHigherThan(PermissionLevel.GAMEMASTERS);
+            }
+        }
         PermissionSet permissions = source.permissions();
         if (permissions == PermissionSet.ALL_PERMISSIONS) {
             return true;
