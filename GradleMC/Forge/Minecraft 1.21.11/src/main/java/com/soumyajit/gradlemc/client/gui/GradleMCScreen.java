@@ -463,7 +463,9 @@ public class GradleMCScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        // Minecraft 1.21.11 permits only one blurred background stratum per frame.
+        // The vanilla screen pipeline may already claim it, so use a simple dim overlay.
+        graphics.fill(0, 0, this.width, this.height, 0x90000000);
         Layout layout = layout();
         GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
         renderShell(graphics, layout);
