@@ -1,146 +1,66 @@
 # GradleMC Roadmap
 
-This roadmap records the public GradleMC support plan. A target is supported only when the code, build, runtime behavior, documentation, screenshots, and artifact naming all agree.
+This roadmap records the public GradleMC support plan. A target is supported only when source metadata, builds, runtime behavior, documentation, and artifact naming agree.
 
 ---
 
 ## Current Supported Public Targets
 
-| Loader | Version | Minecraft | Java | Artifact | Notes |
+| Loader | GradleMC | Minecraft | Java | Artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge target `26.1.2-64.0.11`; Forge `26.1.2` release |
-| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
+| Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` | Forge `61.1.8` |
+| Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
+| NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
+| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 Current public focus:
 
-- stable Forge, Fabric, and Quilt `1.20.1` diagnostics;
-- stable Forge and Fabric `26.1.2` diagnostics;
-- trustworthy reports;
-- clean GUI and command UX;
-- bounded local performance and profiler evidence;
-- Smart Diagnostics clarity;
-- adaptive diagnostics correctness;
-- screenshot-backed README and docs;
-- release and CI discipline.
+- stabilize the Forge, Fabric, and NeoForge `1.21.11` release line;
+- maintain the released `1.20.1` and `26.1.2` targets;
+- keep reports trustworthy and reviewable;
+- keep GUI and command UX clean;
+- keep performance and profiler evidence bounded;
+- improve Smart Diagnostics clarity without pretending it is cloud AI;
+- keep CurseForge, GitHub, source metadata, and artifact names synchronized;
+- use only real screenshots from supported builds.
 
 ---
 
-## Released: Forge `26.1.2` `1.0.0`
+## Released: Minecraft `1.21.11` `1.0.0`
 
-`1.0.0` is the current public Forge `26.1.2` release.
+GradleMC `1.0.0` is publicly released for Forge, Fabric, and NeoForge on Minecraft `1.21.11`.
 
-Release-surface goals:
+Release-surface rules:
 
-- treat Forge `26.1.2` as a real public target, not a roadmap entry with a fake mustache;
-- keep Forge `26.1.2` artifact naming exact: `gradlemc-forge-26.1.2-1.0.0.jar`;
-- keep Forge target metadata documented as `26.1.2-64.0.11`;
-- keep Java `25` documented for this target;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
+- keep Forge artifact naming exact: `gradlemc-forge-1.21.11-1.0.0.jar`;
+- keep Fabric artifact naming exact: `gradlemc-fabric-1.21.11-1.0.0.jar`;
+- keep NeoForge artifact naming exact: `gradlemc-neoforge-1.21.11-1.0.0.jar`;
+- keep Java `21` attached to all three targets;
+- document Forge `61.1.8`, Fabric Loader `0.19.3` with Fabric API `0.141.4+1.21.11`, and NeoForge `21.11.42` accurately;
+- keep `/gradlemc` command examples lowercase;
+- keep Smart Diagnostics and adaptive diagnostics described as local systems;
+- do not imply feature parity that was not verified at runtime.
 
----
-
-## Released: Fabric `26.1.2` `1.0.0`
-
-`1.0.0` is the current public Fabric `26.1.2` release.
-
-Release-surface goals:
-
-- treat Fabric `26.1.2` as a real public target, not a roadmap entry with a filename taped on;
-- keep Fabric `26.1.2` artifact naming exact: `gradlemc-fabric-26.1.2-1.0.0.jar`;
-- keep Java `25` documented for this target;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
+These are real releases, not roadmap entries wearing jar filenames as fake moustaches.
 
 ---
 
-## Released: Quilt `1.20.1` `1.0.0`
+## Maintained Release Lines
 
-`1.0.0` is the current public Quilt `1.20.1` release.
+### Minecraft `26.1.2`
 
-Release-surface goals:
+- Forge `1.0.0`: `gradlemc-forge-26.1.2-1.0.0.jar`, Java `25`.
+- Fabric `1.0.0`: `gradlemc-fabric-26.1.2-1.0.0.jar`, Java `25`.
 
-- treat Quilt `1.20.1` as a real public target, not a roadmap hallucination with a jar filename taped to it;
-- keep Quilt artifact naming exact: `gradlemc-quilt-1.20.1-1.0.0.jar`;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
+### Minecraft `1.20.1`
 
----
-
-## Released: Forge `1.0.2` Hotfix
-
-`1.0.2` is the current public Forge `1.20.1` release.
-
-Release-surface goals:
-
-- keep Forge `1.20.1` support claims locked to Forge `1.20.1`;
-- keep Forge `1.20.1` artifact naming exact: `gradlemc-1.0.2-forge-1.20.1.jar`;
-- document the real hotfix scope: Quick Actions tab overlay fix;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
-
----
-
-## Released: Fabric `1.20.1` `1.0.0`
-
-`1.0.0` is the current public Fabric `1.20.1` release.
-
-Release-surface goals:
-
-- treat Fabric `1.20.1` as a real public target, not a roadmap maybe-baby;
-- keep Fabric artifact naming exact: `gradlemc-fabric-1.20.1-1.0.0.jar`;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
-
----
-
-## Released: Forge `1.0.1` Stabilization
-
-`1.0.1` was the previous public Forge `1.20.1` release.
-
-Release-surface goals:
-
-- keep Forge support claims locked to Forge `1.20.1`;
-- keep Forge artifact naming exact: `gradlemc-1.0.1-forge-1.20.1.jar`;
-- keep command examples lowercase;
-- keep Smart Diagnostics and adaptive diagnostics described as local rule-based systems;
-- keep profiler wording bounded and honest;
-- keep CurseForge and GitHub docs synced;
-- use only real screenshots captured from supported builds.
-
----
-
-## Screenshot And Demo Pass
-
-The GitHub screenshot pass has started. Current assets live in [`Screenshots/`](Screenshots/), and the full gallery is documented in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
-
-Rules:
-
-1. The README gets only a compact preview.
-2. The full gallery belongs in `docs/SCREENSHOTS.md`.
-3. Screenshot maintenance rules belong in `docs/SCREENSHOT_PLAN.md`.
-4. Screenshots must not imply unsupported loader or version support.
-5. Visuals must be updated with docs when UI or report flow changes.
-
-Future improvement: rename numbered screenshots to descriptive lowercase kebab-case names in a focused asset-cleanup change that updates every reference.
+- Forge `1.0.2`: `gradlemc-1.0.2-forge-1.20.1.jar`, Java `17`.
+- Fabric `1.0.0`: `gradlemc-fabric-1.20.1-1.0.0.jar`, Java `17`.
+- Quilt `1.0.0`: `gradlemc-quilt-1.20.1-1.0.0.jar`, Java `17`.
 
 ---
 
@@ -151,67 +71,48 @@ Future `1.0.x` work should be quality-first, not feature stuffing.
 Priority work:
 
 - fix confirmed bugs from real reports;
-- improve GUI copy and error handling;
+- verify client and dedicated-server behavior on every supported target;
+- improve GUI copy, layout, and error handling;
 - polish command help and report summaries;
-- tighten export and report wording;
+- tighten export and issue-bundle wording;
 - improve diagnostics confidence explanations;
-- verify dedicated-server behavior on supported loaders;
-- keep screenshot docs synced with real UI;
-- keep CI strict;
-- update README and CurseForge copy only after behavior is verified.
+- keep screenshots synchronized with real UI;
+- keep CI strict and loader-aware;
+- update public copy only after behavior is verified.
 
----
-
-## Mid-Term Quality Work
-
-Potential `1.0.x` improvements:
-
-- stronger report sections with clearer headings;
-- better issue-bundle summaries;
-- more actionable Smart Diagnostics recommendations;
-- more GUI affordances for latest reports and profile summaries;
-- stricter validation for public wording drift;
-- clearer separation between diagnostics, profiler, and adaptive gameplay-state logic;
-- better docs for server owners and support helpers;
-- better screenshot filenames and visual captions.
-
-Each item needs testing. A cool idea is not a release criterion.
+A cool idea is not a release criterion. It is merely a cool idea.
 
 ---
 
 ## Future Ports
 
-Possible future targets belong behind gates:
+Possible future targets remain behind release gates, including:
 
-- additional Forge targets beyond the currently released `1.20.1` and `26.1.2` builds;
-- newer Quilt versions;
-- NeoForge candidates;
+- additional Forge, Fabric, NeoForge, or Quilt versions not listed above;
 - later Minecraft versions;
-- additional Fabric targets beyond the currently released `1.20.1` and `26.1.2` builds.
+- any new loader family.
 
-A port is not real until all of this is true:
+A port is not public support until all of this is true:
 
-- variant or source metadata says it is enabled;
-- build works;
+- source metadata identifies the intended loader and Minecraft version;
+- the build succeeds;
 - runtime behavior is tested;
 - client/server boundaries are correct;
-- docs mention it accurately;
+- documentation is accurate;
 - screenshots do not misrepresent it;
 - artifact naming is correct;
 - release automation exports the expected jar;
-- CI covers the target;
-- unsupported-feature checks stop false claims.
+- CI covers the target.
 
-Until then, future targets are roadmap entries, not release claims.
+Until then, it is a candidate, not a release.
 
 ---
 
 ## Explicit Non-Goals
 
 - No telemetry or analytics.
-- No cloud AI.
-- No generative AI features.
-- No fake profiler parity claims.
-- No fake NeoForge or Bedrock jars.
+- No cloud AI or generative AI features.
+- No fake profiler-parity claims.
+- No fake jars or renamed artifacts pretending to be ports.
 - No unlisted loader/version support claims.
 - No branch sprawl as a substitute for planning.
