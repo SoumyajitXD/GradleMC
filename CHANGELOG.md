@@ -1,18 +1,19 @@
 # Changelog
 
-This changelog tracks public GradleMC release and repository-surface changes.
-
-GradleMC uses semantic versioning where practical. Public support claims must match the code, build, runtime behavior, docs, screenshots, and artifact names.
+This changelog tracks public GradleMC releases and repository-facing release changes. Public support claims must match source metadata, builds, runtime behavior, documentation, and artifact names.
 
 ---
 
 ## Current Public Releases
 
-| Loader | Current public version | Minecraft | Java | Expected artifact | Notes |
+| Loader | GradleMC | Minecraft | Java | Expected artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2` release; Forge target `26.1.2-64.0.11` |
-| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge target `47.4.20`; Quick Actions overlay hotfix |
+| Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` | Forge `61.1.8` |
+| Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
+| NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
+| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
@@ -24,201 +25,81 @@ GradleMC uses semantic versioning where practical. Public support claims must ma
 
 ---
 
-## Unreleased
+## `1.0.0` — Minecraft `1.21.11` Release Line
 
-### Documentation
+Published GradleMC for Minecraft Java Edition `1.21.11` on Forge, Fabric, and NeoForge.
 
-- Kept screenshot, release, and contribution docs aligned with the current public release surface.
+### Forge `1.21.11`
+
+- Release artifact: `gradlemc-forge-1.21.11-1.0.0.jar`.
+- Forge target: `61.1.8`.
+- Java target: `21`.
+- Added the full GradleMC diagnostics GUI, command surface, performance sampling, memory and environment inspection, Smart Diagnostics, worldgen observation, and exportable troubleshooting reports for this Forge target.
+- `/gradlemc version` identifies Minecraft `1.21.11`, Forge, and GradleMC `1.0.0`.
+
+### Fabric `1.21.11`
+
+- Release artifact: `gradlemc-fabric-1.21.11-1.0.0.jar`.
+- Fabric Loader target: `0.19.3`.
+- Fabric API target: `0.141.4+1.21.11`.
+- Java target: `21`.
+- Added the full GradleMC diagnostics GUI, command surface, performance sampling, memory and environment inspection, Smart Diagnostics, worldgen observation, and exportable troubleshooting reports for this Fabric target.
+- `/gradlemc version` identifies Minecraft `1.21.11`, Fabric, and GradleMC `1.0.0`.
+
+### NeoForge `1.21.11`
+
+- Release artifact: `gradlemc-neoforge-1.21.11-1.0.0.jar`.
+- NeoForge target: `21.11.42`.
+- Java target: `21`.
+- Added the full GradleMC diagnostics GUI, command surface, performance sampling, memory and environment inspection, Smart Diagnostics, worldgen observation, and exportable troubleshooting reports for this NeoForge target.
+- `/gradlemc version` identifies Minecraft `1.21.11`, NeoForge, and GradleMC `1.0.0`.
+
+### Documentation and publishing surface
+
+- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, release documentation, screenshot guidance, maintainer guidance, and `curseforge-description.html`.
+- Removed obsolete claims that NeoForge was categorically unsupported.
+- Added Java `21` guidance and exact artifact names for all three `1.21.11` releases.
+- Kept Smart Diagnostics and adaptive diagnostics described accurately as local rule-based systems, not cloud AI or LLM integrations.
 
 ---
 
-## `1.0.0` - Forge `26.1.2`
+## `1.0.0` — Forge `26.1.2`
 
-Published the Forge port for Minecraft Java Edition `26.1.2`.
-
-### Release identity
-
-- Release artifact: `gradlemc-forge-26.1.2-1.0.0.jar`.
-- Supported target: Forge `26.1.2`.
-- Forge coordinate: `26.1.2-64.0.11`.
+- Artifact: `gradlemc-forge-26.1.2-1.0.0.jar`.
+- Forge target: `26.1.2-64.0.11`.
 - Java target: `25`.
-- CurseForge Project ID remains `1585182`.
+- Published the Forge GradleMC diagnostics surface for Minecraft `26.1.2`.
 
-### Documentation and publishing surface
+## `1.0.0` — Fabric `26.1.2`
 
-- Updated public GitHub docs so Forge `26.1.2` is no longer treated as an unsupported future target.
-- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, `docs/RELEASE_CHECKLIST.md`, `docs/SCREENSHOT_PLAN.md`, `.github/PULL_REQUEST_TEMPLATE.md`, the Forge `26.1.2` source README, and the repository CurseForge description source for the Forge `26.1.2` release.
-- Kept support claims limited to the explicitly listed public release targets: Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
-- Kept NeoForge, Bedrock, and all unlisted loader/version pairs out of current support claims.
-
-### Guardrails
-
-- The Forge `26.1.2` release is a real public target, not a roadmap placeholder with a jar name taped to its forehead.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
-
----
-
-## `1.0.0` - Fabric `26.1.2`
-
-Published the Fabric port for Minecraft Java Edition `26.1.2`.
-
-### Release identity
-
-- Release artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
-- Supported target: Fabric `26.1.2`.
+- Artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
 - Java target: `25`.
-- CurseForge Project ID remains `1585182`.
+- Published the Fabric GradleMC diagnostics surface for Minecraft `26.1.2`.
 
-### Documentation and publishing surface
+## `1.0.0` — Quilt `1.20.1`
 
-- Updated public GitHub docs so Fabric `26.1.2` is no longer treated as an unsupported future target.
-- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, screenshot guidance, release checklist docs, the Fabric `26.1.2` port README, and the repository CurseForge description source for the Fabric `26.1.2` release.
-- Kept support claims limited to the explicitly listed public release targets: Forge `1.20.1`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
-- Kept NeoForge, Bedrock, and all unlisted loader/version pairs out of current support claims.
+- Artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
+- Java target: `17`.
+- Published the Quilt GradleMC diagnostics surface for Minecraft `1.20.1`.
 
-### Guardrails
+## `1.0.2` — Forge `1.20.1`
 
-- The Fabric `26.1.2` release is a real public target, not a roadmap placeholder.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
+- Artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
+- Forge target: `47.4.20`.
+- Java target: `17`.
+- Fixed the Quick Actions tab overlay issue where lower controls or text could overlap.
 
----
+## `1.0.0` — Fabric `1.20.1`
 
-## `1.0.0` - Quilt `1.20.1`
+- Artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
+- Java target: `17`.
+- Published the Fabric GradleMC diagnostics surface for Minecraft `1.20.1`.
 
-Published the Quilt port for Minecraft Java Edition `1.20.1`.
+## `1.0.1` — Forge `1.20.1`
 
-### Release identity
+- Artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
+- Stabilization release preceding the `1.0.2` Quick Actions hotfix.
 
-- Release artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
-- Supported target: Quilt `1.20.1`.
-- Java target remains `17`.
-- CurseForge Project ID remains `1585182`.
+## `1.0.0` — Forge `1.20.1`
 
-### Documentation and publishing surface
-
-- Updated public GitHub docs so Quilt is no longer described as unsupported.
-- Updated `README.md`, `CHANGELOG.md`, `ROADMAP.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md`, release checklist docs, PR template checks, screenshot guidance, issue contact text, and the repository CurseForge description source for the Quilt `1.20.1` release.
-- Kept support claims limited to Minecraft `1.20.1` on Forge, Fabric, and Quilt only.
-- Kept NeoForge, Bedrock, and future Minecraft versions out of current support claims.
-
-### Guardrails
-
-- The Quilt release is a real public target, not a roadmap placeholder.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
-
----
-
-## `1.0.2` - Forge `1.20.1`
-
-Published public Forge hotfix release for Minecraft Java Edition `1.20.1`.
-
-### Release identity
-
-- Release artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
-- Supported target remains Forge `1.20.1`.
-- Java target remains `17`.
-- Forge target remains `47.4.20`.
-- CurseForge Project ID remains `1585182`.
-
-### Fixed
-
-- Fixed the Quick Actions tab overlay issue where lower controls/text could visually overlap instead of laying out cleanly.
-
-### Documentation and publishing surface
-
-- Updated GitHub release-facing docs for the `1.0.2` Forge public release.
-- Updated `README.md`, `AGENTS.md`, `docs/RELEASE_CHECKLIST.md`, `ROADMAP.md`, and `curseforge-description.html` to point at `gradlemc-1.0.2-forge-1.20.1.jar`.
-- Kept public support claims limited to Minecraft `1.20.1` on Forge and Fabric at that time.
-
-### Guardrails
-
-- No new loader, Minecraft version, telemetry, cloud AI, LLM, or generative AI support is claimed by this hotfix.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
-
----
-
-## `1.0.0` - Fabric `1.20.1`
-
-Published the Fabric port for Minecraft Java Edition `1.20.1`.
-
-### Release identity
-
-- Release artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
-- Supported target: Fabric `1.20.1`.
-- Java target remains `17`.
-- CurseForge Project ID remains `1585182`.
-
-### Documentation and publishing surface
-
-- Updated public GitHub docs so Fabric is no longer described as unsupported.
-- Kept support claims limited to Minecraft `1.20.1` on Forge and Fabric only at that time.
-- Kept NeoForge, Quilt, Bedrock, and future Minecraft versions out of current support claims at that time.
-
-### Guardrails
-
-- The Fabric release is a real public target, not a roadmap placeholder.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
-
----
-
-## `1.0.1` - Forge `1.20.1`
-
-Published public release for Minecraft Java Edition `1.20.1` on Forge.
-
-### Release identity
-
-- Release artifact: `gradlemc-1.0.1-forge-1.20.1.jar`.
-- Supported target remains Forge `1.20.1`.
-- Java target remains `17`.
-- Forge target remains `47.4.20`.
-- CurseForge Project ID remains `1585182`.
-
-### Documentation and publishing surface
-
-- Updated GitHub release-facing docs for the `1.0.1` public release.
-- Added `curseforge-description.html` as the repository source for the CurseForge project description.
-- Clarified that screenshots should be captured from the real `1.0.1` release jar before being added.
-- Kept public support claims limited to Forge `1.20.1` only at the time of release.
-
-### Guardrails
-
-- No Fabric, NeoForge, Quilt, or non-`1.20.1` support was claimed by this release.
-- Smart Diagnostics and adaptive diagnostics remain local rule-based systems, not LLMs, generative AI, telemetry, analytics, or cloud inference.
-- Profiler features remain bounded local evidence tools, not Spark parity.
-
----
-
-## `1.0.0` - Forge `1.20.1`
-
-Initial public release target for Minecraft Java Edition `1.20.1` on Forge.
-
-### Highlights
-
-- Lowercase `/gradlemc` command tree.
-- In-game diagnostics GUI opened with `/gradlemc gui` and a configurable keybind.
-- Optional disabled-by-default stats overlay.
-- Local report export under `<gameDir>/gradlemc/reports/`.
-- JVM memory diagnostics.
-- Loaded mod inspection.
-- Config and report path checks.
-- Local risk-rule checks.
-- Entity and block entity density scans.
-- Bounded TPS/MSPT sampling.
-- Bounded FPS sampling.
-- Passive worldgen pressure observation.
-- Local profiler foundation with tick, CPU-lite, memory-lite, and combined modes.
-- Smart Diagnostics scoring, advice, evidence, confidence, and missing-data notes.
-- Adaptive diagnostics status based on local bounded gameplay-state signals.
-- Safe issue-bundle export behavior.
-
-### Known limits
-
-- Forge `1.20.1` was the only supported public target at initial release.
-- Profiler features are local evidence tools, not Spark parity.
-- Smart Diagnostics and adaptive diagnostics are rule-based and local.
-- No telemetry, analytics, online inference, or cloud AI.
+Initial public GradleMC release, including lowercase `/gradlemc` commands, the diagnostics GUI, memory and mod inspection, local reports, bounded TPS/MSPT and FPS sampling, passive worldgen observation, Smart Diagnostics, adaptive diagnostics, and issue-bundle export behavior.
