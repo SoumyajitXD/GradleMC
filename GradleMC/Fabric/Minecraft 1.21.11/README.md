@@ -1,31 +1,39 @@
-# GradleMC Fabric 1.21.11
+# GradleMC — Fabric 1.21.11
 
-Target Minecraft version: 1.21.11
+This standalone project builds the public GradleMC `1.0.0` release for Minecraft Java Edition `1.21.11` on Fabric.
 
-Loader: Fabric
+## Release Identity
 
-Required Java: 21 or newer
+| Field | Value |
+| --- | --- |
+| Minecraft | `1.21.11` |
+| Loader | Fabric Loader `0.19.3` |
+| Fabric API | `0.141.4+1.21.11` |
+| GradleMC | `1.0.0` |
+| Java | `21` |
+| Public artifact | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 
-Build command:
+## Build
 
 ```powershell
 .\gradlew.bat clean build
 ```
 
-Output jar:
+Linux/macOS:
+
+```sh
+./gradlew clean build
+```
+
+Expected output:
 
 ```text
 build/libs/gradlemc-fabric-1.21.11-1.0.0.jar
 ```
 
-Tooling notes:
+## Verification
 
-- Uses `net.fabricmc.fabric-loom-remap` for the obfuscated Minecraft 1.21.11 line.
-- Uses official Mojang mappings, matching the existing mature GradleMC Fabric source style.
-- Uses Fabric Loader `0.19.3` and Fabric API `0.141.4+1.21.11`.
-- Uses Java 21 source/target compatibility.
-
-Known limitations:
-
-- This port preserves the mature GradleMC Fabric diagnostics, GUI, keybinds, reports, profiling, and mod inspection behavior as far as the Minecraft 1.21.11 APIs allow.
-- Client launch should be run with Java 21 or newer.
+- Confirm `/gradlemc version` reports Minecraft `1.21.11`, Fabric, GradleMC `1.0.0`, and Java `21` context.
+- Verify the diagnostics GUI, keybind, commands, reports, performance tests, Smart Diagnostics, mod inspection, and worldgen observation.
+- Test client-only behavior on the client and common/server behavior on a dedicated server.
+- Do not rename another loader's jar and call it a Fabric build. File extensions are not magic spells.
