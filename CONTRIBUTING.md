@@ -2,7 +2,7 @@
 
 Thanks for wanting to improve GradleMC. Focused contributions are welcome.
 
-GradleMC currently has public Minecraft Java Edition `1.20.1` targets for Forge, Fabric, and Quilt, plus `26.1.2` targets for Forge and Fabric. The repository root holds public-facing docs, GitHub configuration, license, screenshots, and project assets.
+GradleMC currently supports Minecraft Java Edition `1.21.11` on Forge, Fabric, and NeoForge; `1.20.1` on Forge, Fabric, and Quilt; and `26.1.2` on Forge and Fabric.
 
 ---
 
@@ -15,7 +15,7 @@ Read these first:
 3. [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release-facing changes.
 4. [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) and [`docs/SCREENSHOT_PLAN.md`](docs/SCREENSHOT_PLAN.md) before changing visual assets.
 
-Unsupported ports are roadmap entries until the code, build, runtime checks, docs, screenshots, and artifact names all agree.
+Unsupported ports remain candidates until source metadata, builds, runtime checks, docs, and artifact names all agree.
 
 ---
 
@@ -24,106 +24,81 @@ Unsupported ports are roadmap entries until the code, build, runtime checks, doc
 - Keep the mod ID as `gradlemc`.
 - Minecraft command literals and examples must be lowercase.
 - Correct GUI command: `/gradlemc gui`.
-- Current supported public release targets: Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1`.
-- Use Java `17` for current `1.20.1` builds and Java `25` for current Forge/Fabric `26.1.2` builds.
-- Current Forge `26.1.2` artifact: `gradlemc-forge-26.1.2-1.0.0.jar`.
-- Current Forge `1.20.1` artifact: `gradlemc-1.0.2-forge-1.20.1.jar`.
-- Current Fabric `26.1.2` artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
-- Current Fabric `1.20.1` artifact: `gradlemc-fabric-1.20.1-1.0.0.jar`.
-- Current Quilt artifact: `gradlemc-quilt-1.20.1-1.0.0.jar`.
-- Do not imply NeoForge, Bedrock, or unlisted loader/version support unless fully implemented and verified.
+- Current supported targets are exactly those listed in the README release matrix.
+- Use Java `17` for `1.20.1`, Java `21` for `1.21.11`, and Java `25` for the released `26.1.2` builds.
+- Do not imply Bedrock or unlisted loader/version support.
 - Keep client-only code isolated from dedicated-server-safe code.
-- Do not commit generated build output, local run folders, logs, private files, or exported reports.
+- Do not commit generated build output, run folders, logs, private files, or exported reports.
 - Prefer small, focused changes over broad rewrites.
+- Do not add telemetry, analytics, cloud AI, LLM integrations, or phone-home behavior.
+
+---
+
+## Current Public Artifacts
+
+```text
+gradlemc-forge-1.21.11-1.0.0.jar
+gradlemc-fabric-1.21.11-1.0.0.jar
+gradlemc-neoforge-1.21.11-1.0.0.jar
+gradlemc-forge-26.1.2-1.0.0.jar
+gradlemc-fabric-26.1.2-1.0.0.jar
+gradlemc-1.0.2-forge-1.20.1.jar
+gradlemc-fabric-1.20.1-1.0.0.jar
+gradlemc-quilt-1.20.1-1.0.0.jar
+```
+
+Do not “adapt” one artifact by renaming it. That is not porting. That is putting a fake moustache on a jar.
 
 ---
 
 ## Local Setup
 
-Current loader source paths:
+Current standalone source paths:
 
 ```text
+GradleMC/Forge/Minecraft 1.21.11/
+GradleMC/Fabric/Minecraft 1.21.11/
+GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/
 ```
 
-Build Forge `26.1.2`:
+Run builds from the matching project folder:
 
 ```sh
-cd "GradleMC/Forge/Minecraft 26.1.2"
-./gradlew build
+./gradlew clean build
 ```
 
-Build Forge `1.20.1`:
-
-```sh
-cd "GradleMC/Forge/Minecraft 1.20.1"
-./gradlew build
-```
-
-Build Fabric `26.1.2`:
-
-```sh
-cd "GradleMC/Fabric/Minecraft 26.1.2"
-./gradlew build
-```
-
-Build Fabric `1.20.1`:
-
-```sh
-cd "GradleMC/Fabric/Minecraft 1.20.1"
-./gradlew build
-```
-
-Build Quilt `1.20.1`:
-
-```sh
-cd "GradleMC/Quilt/Minecraft 1.20.1"
-./gradlew build
-```
-
-On Windows, run `gradlew.bat` from the same source folder.
+On Windows, use `gradlew.bat`. Run `gradlemcSelfTest` where the target defines it.
 
 ---
 
 ## Verification Checklist
 
-For docs-only changes, manually check the edited Markdown links and any release-facing claims. If screenshots changed, confirm README and `docs/SCREENSHOTS.md` render the intended files from `Screenshots/`.
+For docs-only changes:
 
-For Forge `26.1.2` source/resource changes, run:
+- manually check Markdown links;
+- verify all release and Java claims against source metadata;
+- verify artifact names character-for-character;
+- search for stale “unsupported NeoForge” wording;
+- confirm commands remain lowercase.
 
-```sh
-cd "GradleMC/Forge/Minecraft 26.1.2"
-./gradlew clean build
-```
+For source/resource changes:
 
-On Windows:
+- build the exact target that changed;
+- run available self-tests;
+- test the client when client behavior changed;
+- test a dedicated server when common/server behavior changed;
+- never claim runtime testing that did not happen.
 
-```bat
-cd "GradleMC\Forge\Minecraft 26.1.2"
-gradlew.bat clean build
-```
+Java requirements:
 
-For Forge `1.20.1` source/resource changes, run:
-
-```sh
-cd "GradleMC/Forge/Minecraft 1.20.1"
-./gradlew clean build gradlemcSelfTest
-```
-
-On Windows:
-
-```bat
-cd "GradleMC\Forge\Minecraft 1.20.1"
-gradlew.bat clean build gradlemcSelfTest
-```
-
-For Fabric or Quilt source/resource changes, run the matching loader build and verification tasks from that loader source project. Forge/Fabric `26.1.2` work must be verified from the matching `GradleMC/<Loader>/Minecraft 26.1.2/` folder with Java `25`.
-
-Old validation commands from the removed `SOURCE CODE/` layout are not valid unless they are reintroduced in the current standalone project. Do not paste dead commands into docs, PRs, or release notes.
+- `1.20.1`: Java `17`.
+- `1.21.11`: Java `21`.
+- released `26.1.2` targets: Java `25`.
 
 ---
 
@@ -131,11 +106,12 @@ Old validation commands from the removed `SOURCE CODE/` layout are not valid unl
 
 A useful PR includes:
 
-- A clear problem statement.
-- A focused solution.
-- Screenshots or short clips for GUI changes.
-- Exact commands/tests run.
-- Notes about any known limitations.
+- a clear problem statement;
+- a focused solution;
+- screenshots or short clips for GUI changes;
+- exact commands and tests run;
+- target loader, Minecraft version, and Java version;
+- notes about known limitations.
 
 Avoid unrelated rewrites. They make review harder and usually hide bugs.
 
@@ -148,28 +124,28 @@ Current screenshots live in [`Screenshots/`](Screenshots/) and are documented in
 When adding or replacing screenshots:
 
 - use real screenshots from a supported build;
+- state which loader/version produced them;
 - avoid exposing local paths or sensitive values;
-- keep README preview compact;
-- update `docs/SCREENSHOTS.md` for the full gallery;
-- update `docs/SCREENSHOT_PLAN.md` if paths, naming rules, or capture rules change.
+- keep the README preview compact;
+- update the screenshot gallery and guide together;
+- do not use one loader's screenshot as proof of another loader's runtime behavior.
 
 ---
 
 ## Issue Reports
 
-Use the GitHub issue templates. Include:
+Include:
 
-- Minecraft version.
-- Loader and loader version.
-- GradleMC version.
-- Exact GradleMC jar filename.
-- Java version.
-- Client/server environment.
-- Reproduction steps.
-- Expected behavior.
-- Actual behavior.
-- Relevant GradleMC report snippets.
-- Relevant latest-log snippets if safe to share.
+- Minecraft version;
+- loader and loader version;
+- GradleMC version;
+- exact GradleMC jar filename;
+- Java version;
+- client/server environment;
+- reproduction steps;
+- expected behavior;
+- actual behavior;
+- relevant report and log snippets.
 
 Review logs and exported reports before posting. They may include local paths, mod names, Java details, and runtime context.
 
@@ -177,14 +153,14 @@ Review logs and exported reports before posting. They may include local paths, m
 
 ## Good First Contributions
 
-Good first issues usually live in:
+Good first issues usually involve:
 
-- README clarity.
-- Command help text clarity.
-- GUI copy polish.
-- Screenshot captions and docs polish.
-- Test coverage for small pure logic components.
-- Safer validation messages.
-- Better issue reproduction docs.
+- README and documentation clarity;
+- command-help text;
+- GUI copy polish;
+- screenshot captions;
+- tests for small pure-logic components;
+- safer validation messages;
+- better issue-reproduction guidance.
 
 Avoid starting with loader migrations, profiler rewrites, networking rewrites, or large feature expansions unless there is a clear plan and verification path.
