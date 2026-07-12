@@ -2,13 +2,13 @@
 
 This page is the full visual inventory for the screenshots currently committed to the repository.
 
-The screenshot assets live in [`../Screenshots/`](../Screenshots/). The folder name is capitalized, and GitHub paths are case-sensitive. Do not “clean up” links to lowercase unless the actual folder is renamed in the same change.
+The screenshot assets live in [`../Screenshots/`](../Screenshots/). The folder name is capitalized, and GitHub paths are case-sensitive.
 
 ---
 
 ## README Preview Set
 
-The README uses a compact preview so the landing page does not become a scroll-to-death image dump.
+The README uses a compact preview so the landing page does not become an image dump.
 
 <p align="center">
   <img src="../Screenshots/0.png" alt="GradleMC screenshot 0" width="900">
@@ -43,18 +43,24 @@ The README uses a compact preview so the landing page does not become a scroll-t
 
 ## What These Screenshots Prove
 
-These screenshots are evidence for the currently documented GradleMC UI and user-facing flow. If a screenshot was captured from one loader or Minecraft version, it should not be used to imply behavior was tested on another loader/version pair unless that target was actually tested too.
+These screenshots are evidence for the documented GradleMC UI and user-facing flow. A screenshot captured from one loader or Minecraft version must not be used as proof that another target was runtime-tested.
 
-They do **not** prove support for NeoForge, Bedrock, cloud AI, telemetry, or any loader/version pair that is not listed in the supported release matrix. Screenshots are proof, not marketing fog.
+Current public release families are:
+
+- Forge, Fabric, and NeoForge for Minecraft `1.21.11`;
+- Forge, Fabric, and Quilt for Minecraft `1.20.1`;
+- Forge and Fabric for Minecraft `26.1.2`.
+
+The screenshots do **not** prove support for Bedrock, cloud AI, telemetry, or any loader/version pair absent from the supported-release matrix. Screenshots are evidence, not marketing fog.
 
 ---
 
 ## Maintenance Rules
 
-- Keep screenshot links relative so they render on GitHub forks and branches.
+- Keep screenshot links relative so they render on forks and branches.
 - Keep the README preview small; use this page for the full gallery.
 - If screenshots are renamed, update `README.md`, this file, and `docs/SCREENSHOT_PLAN.md` in the same commit.
-- If screenshots are recaptured for a new release, verify the release jar, Minecraft version, loader version, Java version, and command casing first.
+- If screenshots are recaptured, verify the release jar, Minecraft version, loader version, Java version, and command casing first.
 - Prefer descriptive filenames in future cleanup work, but only rename files when every reference is updated.
 
 ---
@@ -63,7 +69,7 @@ They do **not** prove support for NeoForge, Bedrock, cloud AI, telemetry, or any
 
 The current screenshot set uses numbered files: `0.png` through `13.png`. That is acceptable because the links are documented and stable.
 
-A future cleanup may rename them to descriptive names such as:
+A future focused cleanup may rename them to descriptive lowercase kebab-case names such as:
 
 ```text
 gui-overview.png
@@ -73,4 +79,4 @@ report-export.png
 stats-overlay.png
 ```
 
-Do that only as a deliberate visual-asset cleanup pass. Do not casually rename screenshot files while changing unrelated code.
+Do not casually rename screenshot files while changing unrelated code.
