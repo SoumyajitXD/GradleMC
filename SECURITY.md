@@ -8,24 +8,32 @@ GradleMC is a local Minecraft diagnostics mod. Most reports are normal bugs, cra
 
 | Version / target | Security support |
 | --- | --- |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Forge | Current public support target |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Fabric | Current public support target |
+| GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `26.1.2` Forge | Current public support target |
-| GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Current public support target |
+| GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | Current public support target |
-| Future `1.0.x` releases for listed supported targets | Supported after release |
-| NeoForge, Bedrock, or unlisted loader/version combinations | Not supported until actually implemented and released |
+| Future releases for listed targets | Supported after release and documentation update |
+| Bedrock or unlisted loader/version combinations | Not supported |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
 
 Current expected release artifacts:
 
 ```text
+gradlemc-forge-1.21.11-1.0.0.jar
+gradlemc-fabric-1.21.11-1.0.0.jar
+gradlemc-neoforge-1.21.11-1.0.0.jar
 gradlemc-forge-26.1.2-1.0.0.jar
-gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-26.1.2-1.0.0.jar
+gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
 gradlemc-quilt-1.20.1-1.0.0.jar
 ```
+
+A filename alone is not proof that a jar is official. Verify its source and release location.
 
 ---
 
@@ -37,7 +45,7 @@ Open a GitHub issue if you find or suspect:
 - tampered files pretending to be official GradleMC releases;
 - project links or documentation that could mislead users;
 - accidental exposure of sensitive project or user information;
-- supply-chain concerns around release references, build artifacts, attribution, dependency metadata, or license scope.
+- supply-chain concerns involving dependencies, release references, build artifacts, attribution, or license scope.
 
 Bring evidence: links, filenames, hashes if available, screenshots if useful, where you found the problem, and what made it suspicious.
 
@@ -80,4 +88,4 @@ Logs and exported reports can include local paths, mod names, Java details, load
 
 ## License Scope
 
-GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, Quilt, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
+GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, NeoForge, Quilt, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
