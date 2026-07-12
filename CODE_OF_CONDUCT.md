@@ -14,7 +14,7 @@ It does not welcome harassment, spam, personal attacks, entitlement, fake suppor
 - Respect license boundaries and third-party work.
 - Keep support requests focused on GradleMC.
 - Review logs and reports before posting private information.
-- Assume unsupported loaders and versions are unsupported until the project says otherwise.
+- Check the current supported-release matrix before making compatibility claims.
 
 ---
 
@@ -25,7 +25,7 @@ It does not welcome harassment, spam, personal attacks, entitlement, fake suppor
 - Spamming issues, pull requests, or comments.
 - Reopening the same rejected request without new evidence.
 - Uploading copied assets, mod jars, private files, or unlicensed material.
-- Pushing fake support claims for NeoForge, Quilt, Bedrock, or other unsupported Minecraft targets.
+- Pushing fake support claims for Bedrock or any unlisted loader/version pair.
 - Demanding urgent support without logs, reproduction steps, or basic details.
 
 ---
