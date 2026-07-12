@@ -33,11 +33,12 @@ Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems
 | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
-Treat NeoForge `1.21.11` as a real public target. Do not convert that fact into a broad claim that every NeoForge source folder or Minecraft version is released.
+Treat NeoForge `1.21.11` and NeoForge `26.1.2` as real public targets. Do not convert those facts into a broad claim that every NeoForge source folder or Minecraft version is released.
 
 ---
 
@@ -49,6 +50,7 @@ GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/NeoForge/Minecraft 26.1.2/
 GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/

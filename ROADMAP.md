@@ -13,14 +13,15 @@ This roadmap records the public GradleMC support plan. A target is supported onl
 | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
 
 Current public focus:
 
-- stabilize the Forge, Fabric, and NeoForge `1.21.11` release line;
-- maintain the released `1.20.1` and `26.1.2` targets;
+- stabilize the Forge, Fabric, and NeoForge `1.21.11` and `26.1.2` release lines;
+- maintain the released `1.20.1` targets;
 - keep reports trustworthy and reviewable;
 - keep GUI and command UX clean;
 - keep performance and profiler evidence bounded;
@@ -49,12 +50,28 @@ These are real releases, not roadmap entries wearing jar filenames as fake moust
 
 ---
 
+## Released: Minecraft `26.1.2` `1.0.0`
+
+GradleMC `1.0.0` is publicly released for Forge, Fabric, and NeoForge on Minecraft `26.1.2` with Java `25`.
+
+Release-surface rules:
+
+- keep Forge artifact naming exact: `gradlemc-forge-26.1.2-1.0.0.jar`;
+- keep Fabric artifact naming exact: `gradlemc-fabric-26.1.2-1.0.0.jar`;
+- keep NeoForge artifact naming exact: `gradlemc-neoforge-26.1.2-1.0.0.jar`;
+- document Forge `26.1.2-64.0.11` and NeoForge `26.1.2.78` accurately;
+- keep Java `25` attached to all three targets;
+- keep loader/version identity synchronized across source metadata, reports, release files, GitHub, and CurseForge.
+
+---
+
 ## Maintained Release Lines
 
 ### Minecraft `26.1.2`
 
 - Forge `1.0.0`: `gradlemc-forge-26.1.2-1.0.0.jar`, Java `25`.
 - Fabric `1.0.0`: `gradlemc-fabric-26.1.2-1.0.0.jar`, Java `25`.
+- NeoForge `1.0.0`: `gradlemc-neoforge-26.1.2-1.0.0.jar`, NeoForge `26.1.2.78`, Java `25`.
 
 ### Minecraft `1.20.1`
 

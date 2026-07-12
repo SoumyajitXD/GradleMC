@@ -13,6 +13,7 @@ This changelog tracks public GradleMC releases and repository-facing release cha
 | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
@@ -75,6 +76,15 @@ Published GradleMC for Minecraft Java Edition `1.21.11` on Forge, Fabric, and Ne
 - Artifact: `gradlemc-fabric-26.1.2-1.0.0.jar`.
 - Java target: `25`.
 - Published the Fabric GradleMC diagnostics surface for Minecraft `26.1.2`.
+
+## `1.0.0` — NeoForge `26.1.2`
+
+- Artifact: `gradlemc-neoforge-26.1.2-1.0.0.jar`.
+- NeoForge target: `26.1.2.78`.
+- Java target: `25`.
+- Published the NeoForge GradleMC diagnostics surface for Minecraft `26.1.2`.
+- Includes the diagnostics GUI, configurable keybind, lowercase `/gradlemc` command surface, FPS and performance testing, memory and environment inspection, mod inspection, stability-risk checks, Smart Diagnostics, adaptive diagnostics, worldgen observation, and exportable troubleshooting reports.
+- `/gradlemc version` identifies Minecraft `26.1.2`, NeoForge, and GradleMC `1.0.0`.
 
 ## `1.0.0` — Quilt `1.20.1`
 

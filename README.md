@@ -39,7 +39,7 @@ It provides an in-game control center, readable `/gradlemc` commands, stability 
 
 - Minecraft `1.21.11` on Forge, Fabric, and NeoForge.
 - Minecraft `1.20.1` on Forge, Fabric, and Quilt.
-- Minecraft `26.1.2` on Forge and Fabric.
+- Minecraft `26.1.2` on Forge, Fabric, and NeoForge.
 
 Other loader/version pairs are not supported until implementation, builds, runtime behavior, documentation, and artifact naming all agree.
 
@@ -54,6 +54,7 @@ Other loader/version pairs are not supported until implementation, builds, runti
 | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
@@ -65,7 +66,7 @@ Other loader/version pairs are not supported until implementation, builds, runti
 | Telemetry | None |
 | Cloud AI or LLM usage | None |
 
-The `1.21.11` release line brings the GradleMC diagnostics surface to Forge, Fabric, and NeoForge with Java `21`. Use the jar that exactly matches the loader and Minecraft version; jar roulette is not troubleshooting.
+The `1.21.11` release line supports Forge, Fabric, and NeoForge with Java `21`. The `26.1.2` release line supports Forge, Fabric, and NeoForge with Java `25`. Use the jar that exactly matches the loader and Minecraft version; jar roulette is not troubleshooting.
 
 ---
 
@@ -171,6 +172,7 @@ GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/NeoForge/Minecraft 26.1.2/
 GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/
@@ -179,7 +181,7 @@ GradleMC/Quilt/Minecraft 1.20.1/
 Example:
 
 ```sh
-cd "GradleMC/Forge/Minecraft 1.21.11"
+cd "GradleMC/NeoForge/Minecraft 26.1.2"
 ./gradlew build
 ```
 

@@ -42,7 +42,7 @@ Before replacing the screenshot set, confirm:
 - [ ] the target appears in the current supported-release matrix;
 - [ ] Minecraft `1.21.11` screenshots use Forge, Fabric, or NeoForge and Java `21`;
 - [ ] Minecraft `1.20.1` screenshots use Forge, Fabric, or Quilt and Java `17`;
-- [ ] Minecraft `26.1.2` screenshots use Forge or Fabric and Java `25`;
+- [ ] Minecraft `26.1.2` screenshots use Forge, Fabric, or NeoForge and Java `25`;
 - [ ] the loader version matches the selected release;
 - [ ] command examples use lowercase `/gradlemc`;
 - [ ] screenshots do not imply Bedrock or unlisted loader/version support;

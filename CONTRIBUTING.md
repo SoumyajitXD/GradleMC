@@ -2,7 +2,7 @@
 
 Thanks for wanting to improve GradleMC. Focused contributions are welcome.
 
-GradleMC currently supports Minecraft Java Edition `1.21.11` on Forge, Fabric, and NeoForge; `1.20.1` on Forge, Fabric, and Quilt; and `26.1.2` on Forge and Fabric.
+GradleMC currently supports Minecraft Java Edition `1.21.11` on Forge, Fabric, and NeoForge; `1.20.1` on Forge, Fabric, and Quilt; and `26.1.2` on Forge, Fabric, and NeoForge.
 
 ---
 
@@ -42,6 +42,7 @@ gradlemc-fabric-1.21.11-1.0.0.jar
 gradlemc-neoforge-1.21.11-1.0.0.jar
 gradlemc-forge-26.1.2-1.0.0.jar
 gradlemc-fabric-26.1.2-1.0.0.jar
+gradlemc-neoforge-26.1.2-1.0.0.jar
 gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
 gradlemc-quilt-1.20.1-1.0.0.jar
@@ -61,6 +62,7 @@ GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/NeoForge/Minecraft 26.1.2/
 GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/

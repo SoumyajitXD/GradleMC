@@ -13,6 +13,7 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
@@ -37,6 +38,7 @@ GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
+GradleMC/NeoForge/Minecraft 26.1.2/
 GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
 GradleMC/Quilt/Minecraft 1.20.1/
@@ -88,6 +90,7 @@ Target-specific identity checks:
 - [ ] NeoForge `1.21.11`: NeoForge `21.11.42`, GradleMC `1.0.0`, Java `21`.
 - [ ] Forge `26.1.2`: Forge `26.1.2-64.0.11`, GradleMC `1.0.0`, Java `25`.
 - [ ] Fabric `26.1.2`: GradleMC `1.0.0`, Java `25`.
+- [ ] NeoForge `26.1.2`: NeoForge `26.1.2.78`, GradleMC `1.0.0`, Java `25`.
 - [ ] Forge `1.20.1` `1.0.2`: the Quick Actions tab no longer overlays lower controls or text.
 
 ---
@@ -143,9 +146,9 @@ Check every public surface:
 
 Confirm:
 
-- [ ] all eight current public artifacts are listed accurately;
+- [ ] all nine current public artifacts are listed accurately;
 - [ ] Java `17`, `21`, and `25` are attached to the correct release lines;
-- [ ] Forge `1.21.11`, Fabric `1.21.11`, and NeoForge `1.21.11` are treated as released targets;
+- [ ] Forge, Fabric, and NeoForge are treated as released targets for both `1.21.11` and `26.1.2`;
 - [ ] commands are lowercase;
 - [ ] Smart Diagnostics and adaptive diagnostics are not described as LLMs, generative AI, telemetry, analytics, or cloud inference;
 - [ ] profiler language does not imply Spark parity;

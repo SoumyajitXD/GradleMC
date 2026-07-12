@@ -49,7 +49,7 @@ Current public release families are:
 
 - Forge, Fabric, and NeoForge for Minecraft `1.21.11`;
 - Forge, Fabric, and Quilt for Minecraft `1.20.1`;
-- Forge and Fabric for Minecraft `26.1.2`.
+- Forge, Fabric, and NeoForge for Minecraft `26.1.2`.
 
 The screenshots do **not** prove support for Bedrock, cloud AI, telemetry, or any loader/version pair absent from the supported-release matrix. Screenshots are evidence, not marketing fog.
 

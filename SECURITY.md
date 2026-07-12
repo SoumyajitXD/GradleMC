@@ -13,6 +13,7 @@ GradleMC is a local Minecraft diagnostics mod. Most reports are normal bugs, cra
 | GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `26.1.2` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Current public support target |
+| GradleMC `1.0.0` for Minecraft `26.1.2` NeoForge | Current public support target |
 | GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | Current public support target |
@@ -28,6 +29,7 @@ gradlemc-fabric-1.21.11-1.0.0.jar
 gradlemc-neoforge-1.21.11-1.0.0.jar
 gradlemc-forge-26.1.2-1.0.0.jar
 gradlemc-fabric-26.1.2-1.0.0.jar
+gradlemc-neoforge-26.1.2-1.0.0.jar
 gradlemc-1.0.2-forge-1.20.1.jar
 gradlemc-fabric-1.20.1-1.0.0.jar
 gradlemc-quilt-1.20.1-1.0.0.jar

@@ -27,6 +27,7 @@ Use community or modpack support channels for general Minecraft or loader troubl
 | NeoForge | `1.21.11` | `1.0.0` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
 | Forge | `26.1.2` | `1.0.0` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
 | Fabric | `26.1.2` | `1.0.0` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
+| NeoForge | `26.1.2` | `1.0.0` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
 | Forge | `1.20.1` | `1.0.2` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge `47.4.20`; Quick Actions overlay hotfix |
 | Fabric | `1.20.1` | `1.0.0` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
 | Quilt | `1.20.1` | `1.0.0` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
@@ -46,6 +47,8 @@ Check these first:
 5. You reviewed generated reports and logs before sharing them.
 
 For the Minecraft `1.21.11` releases, explicitly mention whether you use Forge `61.1.8`, Fabric Loader `0.19.3` with Fabric API `0.141.4+1.21.11`, or NeoForge `21.11.42`.
+
+For the Minecraft `26.1.2` releases, explicitly mention whether you use Forge `26.1.2-64.0.11`, Fabric, or NeoForge `26.1.2.78`.
 
 ---
 
@@ -120,4 +123,4 @@ These are not support issues for current releases:
 - adding telemetry or cloud features;
 - debugging an entire modpack with no reproduction steps.
 
-Unreleased NeoForge targets remain unsupported, but NeoForge `1.21.11` is now a supported public GradleMC release.
+Unreleased loader/version targets remain unsupported. NeoForge `1.21.11` and NeoForge `26.1.2` are supported public GradleMC releases.
