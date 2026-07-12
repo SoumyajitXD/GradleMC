@@ -17,8 +17,9 @@ Describe what this PR changes and why.
 
 - [ ] I kept Minecraft command literals lowercase.
 - [ ] I did not claim unsupported loader or Minecraft-version support.
-- [ ] I treated Forge `1.20.1`, Forge `26.1.2`, Fabric `1.20.1`, Fabric `26.1.2`, and Quilt `1.20.1` as the current public loader targets.
-- [ ] I did not imply NeoForge, Bedrock, or future-version support unless it is fully implemented and verified.
+- [ ] I checked the current public release matrix in `README.md`.
+- [ ] I treated Forge, Fabric, and NeoForge `1.21.11` as released targets.
+- [ ] I did not imply Bedrock or unlisted loader/version support.
 - [ ] I did not add telemetry, analytics, cloud AI, LLMs, generative AI, embeddings, or online inference.
 - [ ] I kept the change focused and avoided unrelated rewrites.
 - [ ] I checked user-facing text for accuracy.
@@ -43,34 +44,27 @@ Paste the commands you ran:
 
 ```
 
-Suggested Forge `26.1.2` source check:
+Run the matching standalone project build:
 
 ```sh
-cd "GradleMC/Forge/Minecraft 26.1.2"
 ./gradlew clean build
 ```
 
-Suggested Forge `1.20.1` source check:
+Use Java `17` for Minecraft `1.20.1`, Java `21` for Minecraft `1.21.11`, and Java `25` for released Minecraft `26.1.2` targets. Run `gradlemcSelfTest` where available.
 
-```sh
-cd "GradleMC/Forge/Minecraft 1.20.1"
-./gradlew clean build gradlemcSelfTest
-```
-
-For Fabric or Quilt source changes, run the matching loader build and verification tasks from that loader source project. Use Java `25` for Forge/Fabric `26.1.2` work and Java `17` for current `1.20.1` work.
-
-For docs-only changes, list the files reviewed and any screenshot links checked.
+For docs-only changes, list the files reviewed, release metadata checked, and screenshot links verified.
 
 ## Screenshots / Clips
 
 Add screenshots or short clips for GUI, overlay, report, or user-facing behavior changes.
 
-Current committed screenshots live in [`Screenshots/`](../Screenshots/). The full screenshot gallery lives in [`docs/SCREENSHOTS.md`](../docs/SCREENSHOTS.md), and screenshot maintenance rules live in [`docs/SCREENSHOT_PLAN.md`](../docs/SCREENSHOT_PLAN.md).
+Current committed screenshots live in [`Screenshots/`](../Screenshots/). The full gallery lives in [`docs/SCREENSHOTS.md`](../docs/SCREENSHOTS.md), and maintenance rules live in [`docs/SCREENSHOT_PLAN.md`](../docs/SCREENSHOT_PLAN.md).
 
 ## Review Checklist
 
 - [ ] I reviewed release-facing claims, screenshots, reports, and generated outputs before committing.
-- [ ] I did not commit generated build output or local run folders.
+- [ ] I did not commit generated build output, run folders, logs, or private reports.
+- [ ] Artifact names, loader versions, Minecraft versions, and Java versions agree.
 
 ## Notes For Reviewers
 
