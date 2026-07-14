@@ -1,0 +1,43 @@
+name: Cleanup temporary V1.0.3 release branches
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-v1.0.3-release-branches
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Delete temporary release branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin --delete release/forge-1.0.3-sync || true
+          git push origin --delete release/forge-1.0.3-sync-v2 || true
+
+      - name: Remove cleanup workflow from main
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/cleanup-v1.0.3-release-branches.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Remove temporary V1.0.3 release branches'
+          git push origin HEAD:main
