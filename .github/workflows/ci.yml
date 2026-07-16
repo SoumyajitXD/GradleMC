@@ -193,54 +193,64 @@ jobs:
 
   build-supported-port:
     name: Build ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Forge 1.21.11
+            runner: ubuntu-latest
             project_dir: GradleMC/Forge/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
             metadata_kind: forge
           - name: Forge 26.1.2
+            runner: ubuntu-latest
             project_dir: GradleMC/Forge/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             metadata_kind: forge
           - name: Forge 1.20.1
+            # Scan v1's path-redaction self-test intentionally validates Windows path semantics.
+            runner: windows-latest
             project_dir: GradleMC/Forge/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
             metadata_kind: forge
           - name: Fabric 1.21.11
+            runner: ubuntu-latest
             project_dir: GradleMC/Fabric/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             metadata_kind: fabric
           - name: Fabric 26.1.2
+            runner: ubuntu-latest
             project_dir: GradleMC/Fabric/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             metadata_kind: fabric
           - name: Fabric 1.20.1
+            runner: ubuntu-latest
             project_dir: GradleMC/Fabric/Minecraft 1.20.1
             # Loom/Gradle runs on Java 21 while the project toolchain still emits Java 17 bytecode.
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             metadata_kind: fabric
           - name: NeoForge 1.21.11
+            runner: ubuntu-latest
             project_dir: GradleMC/NeoForge/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
             metadata_kind: neoforge
           - name: NeoForge 26.1.2
+            runner: ubuntu-latest
             project_dir: GradleMC/NeoForge/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
             metadata_kind: neoforge
           - name: Quilt 1.20.1
+            runner: ubuntu-latest
             project_dir: GradleMC/Quilt/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
