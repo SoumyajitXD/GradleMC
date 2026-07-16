@@ -26,8 +26,8 @@ public final class GradleMCStatsOverlay {
     private static final FpsRollingStatsCalculator FPS_STATS =
             new FpsRollingStatsCalculator(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
 
-    private static long lastRenderNanos;
     private static long lastDisplayUpdateMillis;
+    private static long lastPercentileUpdateMillis;
     private static FpsRollingStatsCalculator.Snapshot cachedFps = FpsRollingStatsCalculator.Snapshot.empty();
     private static List<String> cachedLines = List.of();
 
@@ -35,9 +35,12 @@ public final class GradleMCStatsOverlay {
     }
 
     public static void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
-        recordFrame();
         Minecraft minecraft = Minecraft.getInstance();
         if (!shouldRender(minecraft)) {
+            return;
+        }
+        if (!hasEnabledContent()) {
+            cachedLines = List.of();
             return;
         }
 
@@ -45,7 +48,11 @@ public final class GradleMCStatsOverlay {
         int updateInterval = Math.max(250, GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get());
         if (now - lastDisplayUpdateMillis >= updateInterval || cachedLines.isEmpty()) {
             FPS_STATS.setWindowSeconds(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
-            cachedFps = FPS_STATS.snapshot();
+            boolean wantsPercentiles = GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()
+                    || GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get();
+            boolean refreshPercentiles = wantsPercentiles && now - lastPercentileUpdateMillis >= 1_000L;
+            cachedFps = FPS_STATS.snapshot(refreshPercentiles);
+            if (refreshPercentiles) lastPercentileUpdateMillis = now;
             cachedLines = buildLines(minecraft, cachedFps);
             lastDisplayUpdateMillis = now;
         }
@@ -53,15 +60,27 @@ public final class GradleMCStatsOverlay {
     }
 
     public static FpsRollingStatsCalculator.Snapshot latestFpsSnapshot() {
-        return cachedFps;
+        return FPS_STATS.snapshot(false);
     }
 
-    private static void recordFrame() {
-        long now = System.nanoTime();
-        if (lastRenderNanos > 0L) {
-            FPS_STATS.recordFrameTimeNanos(now - lastRenderNanos);
-        }
-        lastRenderNanos = now;
+    /** Called exactly once from the post-GUI render event for an active gameplay frame. */
+    public static void onRenderedFrame(long nowNanos) {
+        FPS_STATS.setWindowSeconds(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
+        FPS_STATS.recordRenderedFrame(nowNanos);
+    }
+
+    /** Pauses interval measurement without treating time away from gameplay as a slow frame. */
+    public static void pauseFpsMeasurement() {
+        FPS_STATS.resetInterval();
+    }
+
+    /** Called when joining or leaving a world so no prior world's samples leak into the next one. */
+    public static void resetFpsMeasurement() {
+        FPS_STATS.clear();
+        cachedFps = FpsRollingStatsCalculator.Snapshot.empty();
+        cachedLines = List.of();
+        lastDisplayUpdateMillis = 0L;
+        lastPercentileUpdateMillis = 0L;
     }
 
     private static boolean shouldRender(Minecraft minecraft) {
@@ -72,17 +91,33 @@ public final class GradleMCStatsOverlay {
                 && !minecraft.options.renderDebug;
     }
 
+    private static boolean hasEnabledContent() {
+        return GradleMCConfig.OVERLAY_SHOW_TITLE.get()
+                || GradleMCConfig.OVERLAY_SHOW_FPS.get()
+                || GradleMCConfig.OVERLAY_SHOW_AVERAGE_FPS.get()
+                || GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()
+                || GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get()
+                || GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()
+                || GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY.get()
+                || GradleMCConfig.OVERLAY_SHOW_CPU.get()
+                || GradleMCConfig.OVERLAY_SHOW_GPU_NAME.get()
+                || GradleMCConfig.OVERLAY_SHOW_GPU_USAGE.get()
+                || GradleMCConfig.OVERLAY_SHOW_INTEGRATED_SERVER.get()
+                || GradleMCConfig.OVERLAY_SHOW_TEST_STATUS.get()
+                || GradleMCConfig.OVERLAY_SHOW_PROFILER_STATUS.get()
+                || GradleMCConfig.OVERLAY_SHOW_STABILITY.get();
+    }
+
     private static List<String> buildLines(Minecraft minecraft, FpsRollingStatsCalculator.Snapshot fps) {
         boolean compact = !"DETAILED".equalsIgnoreCase(GradleMCConfig.OVERLAY_MODE.get());
         RuntimeSnapshots.MemorySnapshot memory = RuntimeSnapshots.memory();
         GuiStatusSnapshot serverStatus = GradleMCGuiBridge.latestGuiStatus();
+        List<String> lines = new ArrayList<>(OverlayLineComposer.compose(compact,
+                GradleMCConfig.OVERLAY_SHOW_TITLE.get(), GradleMCConfig.OVERLAY_SHOW_FPS.get(),
+                GradleMCConfig.OVERLAY_SHOW_AVERAGE_FPS.get(), fps));
         if (compact) {
-            return List.of(compactLine(memory, fps));
-        }
-
-        List<String> lines = new ArrayList<>();
-        if (GradleMCConfig.OVERLAY_SHOW_FPS.get()) {
-            lines.add("FPS: " + whole(fps.currentFps()) + " current, " + whole(fps.averageFps()) + " avg");
+            appendCompactMetrics(lines, minecraft, memory, fps);
+            return List.copyOf(lines);
         }
         if (GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()) {
             lines.add("1% low: " + lowLabel(fps.onePercentLowFps()));
@@ -110,22 +145,25 @@ public final class GradleMCStatsOverlay {
         if (GradleMCConfig.OVERLAY_SHOW_GPU_USAGE.get()) {
             lines.add("GPU usage: unavailable");
         }
-        integratedServerLine(minecraft).forEach(lines::add);
-        lines.add("Tests: FPS " + progressLabel(FpsTestManager.progress())
-                + ", perf " + progressLabel(serverStatus.performanceProgress())
-                + ", worldgen " + progressLabel(serverStatus.worldgenProgress()));
-        lines.add(GradleMcProfilerService.overlayStatusLine());
-        lines.add("Stability: " + stabilityLabel(serverStatus));
+        if (GradleMCConfig.OVERLAY_SHOW_INTEGRATED_SERVER.get()) {
+            integratedServerLine(minecraft).forEach(lines::add);
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_TEST_STATUS.get()) {
+            lines.add("Tests: FPS " + progressLabel(FpsTestManager.progress())
+                    + ", perf " + progressLabel(serverStatus.performanceProgress())
+                    + ", worldgen " + progressLabel(serverStatus.worldgenProgress()));
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_PROFILER_STATUS.get()) {
+            lines.add(GradleMcProfilerService.overlayStatusLine());
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_STABILITY.get()) {
+            lines.add("Stability: " + stabilityLabel(serverStatus));
+        }
         return List.copyOf(lines);
     }
 
-    private static String compactLine(RuntimeSnapshots.MemorySnapshot memory, FpsRollingStatsCalculator.Snapshot fps) {
-        List<String> parts = new ArrayList<>();
-        parts.add("GradleMC");
-        if (GradleMCConfig.OVERLAY_SHOW_FPS.get()) {
-            parts.add(whole(fps.currentFps()) + " FPS");
-            parts.add("avg " + whole(fps.averageFps()));
-        }
+    private static void appendCompactMetrics(List<String> lines, Minecraft minecraft, RuntimeSnapshots.MemorySnapshot memory, FpsRollingStatsCalculator.Snapshot fps) {
+        List<String> parts = lines.isEmpty() ? new ArrayList<>() : new ArrayList<>(List.of(lines.remove(0)));
         if (GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()) {
             parts.add("1% " + lowLabel(fps.onePercentLowFps()));
         }
@@ -135,7 +173,31 @@ public final class GradleMCStatsOverlay {
         if (GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()) {
             parts.add("JVM " + formatGiB(memory.usedMiB()) + "/" + formatGiB(memory.maxMiB()) + "G");
         }
-        return String.join(" | ", parts);
+        if (GradleMCConfig.OVERLAY_SHOW_SYSTEM_MEMORY.get()) {
+            ClientSystemStats.SystemMemory systemMemory = ClientSystemStats.systemMemory();
+            parts.add(systemMemory.available() ? "System " + formatGiB(systemMemory.usedMiB()) + "/" + formatGiB(systemMemory.totalMiB()) + "G" : "System unavailable");
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_CPU.get()) {
+            double cpu = ClientSystemStats.processCpuLoadPercent();
+            parts.add(cpu < 0.0D ? "CPU unavailable" : "CPU " + format(cpu) + "%");
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_GPU_NAME.get()) {
+            parts.add("GPU " + ClientSystemStats.gpuRenderer());
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_GPU_USAGE.get()) {
+            parts.add("GPU usage unavailable");
+        }
+        if (GradleMCConfig.OVERLAY_SHOW_INTEGRATED_SERVER.get()) {
+            MinecraftServer server = minecraft.getSingleplayerServer();
+            if (server != null) {
+                double mspt = Math.max(0.0D, server.getAverageTickTime());
+                double tps = mspt <= 0.0D ? 20.0D : Math.min(20.0D, 1000.0D / mspt);
+                parts.add("Server " + format(tps) + " TPS");
+            }
+        }
+        if (!parts.isEmpty()) {
+            lines.add(String.join(" | ", parts));
+        }
     }
 
     private static List<String> integratedServerLine(Minecraft minecraft) {

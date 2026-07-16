@@ -22,6 +22,7 @@ public final class OpenGradleMCGuiPacket {
     public static void handle(OpenGradleMCGuiPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         if (context.getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            NetworkDiagnostics.record("open_gui","server-to-client",0);
             context.enqueueWork(GradleMCGuiBridge::open);
         }
         context.setPacketHandled(true);

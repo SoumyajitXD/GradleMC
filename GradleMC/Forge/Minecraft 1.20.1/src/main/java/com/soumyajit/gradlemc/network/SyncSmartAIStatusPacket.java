@@ -53,6 +53,7 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
     }
 
     public static SyncSmartAIStatusPacket decode(FriendlyByteBuf buffer) {
+        try {
         SmartAIStatus status = new SmartAIStatus(
                 buffer.readBoolean(),
                 buffer.readBoolean(),
@@ -90,11 +91,16 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
                 buffer.readUtf(MAX_SUMMARY_LENGTH)
         );
         return new SyncSmartAIStatusPacket(status, guiStatus);
+        } catch (RuntimeException malformed) {
+            // A remote endpoint must not turn malformed status metadata into client state or GUI work.
+            return new SyncSmartAIStatusPacket(SmartAIStatus.disabled(), GuiStatusSnapshot.empty());
+        }
     }
 
     public static void handle(SyncSmartAIStatusPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         if (context.getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            NetworkDiagnostics.record("sync_status","server-to-client",-1);
             context.enqueueWork(() -> GradleMCGuiBridge.updateStatus(packet.status(), packet.guiStatus()));
         }
         context.setPacketHandled(true);

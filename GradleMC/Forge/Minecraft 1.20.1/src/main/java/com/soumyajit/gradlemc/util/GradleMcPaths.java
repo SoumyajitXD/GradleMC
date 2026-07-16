@@ -46,6 +46,18 @@ public final class GradleMcPaths {
         return gradleMcDirectory().resolve("profiles").normalize();
     }
 
+    public static Path experimentDirectory() {
+        return gradleMcDirectory().resolve("experiments").normalize();
+    }
+
+    public static Path incidentDirectory() {
+        return gradleMcDirectory().resolve("incidents").normalize();
+    }
+
+    public static Path instanceLockFile() {
+        return gradleMcDirectory().resolve("gradlemc-instance-lock.json").normalize();
+    }
+
     public static Path rulesDirectory() {
         return gradleMcDirectory().resolve("rules").normalize();
     }
@@ -80,12 +92,12 @@ public final class GradleMcPaths {
     }
 
     public static Component pathComponent(String prefix, Path path) {
-        String fullPath = path.normalize().toString();
+        String safePath = displayPath(path);
         return Component.literal(prefix)
-                .append(Component.literal(displayPath(path))
+                .append(Component.literal(safePath)
                         .withStyle(style -> style
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, fullPath))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(fullPath)))));
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, safePath))
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(safePath)))));
     }
 
     private static Path outputDirectory(String configuredName, String fallbackName) {
@@ -98,16 +110,15 @@ public final class GradleMcPaths {
         return configured;
     }
 
-    private static String safeOutputDirectoryName(String value, String fallbackName) {
+    static String safeOutputDirectoryName(String value, String fallbackName) {
         String name = value;
-        if (name == null || name.isBlank() || name.contains("..")) {
+        if (name == null || name.isBlank()) {
             return fallbackName;
         }
-        name = name.replace('\\', '/');
         if ("gradlemc/reports".equals(name) || "config/gradlemc/reports".equals(name)) {
             return "reports";
         }
-        if (name.startsWith("/") || name.matches("^[A-Za-z]:.*")) {
+        if (!name.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,63}") || ".".equals(name) || "..".equals(name)) {
             return fallbackName;
         }
         return name;

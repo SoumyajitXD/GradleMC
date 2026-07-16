@@ -9,7 +9,9 @@ public final class OverlayDefaults {
     public static final double OPACITY = 0.55D;
     public static final int SAMPLING_WINDOW_SECONDS = 60;
     public static final int UPDATE_INTERVAL_MS = 500;
+    public static final boolean SHOW_TITLE = false;
     public static final boolean SHOW_FPS = true;
+    public static final boolean SHOW_AVERAGE_FPS = false;
     public static final boolean SHOW_ONE_PERCENT_LOW = true;
     public static final boolean SHOW_POINT_ONE_PERCENT_LOW = true;
     public static final boolean SHOW_JVM_MEMORY = true;
@@ -17,6 +19,10 @@ public final class OverlayDefaults {
     public static final boolean SHOW_CPU = false;
     public static final boolean SHOW_GPU_NAME = true;
     public static final boolean SHOW_GPU_USAGE = false;
+    public static final boolean SHOW_INTEGRATED_SERVER = true;
+    public static final boolean SHOW_TEST_STATUS = true;
+    public static final boolean SHOW_PROFILER_STATUS = true;
+    public static final boolean SHOW_STABILITY = true;
 
     private OverlayDefaults() {
     }

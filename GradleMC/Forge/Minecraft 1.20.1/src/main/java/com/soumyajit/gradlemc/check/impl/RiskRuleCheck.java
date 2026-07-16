@@ -79,7 +79,26 @@ public class RiskRuleCheck implements StabilityCheck {
                     : java.util.Optional.empty();
             case MOD_GROUP_COUNT -> evaluateGroup(rule, loadedMods);
             case CONFIG_FILE_EXISTS -> evaluateConfigFile(rule);
+            case ALL_MODS_PRESENT -> rule.modIds().stream().allMatch(loadedMods::contains) ? hit(rule) : java.util.Optional.empty();
+            case ANY_MOD_PRESENT -> rule.modIds().stream().anyMatch(loadedMods::contains) ? hit(rule) : java.util.Optional.empty();
+            case MOD_VERSION_IN_RANGE, MOD_VERSION_OUTSIDE_RANGE, DEPENDENCY_PRESENT, DEPENDENCY_ABSENT -> evaluateMetadataRule(rule);
         };
+    }
+
+    private java.util.Optional<CheckResult> evaluateMetadataRule(RiskRule rule) {
+        return net.minecraftforge.fml.ModList.get().getModContainerById(rule.modId()).flatMap(container -> {
+            if (rule.type() == RiskRuleType.DEPENDENCY_PRESENT || rule.type() == RiskRuleType.DEPENDENCY_ABSENT) {
+                boolean declared = container.getModInfo().getDependencies().stream().anyMatch(dep -> dep.getModId().equals(rule.dependencyModId()));
+                return (declared == (rule.type() == RiskRuleType.DEPENDENCY_PRESENT)) ? hit(rule) : java.util.Optional.empty();
+            }
+            try {
+                boolean inRange = org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec(rule.versionRange())
+                        .containsVersion(container.getModInfo().getVersion());
+                return (inRange == (rule.type() == RiskRuleType.MOD_VERSION_IN_RANGE)) ? hit(rule) : java.util.Optional.empty();
+            } catch (org.apache.maven.artifact.versioning.InvalidVersionSpecificationException ignored) {
+                return java.util.Optional.empty();
+            }
+        });
     }
 
     private java.util.Optional<CheckResult> evaluateGroup(RiskRule rule, Set<String> loadedMods) {

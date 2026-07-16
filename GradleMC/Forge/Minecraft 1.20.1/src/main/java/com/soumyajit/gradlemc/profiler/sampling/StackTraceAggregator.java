@@ -13,7 +13,11 @@ public final class StackTraceAggregator {
     private final Map<String, Long> frameSamples = new HashMap<>();
     private final Map<String, Long> leafSamples = new HashMap<>();
     private final Map<String, Long> packageSamples = new HashMap<>();
+    private final Map<String, Long> threadStateSamples = new HashMap<>();
+    private final Map<String, Long> topDownSamples = new HashMap<>();
+    private final Map<String, Long> bottomUpSamples = new HashMap<>();
     private long sampleCount;
+    private long truncatedKeys;
 
     public synchronized void add(ThreadSnapshot snapshot) {
         if (snapshot == null || snapshot.frames().isEmpty()) {
@@ -21,6 +25,7 @@ public final class StackTraceAggregator {
         }
         sampleCount++;
         increment(threadSamples, snapshot.threadName(), 1L);
+        increment(threadStateSamples,snapshot.threadName()+" ["+snapshot.state()+"]",1L);
         StackTraceElement leaf = snapshot.frames().get(0);
         increment(leafSamples, frameKey(leaf), 1L);
         for (StackTraceElement frame : snapshot.frames()) {
@@ -28,6 +33,7 @@ public final class StackTraceAggregator {
             increment(frameSamples, key, 1L);
             increment(packageSamples, packageKey(frame.getClassName()), 1L);
         }
+        increment(topDownSamples,path(snapshot.frames(),true),1L);increment(bottomUpSamples,path(snapshot.frames(),false),1L);
     }
 
     public synchronized void addAll(List<ThreadSnapshot> snapshots) {
@@ -55,6 +61,7 @@ public final class StackTraceAggregator {
     public synchronized List<FrameCount> topPackages(int limit) {
         return top(packageSamples, limit);
     }
+    public synchronized List<FrameCount> topThreadStates(int limit){return top(threadStateSamples,limit);}public synchronized List<FrameCount> topDown(int limit){return top(topDownSamples,limit);}public synchronized List<FrameCount> bottomUp(int limit){return top(bottomUpSamples,limit);}public synchronized long truncatedKeys(){return truncatedKeys;}
 
     public synchronized Map<String, Long> packageCounts() {
         return new LinkedHashMap<>(packageSamples);
@@ -68,16 +75,18 @@ public final class StackTraceAggregator {
                 .toList();
     }
 
-    private static void increment(Map<String, Long> map, String key, long amount) {
+    private void increment(Map<String, Long> map, String key, long amount) {
         if (key == null || key.isBlank()) {
             return;
         }
         if (!map.containsKey(key) && map.size() >= MAX_KEYS) {
             map.merge("<other>", amount, Long::sum);
+            truncatedKeys+=amount;
             return;
         }
         map.merge(key, amount, Long::sum);
     }
+    private static String path(List<StackTraceElement> frames,boolean topDown){StringBuilder out=new StringBuilder();int limit=Math.min(64,frames.size());for(int index=0;index<limit;index++){int i=topDown?limit-1-index:index;if(index>0)out.append(" -> ");out.append(frameKey(frames.get(i)));}return out.toString();}
 
     private static String frameKey(StackTraceElement frame) {
         return frame.getClassName() + "#" + frame.getMethodName();

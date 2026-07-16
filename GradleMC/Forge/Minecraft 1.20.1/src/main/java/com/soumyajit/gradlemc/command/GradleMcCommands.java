@@ -15,8 +15,20 @@ import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.check.impl.ConfigSanityCheck;
 import com.soumyajit.gradlemc.check.impl.RiskRuleCheck;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
+import com.soumyajit.gradlemc.experiment.ExperimentService;
+import com.soumyajit.gradlemc.incident.IncidentService;
+import com.soumyajit.gradlemc.lock.InstanceLockService;
+import com.soumyajit.gradlemc.startup.ResourceReloadTimingService;
+import com.soumyajit.gradlemc.startup.StartupTimingService;
+import com.soumyajit.gradlemc.doctor.DoctorService;
+import com.soumyajit.gradlemc.network.NetworkDiagnosticService;
+import com.soumyajit.gradlemc.storage.StorageService;
 import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
+import com.soumyajit.gradlemc.modaudit.ModAuditReportWriter;
+import com.soumyajit.gradlemc.modaudit.ModAuditResult;
+import com.soumyajit.gradlemc.modaudit.ModAuditService;
+import com.soumyajit.gradlemc.modaudit.ModDescriptor;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
 import com.soumyajit.gradlemc.profiler.GradleMcProfilerService;
 import com.soumyajit.gradlemc.report.IssueBundleExporter;
@@ -35,6 +47,7 @@ import com.soumyajit.gradlemc.smart.SmartRecommendation;
 import com.soumyajit.gradlemc.smart.StabilityAdvisor;
 import com.soumyajit.gradlemc.smart.StabilityScore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.task.DiagnosticRunService;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -84,15 +97,104 @@ public final class GradleMcCommands {
     }
 
     public static void register(RegisterCommandsEvent event) {
+        StartupTimingService.onRegisterCommands(event);
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("gradlemc")
                 .executes(context -> showHelp(context.getSource()))
                 .then(Commands.literal("help")
                         .executes(context -> showHelp(context.getSource())))
                 .then(Commands.literal("status")
                         .executes(context -> showStatus(context.getSource())))
+                .then(Commands.literal("tasks")
+                        .executes(context -> DiagnosticRunService.listTasks(context.getSource()))
+                        .then(Commands.literal("all").executes(context -> DiagnosticRunService.listTasks(context.getSource(), true))))
+                .then(Commands.literal("task")
+                        .then(Commands.literal("info").then(Commands.argument("task", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.info(context.getSource(), StringArgumentType.getString(context, "task")))))
+                        .then(Commands.literal("graph").then(Commands.argument("target", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.graph(context.getSource(), StringArgumentType.getString(context, "target")))))
+                        .then(Commands.literal("why").then(Commands.argument("task", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.why(context.getSource(), StringArgumentType.getString(context, "task")))))
+                        .then(Commands.literal("inputs").then(Commands.argument("task", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.inputs(context.getSource(), StringArgumentType.getString(context, "task")))))
+                        .then(Commands.literal("outputs").then(Commands.argument("task", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.outputs(context.getSource(), StringArgumentType.getString(context, "task")))))
+                        .then(Commands.literal("history").then(Commands.argument("task", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.history(context.getSource(), StringArgumentType.getString(context, "task"))))))
+                .then(Commands.literal("workflows").executes(context -> { context.getSource().sendSuccess(() -> Component.literal("GradleMC workflows: " + String.join(", ", DiagnosticRunService.workflows())), false); return Command.SINGLE_SUCCESS; }))
+                .then(Commands.literal("scans").then(Commands.literal("list").executes(context -> DiagnosticRunService.scans(context.getSource(), false))).then(Commands.literal("latest").executes(context -> DiagnosticRunService.scans(context.getSource(), true))))
+                .then(Commands.literal("run").requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("status").executes(context -> DiagnosticRunService.status(context.getSource())))
+                        .then(Commands.literal("cancel").executes(context -> DiagnosticRunService.cancel(context.getSource())))
+                        .then(Commands.argument("target", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), false, false))
+                                .then(Commands.literal("dry-run").executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), true, false)))
+                                .then(Commands.literal("rerun").executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), false, true)))))
                 .then(Commands.literal("check")
                         .requires(source -> source.hasPermission(2))
-                        .executes(context -> runCheck(context.getSource())))
+                        .executes(context -> DiagnosticRunService.run(context.getSource(), "check", false, false)))
+                .then(Commands.literal("verify")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(context -> DiagnosticRunService.run(context.getSource(), "verify", false, false)))
+                .then(Commands.literal("releasecheck")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(context -> DiagnosticRunService.run(context.getSource(), "releasecheck", false, false)))
+                .then(Commands.literal("gates")
+                        .executes(context -> DiagnosticRunService.gates(context.getSource(), false))
+                        .then(Commands.literal("evaluate").executes(context -> DiagnosticRunService.gates(context.getSource(), true)))
+                        .then(Commands.literal("explain").then(Commands.argument("gate", StringArgumentType.word())
+                                .executes(context -> DiagnosticRunService.explainGate(context.getSource(), StringArgumentType.getString(context, "gate"))))))
+                .then(Commands.literal("experiment")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("create")
+                                .then(Commands.argument("name", StringArgumentType.word())
+                                        .then(Commands.argument("workflow", StringArgumentType.word())
+                                                .executes(context -> ExperimentService.create(context.getSource(),
+                                                        StringArgumentType.getString(context, "name"),
+                                                        StringArgumentType.getString(context, "workflow"))))))
+                        .then(Commands.literal("baseline").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(context -> ExperimentService.baseline(context.getSource(), StringArgumentType.getString(context, "name")))))
+                        .then(Commands.literal("status").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(context -> ExperimentService.status(context.getSource(), StringArgumentType.getString(context, "name")))))
+                        .then(Commands.literal("compare").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(context -> ExperimentService.compare(context.getSource(), StringArgumentType.getString(context, "name")))))
+                        .then(Commands.literal("cancel").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(context -> ExperimentService.cancel(context.getSource(), StringArgumentType.getString(context, "name"))))))
+                .then(Commands.literal("experiments")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("list").executes(context -> ExperimentService.list(context.getSource()))))
+                .then(Commands.literal("incidents")
+                        .executes(context -> IncidentService.list(context.getSource()))
+                        .then(Commands.literal("start").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.start(context.getSource())))
+                        .then(Commands.literal("stop").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.stop(context.getSource())))
+                        .then(Commands.literal("latest").executes(context -> IncidentService.latest(context.getSource())))
+                        .then(Commands.literal("mark").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.mark(context.getSource())))
+                        .then(Commands.literal("inspect").then(Commands.argument("id", StringArgumentType.word())
+                                .executes(context -> IncidentService.inspect(context.getSource(), StringArgumentType.getString(context, "id")))))
+                        .then(Commands.literal("export").requires(source -> source.hasPermission(2)).then(Commands.argument("id", StringArgumentType.word())
+                                .executes(context -> IncidentService.export(context.getSource(), StringArgumentType.getString(context, "id"))))))
+                .then(Commands.literal("instance")
+                        .then(Commands.literal("lock")
+                                .then(Commands.literal("write").requires(source -> source.hasPermission(2)).executes(context -> InstanceLockService.write(context.getSource())))
+                                .then(Commands.literal("check").executes(context -> InstanceLockService.check(context.getSource())))
+                                .then(Commands.literal("diff").executes(context -> InstanceLockService.diff(context.getSource())))))
+                .then(Commands.literal("startup")
+                        .then(Commands.literal("latest").executes(context -> StartupTimingService.show(context.getSource())))
+                        .then(Commands.literal("export").requires(source -> source.hasPermission(2)).executes(context -> StartupTimingService.export(context.getSource()))))
+                .then(Commands.literal("reload")
+                        .then(Commands.literal("observe").requires(source -> source.hasPermission(2)).executes(context -> ResourceReloadTimingService.observe(context.getSource())))
+                        .then(Commands.literal("latest").executes(context -> ResourceReloadTimingService.show(context.getSource()))))
+                .then(Commands.literal("doctor").executes(context -> DoctorService.run(context.getSource())))
+                .then(Commands.literal("network")
+                        .then(Commands.literal("status").executes(context -> NetworkDiagnosticService.status(context.getSource())))
+                        .then(Commands.literal("sample").requires(source -> source.hasPermission(2)).then(Commands.argument("seconds",IntegerArgumentType.integer(1,300))
+                                .executes(context -> NetworkDiagnosticService.sample(context.getSource(),IntegerArgumentType.getInteger(context,"seconds")))))
+                        .then(Commands.literal("latest").executes(context -> NetworkDiagnosticService.latest(context.getSource()))))
+                .then(Commands.literal("storage")
+                        .executes(context -> StorageService.status(context.getSource()))
+                        .then(Commands.literal("reports").requires(source -> source.hasPermission(2)).executes(context -> StorageService.reports(context.getSource())))
+                        .then(Commands.literal("cleanup").requires(source -> source.hasPermission(2))
+                                .then(Commands.literal("dry-run").executes(context -> StorageService.cleanup(context.getSource(),false)))
+                                .then(Commands.literal("confirm").executes(context -> StorageService.cleanup(context.getSource(),true)))))
                 .then(Commands.literal("config")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> showConfigHelp(context.getSource()))
@@ -124,7 +226,16 @@ public final class GradleMcCommands {
                                         .executes(context -> searchMods(
                                                 context.getSource(),
                                                 StringArgumentType.getString(context, "modid")
-                                        )))))
+                                        ))))
+                        .then(Commands.literal("inspect")
+                                .then(Commands.argument("modid", StringArgumentType.word())
+                                        .executes(context -> inspectMod(context.getSource(), StringArgumentType.getString(context, "modid")))))
+                        .then(Commands.literal("audit")
+                                .executes(context -> showModAudit(context.getSource(), false))
+                                .then(Commands.literal("refresh").requires(source -> source.hasPermission(2))
+                                        .executes(context -> showModAudit(context.getSource(), true))))
+                        .then(Commands.literal("export").requires(source -> source.hasPermission(2))
+                                .executes(context -> exportModAudit(context.getSource()))))
                 .then(Commands.literal("perf")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> showPerfHelp(context.getSource()))
@@ -409,7 +520,39 @@ public final class GradleMcCommands {
     }
 
     private static int showModsSummary(CommandSourceStack source) {
-        return countMods(source);
+        ModAuditResult audit = ModAuditService.current();
+        send(source, "Loaded mods: " + audit.snapshot().mods().size() + "; owning files: " + audit.snapshot().owningFileCount()
+                + "; audit findings: " + audit.findings().size() + (audit.fromCache() ? " (cached)" : " (fresh)"));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int inspectMod(CommandSourceStack source, String modId) {
+        ModAuditResult audit = ModAuditService.current();
+        Optional<ModDescriptor> optional = audit.snapshot().find(modId);
+        if (optional.isEmpty()) { source.sendFailure(Component.literal("No loaded mod matched: " + modId)); return 0; }
+        ModDescriptor mod = optional.get();
+        send(source, mod.displayName() + " (" + mod.modId() + ") v" + mod.version() + " namespace=" + mod.namespace());
+        send(source, "JAR: " + (mod.jarFileName().isBlank() ? "unavailable" : mod.jarFileName()) + "; direct dependencies: " + mod.dependencies().size()
+                + "; dependants: " + audit.dependencyGraph().dependantsOf(mod.modId()).size());
+        audit.findings().stream().filter(finding -> finding.affectedModIds().contains(mod.modId())).limit(3)
+                .forEach(finding -> send(source, "[" + finding.severity() + "/" + finding.confidence() + "] " + finding.title()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int showModAudit(CommandSourceStack source, boolean refresh) {
+        ModAuditResult audit = refresh ? ModAuditService.refresh() : ModAuditService.current();
+        long warnings = audit.findings().stream().filter(f -> f.severity() == Severity.WARN || f.severity() == Severity.FAIL || f.severity() == Severity.CRITICAL).count();
+        send(source, "Mod audit: " + audit.snapshot().mods().size() + " mods, " + audit.snapshot().owningFileCount() + " files, " + audit.findings().size() + " findings (" + warnings + " actionable); " + (audit.fromCache() ? "cached" : "fresh") + ".");
+        audit.findings().stream().filter(f -> f.severity() != Severity.INFO && f.severity() != Severity.PASS).limit(5)
+                .forEach(f -> send(source, "[" + f.severity() + "/" + f.confidence() + "] " + f.title()));
+        send(source, "Use /gradlemc mods export for TXT and JSON reports.");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int exportModAudit(CommandSourceStack source) {
+        if (!GradleMCConfig.REPORTS_ENABLED.get()) { source.sendFailure(Component.literal("GradleMC reports are disabled in gradlemc-common.toml.")); return 0; }
+        try { ModAuditReportWriter.WrittenReports reports = new ModAuditReportWriter().write(ModAuditService.current()); sendPath(source, "Mod audit TXT written: ", reports.text()); sendPath(source, "Mod audit JSON written: ", reports.json()); return Command.SINGLE_SUCCESS; }
+        catch (IOException exception) { source.sendFailure(Component.literal("Mod audit export failed: " + safeMessage(exception))); return 0; }
     }
 
     private static int listMods(CommandSourceStack source) {

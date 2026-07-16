@@ -1,6 +1,8 @@
 package com.soumyajit.gradlemc.report;
 
 import com.soumyajit.gradlemc.metrics.FpsTestResult;
+import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.ManagedPathSafety;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +13,7 @@ import java.util.List;
 
 public class FpsTestReportWriter {
     public Path write(FpsTestResult result, Path reportDirectory) throws IOException {
-        Files.createDirectories(reportDirectory);
+        ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), reportDirectory);
         Path reportFile = ReportFileNames.unique(reportDirectory, "gradlemc-fps-test-", result.endedAt(), ".txt");
         Files.write(reportFile, linesFor(result), StandardCharsets.UTF_8);
         return reportFile;
@@ -45,8 +47,9 @@ public class FpsTestReportWriter {
         lines.add("");
         lines.add("Notes");
         lines.add("-----");
-        lines.add("FPS is sampled on the physical Minecraft client once per client tick.");
-        lines.add("The 1% low value is an approximation from the lowest 1% of collected samples.");
+        lines.add("FPS uses completed active-gameplay frame intervals observed once from Forge's post-GUI render callback and System.nanoTime().");
+        lines.add("Average FPS is completed rendered frames divided by summed valid frame-interval seconds; paused, menu, unfocused, and invalid-gap time is excluded.");
+        lines.add("The 1% low value is calculated from the slowest 1% of the bounded collected frame intervals.");
         lines.add("");
         lines.add("Interpretation");
         lines.add("--------------");

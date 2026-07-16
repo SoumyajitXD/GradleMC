@@ -9,7 +9,13 @@ public enum RiskRuleType {
     MOD_GROUP_COUNT,
     CLIENT_ONLY_ON_SERVER,
     SERVER_ONLY_ON_CLIENT,
-    CONFIG_FILE_EXISTS;
+    CONFIG_FILE_EXISTS,
+    ALL_MODS_PRESENT,
+    ANY_MOD_PRESENT,
+    MOD_VERSION_IN_RANGE,
+    MOD_VERSION_OUTSIDE_RANGE,
+    DEPENDENCY_PRESENT,
+    DEPENDENCY_ABSENT;
 
     public static Optional<RiskRuleType> parse(String value) {
         if (value == null || value.isBlank()) {

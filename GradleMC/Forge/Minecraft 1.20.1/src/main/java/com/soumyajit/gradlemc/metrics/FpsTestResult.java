@@ -18,6 +18,7 @@ public record FpsTestResult(
     public enum EndReason {
         COMPLETED,
         STOPPED,
+        CANCELLED,
         ERROR
     }
 }

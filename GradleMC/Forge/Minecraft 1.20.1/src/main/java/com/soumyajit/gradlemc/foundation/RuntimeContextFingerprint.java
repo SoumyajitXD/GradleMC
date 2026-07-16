@@ -1,0 +1,3 @@
+package com.soumyajit.gradlemc.foundation;
+import java.util.*;
+public record RuntimeContextFingerprint(int schemaVersion,String digest,StaticFingerprint staticReference) { public RuntimeContextFingerprint {if(schemaVersion<1||digest==null||!digest.matches("[0-9a-f]{64}")||staticReference==null)throw new IllegalArgumentException("Invalid runtime fingerprint");} public String shortDisplay(){return digest.substring(0,12);} public static RuntimeContextFingerprint of(int schema,StaticFingerprint stat,Map<String,String> stableContext){Map<String,String> values=new TreeMap<>(stableContext==null?Map.of():stableContext);values.put("static",stat.digest());return new RuntimeContextFingerprint(schema,Fingerprints.digest("runtime/"+schema,values),stat);} }

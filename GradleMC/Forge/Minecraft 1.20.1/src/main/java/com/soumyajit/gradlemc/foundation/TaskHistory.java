@@ -1,0 +1,3 @@
+package com.soumyajit.gradlemc.foundation;
+import java.util.*;
+public final class TaskHistory { private final int limit;private final ArrayDeque<TaskCore.TaskResult> values=new ArrayDeque<>();public TaskHistory(int limit){if(limit<1||limit>256)throw new IllegalArgumentException("Invalid history limit");this.limit=limit;}public synchronized void add(TaskCore.TaskResult value){values.addFirst(value);while(values.size()>limit)values.removeLast();}public synchronized Optional<TaskCore.TaskResult> latest(TaskId id){return values.stream().filter(v->v.id().equals(id)).findFirst();}public synchronized List<TaskCore.TaskResult> recent(){return List.copyOf(values);}public synchronized void clear(){values.clear();} }

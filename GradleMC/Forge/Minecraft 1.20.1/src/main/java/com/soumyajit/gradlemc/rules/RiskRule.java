@@ -11,6 +11,8 @@ public record RiskRule(
         List<String> modIds,
         int maxPresent,
         String configFile,
+        String versionRange,
+        String dependencyModId,
         boolean expectExists,
         Severity severity,
         String message,

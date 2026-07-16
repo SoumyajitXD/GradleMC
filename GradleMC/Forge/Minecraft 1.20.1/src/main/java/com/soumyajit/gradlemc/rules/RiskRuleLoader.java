@@ -11,6 +11,7 @@ import com.soumyajit.gradlemc.check.CheckResult;
 import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.ManagedPathSafety;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,12 +19,17 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.LinkOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public final class RiskRuleLoader {
+    private static final long MAX_RULE_FILE_BYTES = 1024L * 1024L;
+    private static final int MAX_RULES = 256;
+    private static final int MAX_FIELD_LENGTH = 1024;
+    private static final int MAX_MOD_IDS_PER_RULE = 64;
     private static final Gson GSON = new Gson();
     private static RiskRuleSet cachedRules;
 
@@ -53,10 +59,10 @@ public final class RiskRuleLoader {
 
     public static boolean writeExampleIfMissing() throws IOException {
         Path path = examplePath();
-        if (Files.exists(path)) {
+        ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), GradleMcPaths.rulesDirectory());
+        if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
             return false;
         }
-        Files.createDirectories(path.getParent());
         try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             GSON.toJson(exampleJson(), writer);
         }
@@ -76,7 +82,9 @@ public final class RiskRuleLoader {
             ));
             return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
         }
-        if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
+        try { ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), GradleMcPaths.rulesDirectory()); }
+        catch (IOException exception) { return unavailable(path, loadResults, "Risk rule directory is unavailable"); }
+        if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path) || !Files.isReadable(path)) {
             loadResults.add(CheckResult.of(
                     Severity.WARN,
                     CheckCategory.CONFIG,
@@ -86,6 +94,8 @@ public final class RiskRuleLoader {
             ));
             return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
         }
+        try { if (Files.size(path) > MAX_RULE_FILE_BYTES) return unavailable(path, loadResults, "Risk rule file exceeds the 1 MiB safe limit"); }
+        catch (IOException exception) { return unavailable(path, loadResults, "Risk rule file size could not be read"); }
 
         try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             JsonElement root = JsonParser.parseReader(reader);
@@ -108,6 +118,7 @@ public final class RiskRuleLoader {
             int index = 0;
             for (JsonElement element : rules) {
                 index++;
+                if (index > MAX_RULES) { invalid(index, "Rule limit of " + MAX_RULES + " reached", loadResults); break; }
                 parseRule(element, index, parsed, loadResults);
             }
             loadResults.add(CheckResult.of(
@@ -118,7 +129,7 @@ public final class RiskRuleLoader {
                     "Run /gradlemc rules reload after editing the file."
             ));
             return new RiskRuleSet(path, List.copyOf(parsed), List.copyOf(loadResults), Instant.now());
-        } catch (JsonSyntaxException | IllegalStateException exception) {
+        } catch (JsonSyntaxException | IllegalStateException | NumberFormatException | UnsupportedOperationException exception) {
             loadResults.add(CheckResult.of(
                     Severity.WARN,
                     CheckCategory.CONFIG,
@@ -137,6 +148,12 @@ public final class RiskRuleLoader {
             ));
             return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
         }
+    }
+
+    private static RiskRuleSet unavailable(Path path, List<CheckResult> results, String detail) {
+        results.add(CheckResult.of(Severity.WARN, CheckCategory.CONFIG, "Risk rule file is unavailable", detail,
+                "Keep the rule file inside gradlemc/rules as a regular file."));
+        return new RiskRuleSet(path, List.of(), results, Instant.now());
     }
 
     private static void parseRule(JsonElement element, int index, List<RiskRule> rules, List<CheckResult> loadResults) {
@@ -158,6 +175,8 @@ public final class RiskRuleLoader {
         List<String> modIds = stringArray(object, "modIds");
         int maxPresent = intValue(object, "maxPresent", 0);
         String configFile = stringValue(object, "configFile", stringValue(object, "file", ""));
+        String versionRange = stringValue(object, "versionRange", "");
+        String dependencyModId = stringValue(object, "dependencyModId", stringValue(object, "dependency", "")).toLowerCase(Locale.ROOT);
         boolean expectExists = booleanValue(object, "expectExists", true);
 
         if (requiresModId(type) && modId.isBlank()) {
@@ -172,15 +191,31 @@ public final class RiskRuleLoader {
             invalid(index, "config_file_exists requires configFile for " + id, loadResults);
             return;
         }
+        if ((type == RiskRuleType.ALL_MODS_PRESENT || type == RiskRuleType.ANY_MOD_PRESENT) && modIds.isEmpty()) {
+            invalid(index, type.name().toLowerCase(Locale.ROOT) + " requires modIds for " + id, loadResults);
+            return;
+        }
+        if ((type == RiskRuleType.MOD_VERSION_IN_RANGE || type == RiskRuleType.MOD_VERSION_OUTSIDE_RANGE) && (modId.isBlank() || versionRange.isBlank())) {
+            invalid(index, type.name().toLowerCase(Locale.ROOT) + " requires modId and versionRange for " + id, loadResults);
+            return;
+        }
+        if ((type == RiskRuleType.DEPENDENCY_PRESENT || type == RiskRuleType.DEPENDENCY_ABSENT) && (modId.isBlank() || dependencyModId.isBlank())) {
+            invalid(index, type.name().toLowerCase(Locale.ROOT) + " requires modId and dependencyModId for " + id, loadResults);
+            return;
+        }
 
-        rules.add(new RiskRule(id, type, modId, modIds, maxPresent, configFile, expectExists, severity, message, suggestion));
+        rules.add(new RiskRule(id, type, modId, modIds, maxPresent, configFile, versionRange, dependencyModId, expectExists, severity, message, suggestion));
     }
 
     private static boolean requiresModId(RiskRuleType type) {
         return type == RiskRuleType.MOD_PRESENT
                 || type == RiskRuleType.MOD_MISSING
                 || type == RiskRuleType.CLIENT_ONLY_ON_SERVER
-                || type == RiskRuleType.SERVER_ONLY_ON_CLIENT;
+                || type == RiskRuleType.SERVER_ONLY_ON_CLIENT
+                || type == RiskRuleType.MOD_VERSION_IN_RANGE
+                || type == RiskRuleType.MOD_VERSION_OUTSIDE_RANGE
+                || type == RiskRuleType.DEPENDENCY_PRESENT
+                || type == RiskRuleType.DEPENDENCY_ABSENT;
     }
 
     private static void invalid(int index, String detail, List<CheckResult> loadResults) {
@@ -195,7 +230,9 @@ public final class RiskRuleLoader {
 
     private static String stringValue(JsonObject object, String key, String fallback) {
         JsonElement value = object.get(key);
-        return value == null || value.isJsonNull() ? fallback : value.getAsString();
+        if (value == null || value.isJsonNull()) return fallback;
+        String text = value.getAsString();
+        return text.length() <= MAX_FIELD_LENGTH ? text : text.substring(0, MAX_FIELD_LENGTH);
     }
 
     private static int intValue(JsonObject object, String key, int fallback) {
@@ -215,6 +252,7 @@ public final class RiskRuleLoader {
         }
         List<String> values = new ArrayList<>();
         for (JsonElement element : value.getAsJsonArray()) {
+            if (values.size() >= MAX_MOD_IDS_PER_RULE) break;
             if (!element.isJsonNull()) {
                 String text = element.getAsString().trim().toLowerCase(Locale.ROOT);
                 if (!text.isBlank()) {
@@ -234,7 +272,7 @@ public final class RiskRuleLoader {
     }
 
     private static String sanitizeFileName(String value) {
-        if (value == null || value.isBlank() || value.contains("/") || value.contains("\\") || value.contains("..")) {
+        if (value == null || value.isBlank() || !value.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,127}") || value.contains("..")) {
             return "gradlemc-rules.json";
         }
         return value;

@@ -73,7 +73,7 @@ public record GradleMCGuiState(
                 guiStatus,
                 GradleMCGuiBridge.smartAIStatusAgeMillis(),
                 RuntimeSnapshots.memory(),
-                minecraft.getFps(),
+                (int) Math.round(rollingFps.currentFps()),
                 rollingFps.averageFps(),
                 rollingFps.onePercentLowFps(),
                 rollingFps.pointOnePercentLowFps(),

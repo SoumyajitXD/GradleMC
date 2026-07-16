@@ -1,6 +1,13 @@
 package com.soumyajit.gradlemc.metrics;
 
 public record DiagnosticTestProgress(boolean running, int requestedSeconds, int elapsedSeconds) {
+    private static final int MAX_DURATION_SECONDS = 1_800;
+
+    public DiagnosticTestProgress {
+        requestedSeconds = Math.max(0, Math.min(MAX_DURATION_SECONDS, requestedSeconds));
+        elapsedSeconds = Math.max(0, Math.min(requestedSeconds, elapsedSeconds));
+        if (requestedSeconds == 0) running = false;
+    }
     public static DiagnosticTestProgress idle() {
         return new DiagnosticTestProgress(false, 0, 0);
     }

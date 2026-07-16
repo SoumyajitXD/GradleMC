@@ -38,6 +38,8 @@ public final class StabilityAdvisor {
 
         int finalScore = Math.max(0, Math.min(100, (int) Math.round(score.value)));
         ConfidenceLevel confidence = confidence(missing.size(), baseline);
+        RecommendationValidator.Validation validated = RecommendationValidator.validate(recommendations, missing);
+        trends.addAll(validated.notes());
         return new StabilityScore(
                 finalScore,
                 RiskLevel.fromScore(finalScore),
@@ -45,7 +47,7 @@ public final class StabilityAdvisor {
                 findings.stream()
                         .sorted(Comparator.comparing(DiagnosticFinding::severity).reversed())
                         .toList(),
-                recommendations.stream()
+                validated.recommendations().stream()
                         .sorted(Comparator.comparingInt(SmartRecommendation::priority).reversed())
                         .toList(),
                 List.copyOf(missing),

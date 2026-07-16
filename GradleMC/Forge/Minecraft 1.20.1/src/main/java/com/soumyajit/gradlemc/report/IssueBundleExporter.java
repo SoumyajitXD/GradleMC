@@ -6,11 +6,11 @@ import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
 import com.soumyajit.gradlemc.rules.RiskRuleLoader;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.ManagedPathSafety;
 import com.soumyajit.gradlemc.util.RuntimeSnapshots;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.versions.forge.ForgeVersion;
 
@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -32,26 +35,29 @@ public class IssueBundleExporter {
     public Path create(MinecraftServer server) throws IOException {
         Path bundleDirectory = GradleMcPaths.issueBundleDirectory();
         Path reportDirectory = GradleMcPaths.reportDirectory();
-        Files.createDirectories(bundleDirectory);
+        ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), bundleDirectory);
         Path bundle = ReportFileNames.unique(bundleDirectory, "gradlemc-issue-bundle-", Instant.now(), ".zip");
-        try (OutputStream outputStream = Files.newOutputStream(bundle);
-             ZipOutputStream zip = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
-            addText(zip, "HOW_TO_REPORT.txt", howToReport());
-            addText(zip, "environment-summary.txt", environmentSummary(server));
-            addText(zip, "mod-list-summary.txt", modListSummary());
-            addText(zip, "gradlemc-config-summary.txt", configSummary());
-            addText(zip, "rule-check-summary.txt", ruleSummary());
-            addText(zip, "latest-test-summaries.txt", latestTestSummaries());
-            addLatestReports(zip, reportDirectory);
-            if (GradleMCConfig.INCLUDE_LOG_SNIPPET_IN_ISSUE_BUNDLE.get()) {
-                addLogSnippet(zip);
-            } else {
+        Path temporary = Files.createTempFile(bundleDirectory, ".gradlemc-issue-bundle-", ".tmp");
+        try {
+            try (OutputStream outputStream = Files.newOutputStream(temporary);
+                 ZipOutputStream zip = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
+                addText(zip, "HOW_TO_REPORT.txt", howToReport());
+                addText(zip, "environment-summary.txt", environmentSummary(server));
+                addText(zip, "mod-list-summary.txt", modListSummary());
+                addText(zip, "gradlemc-config-summary.txt", configSummary());
+                addText(zip, "rule-check-summary.txt", ruleSummary());
+                addText(zip, "latest-test-summaries.txt", latestTestSummaries());
+                addLatestReports(zip, reportDirectory);
                 addText(zip, "log-snippet-skipped.txt",
-                        "latest.log was not included because includeLogSnippetInIssueBundle=false.\n"
-                                + "GradleMC never includes full logs by default.\n");
+                        "latest.log is not included in GradleMC 1.0.3 issue bundles.\n"
+                                + "Logs can contain chat, commands, addresses, UUIDs, coordinates, and session data; review and attach them manually only when appropriate.\n");
             }
+            try { Files.move(temporary, bundle, StandardCopyOption.ATOMIC_MOVE); }
+            catch (AtomicMoveNotSupportedException exception) { Files.move(temporary, bundle); }
+            return bundle;
+        } finally {
+            Files.deleteIfExists(temporary);
         }
-        return bundle;
     }
 
     private void addLatestReports(ZipOutputStream zip, Path reportDirectory) throws IOException {
@@ -63,17 +69,18 @@ public class IssueBundleExporter {
 
     private void addLatestReport(ZipOutputStream zip, Path reportDirectory, String prefix, String entryName) throws IOException {
         Optional<Path> latest = latestReport(reportDirectory, prefix);
-        if (latest.isPresent() && Files.size(latest.get()) <= 512L * 1024L) {
-            addFile(zip, entryName, latest.get());
+        if (latest.isPresent() && Files.isRegularFile(latest.get(), LinkOption.NOFOLLOW_LINKS)
+                && !Files.isSymbolicLink(latest.get()) && Files.size(latest.get()) <= 512L * 1024L) {
+            addText(zip, entryName, redact(Files.readString(latest.get(), StandardCharsets.UTF_8)));
         }
     }
 
     private Optional<Path> latestReport(Path reportDirectory, String prefix) throws IOException {
-        if (!Files.isDirectory(reportDirectory)) {
+        if (!Files.isDirectory(reportDirectory, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(reportDirectory)) {
             return Optional.empty();
         }
         try (Stream<Path> paths = Files.list(reportDirectory)) {
-            return paths.filter(Files::isRegularFile)
+            return paths.filter(path -> Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(path))
                     .filter(path -> path.getFileName().toString().startsWith(prefix))
                     .filter(path -> path.getFileName().toString().endsWith(".txt"))
                     .filter(path -> prefix.equals("gradlemc-")
@@ -89,24 +96,6 @@ public class IssueBundleExporter {
                         }
                     }));
         }
-    }
-
-    private void addLogSnippet(ZipOutputStream zip) throws IOException {
-        Path gameDir = FMLPaths.GAMEDIR.get().normalize();
-        Path latestLog = gameDir.resolve("logs").resolve("latest.log").normalize();
-        if (!latestLog.startsWith(gameDir) || !Files.isRegularFile(latestLog) || Files.size(latestLog) > 4L * 1024L * 1024L) {
-            addText(zip, "log-snippet-skipped.txt", "latest.log was missing or too large for safe snippet export.\n");
-            return;
-        }
-        int limit = GradleMCConfig.LOG_SNIPPET_LINE_LIMIT.get();
-        List<String> lines = Files.readAllLines(latestLog, StandardCharsets.UTF_8);
-        int from = Math.max(0, lines.size() - limit);
-        StringBuilder builder = new StringBuilder();
-        builder.append("Redacted tail of latest.log. Full logs are not included by GradleMC.\n\n");
-        for (String line : lines.subList(from, lines.size())) {
-            builder.append(redact(line)).append('\n');
-        }
-        addText(zip, "latest-log-tail-redacted.txt", builder.toString());
     }
 
     private String howToReport() {
@@ -134,7 +123,7 @@ public class IssueBundleExporter {
                 + "Loader: " + GradleMC.CURRENT_LOADER_NAME + "\n"
                 + "Forge: " + ForgeVersion.getVersion() + "\n"
                 + "Java: " + System.getProperty("java.version", "unknown") + "\n"
-                + "Output root: " + GradleMcPaths.gradleMcDirectory() + "\n"
+                + "Output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()) + "\n"
                 + "Loaded mods: " + ModList.get().getMods().size() + "\n"
                 + "Players online: " + server.getPlayerCount() + "\n"
                 + "Memory used/max: " + memory.usedMiB() + "/" + memory.maxMiB() + " MiB\n"
@@ -154,12 +143,12 @@ public class IssueBundleExporter {
 
     private String configSummary() {
         return "reportsEnabled: " + GradleMCConfig.REPORTS_ENABLED.get() + "\n"
-                + "reportDirectoryName: " + GradleMCConfig.REPORT_DIRECTORY_NAME.get() + "\n"
-                + "outputRoot: " + GradleMcPaths.gradleMcDirectory() + "\n"
-                + "reportDirectory: " + GradleMcPaths.reportDirectory() + "\n"
-                + "exportDirectory: " + GradleMcPaths.exportDirectory() + "\n"
-                + "issueBundleDirectory: " + GradleMcPaths.issueBundleDirectory() + "\n"
-                + "rulesDirectory: " + GradleMcPaths.rulesDirectory() + "\n"
+                + "reportDirectory: " + GradleMcPaths.displayPath(GradleMcPaths.reportDirectory()) + "\n"
+                + "outputRoot: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()) + "\n"
+                + "reportDirectory: " + GradleMcPaths.displayPath(GradleMcPaths.reportDirectory()) + "\n"
+                + "exportDirectory: " + GradleMcPaths.displayPath(GradleMcPaths.exportDirectory()) + "\n"
+                + "issueBundleDirectory: " + GradleMcPaths.displayPath(GradleMcPaths.issueBundleDirectory()) + "\n"
+                + "rulesDirectory: " + GradleMcPaths.displayPath(GradleMcPaths.rulesDirectory()) + "\n"
                 + "defaultPerfSeconds: " + GradleMCConfig.DEFAULT_PERF_SECONDS.get() + "\n"
                 + "maxPerfSeconds: " + GradleMCConfig.MAX_PERF_SECONDS.get() + "\n"
                 + "defaultWorldgenObservationSeconds: " + GradleMCConfig.DEFAULT_WORLDGEN_OBSERVATION_SECONDS.get() + "\n"
@@ -212,17 +201,20 @@ public class IssueBundleExporter {
         zip.closeEntry();
     }
 
-    private void addFile(ZipOutputStream zip, String name, Path path) throws IOException {
-        zip.putNextEntry(new ZipEntry(name));
-        Files.copy(path, zip);
-        zip.closeEntry();
+    private String redact(String line) {
+        String gamePath = GradleMcPaths.gameDirectory().toString();
+        String redacted = replaceLiteral(line, gamePath, "[game-dir]");
+        String home = System.getProperty("user.home", "");
+        if (!home.isBlank()) redacted = replaceLiteral(redacted, home, "[user-home]");
+        return redacted
+                .replaceAll("(?i)(token|password|api[_-]?key|secret)\\s*[=:]\\s*[^\\s,;]+", "$1=[redacted]")
+                .replaceAll("(?i)\\b[A-Z]:[\\\\/][^\\s\\\"']+", "[absolute-path]");
     }
 
-    private String redact(String line) {
-        String gamePath = FMLPaths.GAMEDIR.get().normalize().toString();
-        return line.replace(gamePath, "[game-dir]")
-                .replace(System.getProperty("user.home", ""), "[user-home]")
-                .replaceAll("(?i)(token|password|apikey|api_key|secret)=\\S+", "$1=[redacted]");
+    private String replaceLiteral(String value, String literal, String replacement) {
+        if (literal == null || literal.isBlank()) return value;
+        return java.util.regex.Pattern.compile(java.util.regex.Pattern.quote(literal), java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(value).replaceAll(java.util.regex.Matcher.quoteReplacement(replacement));
     }
 
     private String modVersion() {

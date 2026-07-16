@@ -53,6 +53,7 @@ public final class GradleMCNetwork {
             return;
         }
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), OpenGradleMCGuiPacket.INSTANCE);
+        NetworkDiagnostics.record("open_gui","server-to-client",0);
     }
 
     public static void syncSmartAIStatus(ServerPlayer player, SmartAIStatus status) {
@@ -64,6 +65,7 @@ public final class GradleMCNetwork {
             return;
         }
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncSmartAIStatusPacket(status, guiStatus));
+        NetworkDiagnostics.record("sync_status","server-to-client",approximateStatusBytes(status,guiStatus));
     }
 
     public static void requestSmartAIStatus() {
@@ -71,7 +73,14 @@ public final class GradleMCNetwork {
             return;
         }
         CHANNEL.sendToServer(RequestSmartAIStatusPacket.INSTANCE);
+        NetworkDiagnostics.record("request_status","client-to-server",0);
     }
+
+    public static String protocolVersion() { return PROTOCOL_VERSION; }
+    public static boolean registered() { return registered; }
+    public static int registeredPacketTypes() { return packetId; }
+    private static long approximateStatusBytes(SmartAIStatus status,GuiStatusSnapshot gui){if(status==null||gui==null)return 0;return 96L+chars(status.recentAdaptation())+chars(status.topRiskFactors())+chars(gui.latestReportPath())+chars(gui.latestReportSummary())+chars(gui.latestPerformanceReportPath())+chars(gui.latestWorldgenReportPath())+chars(gui.latestExportPath())+chars(gui.latestIssueBundlePath())+chars(gui.latestProfilePath())+chars(gui.latestProfileSummary());}
+    private static long chars(String value){return value==null?0:Math.min(3L*value.length(),576L);}
 
     private static int nextPacketId() {
         return packetId++;

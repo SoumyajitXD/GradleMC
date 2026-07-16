@@ -10,6 +10,8 @@ public final class OverlayDefaultsSelfTest {
         assertEquals("TOP_LEFT", OverlayDefaults.POSITION, "overlay default position");
         assertEquals(60, OverlayDefaults.SAMPLING_WINDOW_SECONDS, "overlay default sampling window");
         assertEquals(500, OverlayDefaults.UPDATE_INTERVAL_MS, "overlay default update interval");
+        assertTrue(!OverlayDefaults.SHOW_TITLE, "overlay title should be disabled by default");
+        assertTrue(!OverlayDefaults.SHOW_AVERAGE_FPS, "average FPS should be disabled by default");
         assertTrue(!OverlayDefaults.SHOW_GPU_USAGE, "GPU usage should not be enabled without an accurate provider");
     }
 

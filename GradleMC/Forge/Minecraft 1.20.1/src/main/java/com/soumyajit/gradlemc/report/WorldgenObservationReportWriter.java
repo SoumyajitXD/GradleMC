@@ -1,6 +1,8 @@
 package com.soumyajit.gradlemc.report;
 
 import com.soumyajit.gradlemc.metrics.WorldgenObservationResult;
+import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.ManagedPathSafety;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +14,7 @@ import java.util.Locale;
 
 public class WorldgenObservationReportWriter {
     public Path write(WorldgenObservationResult result, Path reportDirectory) throws IOException {
-        Files.createDirectories(reportDirectory);
+        ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), reportDirectory);
         Path reportFile = ReportFileNames.unique(reportDirectory, "gradlemc-worldgen-observation-", result.endedAt(), ".txt");
         Files.write(reportFile, linesFor(result), StandardCharsets.UTF_8);
         return reportFile;

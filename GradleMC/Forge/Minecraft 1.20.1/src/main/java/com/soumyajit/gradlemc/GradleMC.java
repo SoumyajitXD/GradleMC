@@ -4,14 +4,18 @@ import com.mojang.logging.LogUtils;
 import com.soumyajit.gradlemc.ai.AdaptiveSmartAIManager;
 import com.soumyajit.gradlemc.command.GradleMcCommands;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
+import com.soumyajit.gradlemc.foundation.FoundationService;
 import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
 import com.soumyajit.gradlemc.profiler.GradleMcProfilerService;
+import com.soumyajit.gradlemc.startup.ResourceReloadTimingService;
+import com.soumyajit.gradlemc.startup.StartupTimingService;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
 @Mod(GradleMC.MOD_ID)
@@ -35,6 +39,17 @@ public class GradleMC {
         MinecraftForge.EVENT_BUS.addListener(PerformanceTestManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(WorldgenObservationManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(GradleMcProfilerService::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(StartupTimingService::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(StartupTimingService::onServerStarting);
+        MinecraftForge.EVENT_BUS.addListener(StartupTimingService::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(ResourceReloadTimingService::onReloadListeners);
+        MinecraftForge.EVENT_BUS.addListener(ResourceReloadTimingService::onDatapackSync);
+        MinecraftForge.EVENT_BUS.addListener(GradleMC::onServerStopped);
+        StartupTimingService.initializationCompleted();
         LOGGER.info("GradleMC command scaffold loaded");
+    }
+
+    private static void onServerStopped(ServerStoppedEvent event) {
+        FoundationService.resetExecutor();
     }
 }

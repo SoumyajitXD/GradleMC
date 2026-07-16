@@ -21,6 +21,9 @@ public final class GradleMCConfig {
     public static final ForgeConfigSpec.BooleanValue INCLUDE_LOG_SNIPPET_IN_ISSUE_BUNDLE;
     public static final ForgeConfigSpec.IntValue LOG_SNIPPET_LINE_LIMIT;
     public static final ForgeConfigSpec.BooleanValue ENABLE_RULE_CHECKS;
+    public static final ForgeConfigSpec.BooleanValue MOD_AUDIT_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue MOD_AUDIT_INCLUDE_JAR_FILENAMES;
+    public static final ForgeConfigSpec.IntValue MOD_AUDIT_MAX_CHAT_FINDINGS;
     public static final ForgeConfigSpec.ConfigValue<String> RULES_FILE_NAME;
     public static final ForgeConfigSpec.BooleanValue VERBOSE_CHAT_OUTPUT;
     public static final ForgeConfigSpec.BooleanValue SMART_DIAGNOSTICS_ENABLED;
@@ -30,6 +33,19 @@ public final class GradleMCConfig {
     public static final ForgeConfigSpec.IntValue SMART_ADVICE_MAX_ITEMS;
     public static final ForgeConfigSpec.ConfigValue<String> ANOMALY_SENSITIVITY;
     public static final ForgeConfigSpec.BooleanValue SMART_SCORE_USES_ADAPTIVE_THRESHOLDS;
+    public static final ForgeConfigSpec.BooleanValue HEALTH_GATES_ENABLED;
+    public static final ForgeConfigSpec.DoubleValue GATE_MIN_MEDIAN_FPS;
+    public static final ForgeConfigSpec.DoubleValue GATE_MAX_P95_FRAME_TIME_MS;
+    public static final ForgeConfigSpec.DoubleValue GATE_MIN_TPS;
+    public static final ForgeConfigSpec.DoubleValue GATE_MAX_P95_MSPT;
+    public static final ForgeConfigSpec.DoubleValue GATE_MAX_GC_PAUSE_MS;
+    public static final ForgeConfigSpec.IntValue GATE_MAX_CRITICAL_FINDINGS;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_TASKS;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_RUN_SECONDS;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_FILES;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_READ_MIB;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_RECORDS;
+    public static final ForgeConfigSpec.IntValue BUDGET_MAX_SCAN_MIB;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ADAPTIVE_SMART_AI;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ADAPTIVE_AMBIENCE;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ADAPTIVE_EVENTS;
@@ -51,7 +67,9 @@ public final class GradleMCConfig {
     public static final ForgeConfigSpec.DoubleValue OVERLAY_BACKGROUND_OPACITY;
     public static final ForgeConfigSpec.ConfigValue<Integer> OVERLAY_SAMPLING_WINDOW_SECONDS;
     public static final ForgeConfigSpec.ConfigValue<Integer> OVERLAY_UPDATE_INTERVAL_MS;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_TITLE;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_FPS;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_AVERAGE_FPS;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_ONE_PERCENT_LOW;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_POINT_ONE_PERCENT_LOW;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_JVM_MEMORY;
@@ -59,6 +77,10 @@ public final class GradleMCConfig {
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_CPU;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_GPU_NAME;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_GPU_USAGE;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_INTEGRATED_SERVER;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_TEST_STATUS;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_PROFILER_STATUS;
+    public static final ForgeConfigSpec.BooleanValue OVERLAY_SHOW_STABILITY;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -111,6 +133,15 @@ public final class GradleMCConfig {
         ENABLE_RULE_CHECKS = builder
                 .comment("Run local GradleMC risk rules as part of quick checks and exports.")
                 .define("enableRuleChecks", true);
+        MOD_AUDIT_ENABLED = builder
+                .comment("Enable local installed-mod metadata audits. No network, jar scanning, or telemetry is used.")
+                .define("modAuditEnabled", true);
+        MOD_AUDIT_INCLUDE_JAR_FILENAMES = builder
+                .comment("Include JAR file names, never absolute paths, in local mod-audit reports.")
+                .define("modAuditIncludeJarFilenames", true);
+        MOD_AUDIT_MAX_CHAT_FINDINGS = builder
+                .comment("Maximum actionable mod-audit findings shown in chat.")
+                .defineInRange("modAuditMaxChatFindings", 5, 1, 20);
         RULES_FILE_NAME = builder
                 .comment("Risk rule file name inside the Minecraft game directory's gradlemc/rules folder.")
                 .define("rulesFileName", "gradlemc-rules.json");
@@ -138,6 +169,27 @@ public final class GradleMCConfig {
         SMART_SCORE_USES_ADAPTIVE_THRESHOLDS = builder
                 .comment("Use local adaptive baseline thresholds when enough samples exist.")
                 .define("smartScoreUsesAdaptiveThresholds", true);
+        HEALTH_GATES_ENABLED = builder
+                .comment("Evaluate local GradleMC health gates. Missing evidence is INCONCLUSIVE, never PASS.")
+                .define("healthGatesEnabled", true);
+        GATE_MIN_MEDIAN_FPS = builder.comment("Minimum acceptable median FPS when FPS evidence exists.")
+                .defineInRange("gateMinMedianFps", 60.0D, 1.0D, 1000.0D);
+        GATE_MAX_P95_FRAME_TIME_MS = builder.comment("Maximum acceptable p95 frame time in milliseconds.")
+                .defineInRange("gateMaxP95FrameTimeMs", 33.4D, 1.0D, 1000.0D);
+        GATE_MIN_TPS = builder.comment("Minimum acceptable server TPS when server evidence exists.")
+                .defineInRange("gateMinTps", 18.0D, 1.0D, 20.0D);
+        GATE_MAX_P95_MSPT = builder.comment("Maximum acceptable p95 server tick time in milliseconds.")
+                .defineInRange("gateMaxP95Mspt", 50.0D, 1.0D, 10000.0D);
+        GATE_MAX_GC_PAUSE_MS = builder.comment("Maximum acceptable observed GC pause in milliseconds.")
+                .defineInRange("gateMaxGcPauseMs", 200.0D, 1.0D, 60000.0D);
+        GATE_MAX_CRITICAL_FINDINGS = builder.comment("Maximum acceptable critical finding count.")
+                .defineInRange("gateMaxCriticalFindings", 0, 0, 1000);
+        BUDGET_MAX_TASKS = builder.comment("Maximum tasks in one bounded diagnostic run.").defineInRange("budgetMaxTasks",128,8,512);
+        BUDGET_MAX_RUN_SECONDS = builder.comment("Maximum wall duration for one diagnostic run.").defineInRange("budgetMaxRunSeconds",300,10,3600);
+        BUDGET_MAX_FILES = builder.comment("Maximum files accounted across a diagnostic run.").defineInRange("budgetMaxFiles",10000,100,100000);
+        BUDGET_MAX_READ_MIB = builder.comment("Maximum bytes read across providers, in MiB.").defineInRange("budgetMaxReadMiB",256,1,2048);
+        BUDGET_MAX_RECORDS = builder.comment("Maximum retained records or samples in a run.").defineInRange("budgetMaxRecords",100000,1000,1000000);
+        BUDGET_MAX_SCAN_MIB = builder.comment("Maximum GradleMC Scan output size in MiB.").defineInRange("budgetMaxScanMiB",16,1,64);
         builder.pop();
 
         builder.push("adaptiveSmartAI");
@@ -207,9 +259,15 @@ public final class GradleMCConfig {
         OVERLAY_UPDATE_INTERVAL_MS = builder
                 .comment("Overlay display refresh interval in milliseconds. Allowed values: 250, 500, 1000.")
                 .defineInList("overlayUpdateIntervalMs", OverlayDefaults.UPDATE_INTERVAL_MS, java.util.List.of(250, 500, 1000));
+        OVERLAY_SHOW_TITLE = builder
+                .comment("Displays the \"GradleMC\" heading above enabled overlay statistics.")
+                .define("showOverlayTitle", OverlayDefaults.SHOW_TITLE);
         OVERLAY_SHOW_FPS = builder
-                .comment("Show current and average FPS.")
+                .comment("Show the recent current FPS value only.")
                 .define("overlayShowFps", OverlayDefaults.SHOW_FPS);
+        OVERLAY_SHOW_AVERAGE_FPS = builder
+                .comment("Show average FPS across the configured rolling measurement window. Disabled by default.")
+                .define("showAverageFps", OverlayDefaults.SHOW_AVERAGE_FPS);
         OVERLAY_SHOW_ONE_PERCENT_LOW = builder
                 .comment("Show 1% low FPS after the rolling window has enough samples.")
                 .define("overlayShowOnePercentLow", OverlayDefaults.SHOW_ONE_PERCENT_LOW);
@@ -231,6 +289,18 @@ public final class GradleMCConfig {
         OVERLAY_SHOW_GPU_USAGE = builder
                 .comment("Reserved for accurate GPU usage providers. GradleMC does not fake GPU usage.")
                 .define("overlayShowGpuUsage", OverlayDefaults.SHOW_GPU_USAGE);
+        OVERLAY_SHOW_INTEGRATED_SERVER = builder
+                .comment("Show integrated-server TPS/MSPT when playing single-player.")
+                .define("overlayShowIntegratedServer", OverlayDefaults.SHOW_INTEGRATED_SERVER);
+        OVERLAY_SHOW_TEST_STATUS = builder
+                .comment("Show bounded diagnostic test progress.")
+                .define("overlayShowTestStatus", OverlayDefaults.SHOW_TEST_STATUS);
+        OVERLAY_SHOW_PROFILER_STATUS = builder
+                .comment("Show local profiler status.")
+                .define("overlayShowProfilerStatus", OverlayDefaults.SHOW_PROFILER_STATUS);
+        OVERLAY_SHOW_STABILITY = builder
+                .comment("Show the synchronized stability summary.")
+                .define("overlayShowStability", OverlayDefaults.SHOW_STABILITY);
         builder.pop();
         SPEC = builder.build();
     }

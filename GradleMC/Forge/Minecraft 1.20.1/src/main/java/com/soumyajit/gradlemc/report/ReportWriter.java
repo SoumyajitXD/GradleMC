@@ -11,6 +11,7 @@ import com.soumyajit.gradlemc.smart.SmartRecommendation;
 import com.soumyajit.gradlemc.smart.StabilityAdvisor;
 import com.soumyajit.gradlemc.smart.StabilityScore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.ManagedPathSafety;
 import net.minecraft.SharedConstants;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.ModList;
@@ -28,9 +29,9 @@ import java.util.stream.Collectors;
 
 public class ReportWriter {
     public Path write(Report report, Path reportDirectory) throws IOException {
-        Files.createDirectories(reportDirectory);
+        ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), reportDirectory);
         Path reportFile = ReportFileNames.unique(reportDirectory, "gradlemc-", report.createdAt(), ".txt");
-        Files.write(reportFile, linesFor(report, reportFile), StandardCharsets.UTF_8);
+        Files.write(reportFile, linesFor(report, reportFile).stream().map(ReportRedactor::redact).toList(), StandardCharsets.UTF_8);
         return reportFile;
     }
 
@@ -51,7 +52,7 @@ public class ReportWriter {
         lines.add("Forge: " + ForgeVersion.getVersion());
         lines.add("Java: " + System.getProperty("java.version", "unknown"));
         lines.add("Physical side: " + FMLEnvironment.dist);
-        lines.add("Output root: " + GradleMcPaths.gradleMcDirectory());
+        lines.add("Output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()));
         lines.add("Loaded mods: " + ModList.get().getMods().size());
         lines.add("");
         lines.add("Command Summary");
@@ -127,7 +128,7 @@ public class ReportWriter {
                 lines.add("");
             }
         }
-        lines.add("Report path: " + reportFile);
+        lines.add("Report path: " + GradleMcPaths.displayPath(reportFile));
         return lines;
     }
 

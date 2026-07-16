@@ -1,0 +1,3 @@
+package com.soumyajit.gradlemc.foundation;
+import java.nio.charset.StandardCharsets; import java.security.MessageDigest; import java.util.*;
+public final class Fingerprints { private Fingerprints(){} public static String digest(String schema, Map<String,String> values){ try { MessageDigest d=MessageDigest.getInstance("SHA-256"); put(d,"schema",schema); new TreeMap<>(values==null?Map.of():values).forEach((k,v)->put(d,k,v)); return HexFormat.of().formatHex(d.digest()); }catch(Exception e){throw new IllegalStateException(e);} } private static void put(MessageDigest d,String k,String v){d.update(k.getBytes(StandardCharsets.UTF_8));d.update((byte)0);d.update((v==null?"":v).getBytes(StandardCharsets.UTF_8));d.update((byte)0);} }

@@ -20,6 +20,8 @@ public final class ThreadSampler implements AutoCloseable {
     private final Deque<StackTraceAggregator.ThreadSnapshot> recentSnapshots = new ArrayDeque<>();
     private ScheduledExecutorService executor;
     private long capturedSamples;
+    private long samplingPasses,missedPasses,maxDriftNanos,droppedRecentSnapshots,failures,nextExpectedNanos;
+    private String lastFailure="";
 
     public ThreadSampler(StackTraceAggregator aggregator, int intervalMillis, String threadPattern,
                          boolean includeSleeping, boolean aggregateImmediately) {
@@ -39,6 +41,7 @@ public final class ThreadSampler implements AutoCloseable {
             thread.setDaemon(true);
             return thread;
         });
+        nextExpectedNanos=System.nanoTime();
         executor.scheduleAtFixedRate(this::sampleSafely, 0L, intervalMillis, TimeUnit.MILLISECONDS);
     }
 
@@ -50,16 +53,20 @@ public final class ThreadSampler implements AutoCloseable {
     public synchronized long capturedSamples() {
         return capturedSamples;
     }
+    public synchronized SamplingStats stats(){return new SamplingStats(capturedSamples,samplingPasses,missedPasses,maxDriftNanos,droppedRecentSnapshots,failures,lastFailure,recentSnapshots.size());}
 
     @Override
     public synchronized void close() {
         if (executor != null) {
             executor.shutdownNow();
+            try{executor.awaitTermination(2,TimeUnit.SECONDS);}catch(InterruptedException exception){Thread.currentThread().interrupt();}
             executor = null;
         }
     }
 
     private void sampleSafely() {
+        long now=System.nanoTime();
+        synchronized(this){long drift=Math.max(0,now-nextExpectedNanos);maxDriftNanos=Math.max(maxDriftNanos,drift);if(drift>=intervalMillis*2_000_000L)missedPasses+=Math.max(0,drift/(intervalMillis*1_000_000L)-1);nextExpectedNanos=now+intervalMillis*1_000_000L;samplingPasses++;}
         try {
             List<StackTraceAggregator.ThreadSnapshot> snapshots = capture();
             synchronized (this) {
@@ -71,14 +78,16 @@ public final class ThreadSampler implements AutoCloseable {
                         recentSnapshots.addLast(snapshot);
                         while (recentSnapshots.size() > RECENT_SNAPSHOT_LIMIT) {
                             recentSnapshots.removeFirst();
+                            droppedRecentSnapshots++;
                         }
                     }
                 }
             }
-        } catch (RuntimeException ignored) {
-            // Sampling must never crash the server.
+        } catch (RuntimeException exception) {
+            synchronized(this){failures++;lastFailure=exception.getClass().getSimpleName();}
         }
     }
+    public record SamplingStats(long capturedSamples,long samplingPasses,long missedPasses,long maxDriftNanos,long droppedRecentSnapshots,long failures,String lastFailure,int retainedRecentSnapshots){ }
 
     private List<StackTraceAggregator.ThreadSnapshot> capture() {
         List<StackTraceAggregator.ThreadSnapshot> snapshots = new ArrayList<>();
