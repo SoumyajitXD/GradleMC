@@ -24,8 +24,7 @@ jobs:
     name: Repository sanity
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # This job is a diagnostic guardrail, not the build gate. The actual blocking
-    # verification is the build-supported-port matrix below.
+    # Diagnostic guardrail only. The build matrix is the blocking verification.
     continue-on-error: true
     steps:
       - name: Checkout sources
@@ -131,6 +130,7 @@ jobs:
           set -u
           required_artifacts=(
             "gradlemc-forge-26.1.2-1.0.0.jar"
+            "gradlemc-1.0.3-forge-1.20.1.jar"
             "gradlemc-1.0.2-forge-1.20.1.jar"
             "gradlemc-fabric-26.1.2-1.0.0.jar"
             "gradlemc-fabric-1.20.1-1.0.0.jar"
@@ -163,7 +163,7 @@ jobs:
             case "$tracked_file" in
               */gradle/wrapper/gradle-wrapper.jar)
                 ;;
-              Releases/Forge/Minecraft\ 26.1.2/gradlemc-forge-26.1.2-1.0.0.jar|Releases/Forge/Minecraft\ 1.20.1/gradlemc-1.0.2-forge-1.20.1.jar|Releases/Fabric/Minecraft\ 26.1.2/gradlemc-fabric-26.1.2-1.0.0.jar|Releases/Fabric/Minecraft\ 1.20.1/gradlemc-fabric-1.20.1-1.0.0.jar|Releases/Quilt/Minecraft\ 1.20.1/gradlemc-quilt-1.20.1-1.0.0.jar)
+              Releases/Forge/Minecraft\ 26.1.2/gradlemc-forge-26.1.2-1.0.0.jar|Releases/Forge/Minecraft\ 1.20.1/gradlemc-1.0.3-forge-1.20.1.jar|Releases/Forge/Minecraft\ 1.20.1/gradlemc-1.0.2-forge-1.20.1.jar|Releases/Fabric/Minecraft\ 26.1.2/gradlemc-fabric-26.1.2-1.0.0.jar|Releases/Fabric/Minecraft\ 1.20.1/gradlemc-fabric-1.20.1-1.0.0.jar|Releases/Quilt/Minecraft\ 1.20.1/gradlemc-quilt-1.20.1-1.0.0.jar)
                 ;;
               *.jar)
                 unexpected_jars+=("$tracked_file")
@@ -203,56 +203,48 @@ jobs:
             project_dir: GradleMC/Forge/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
-            expected_artifact: gradlemc-forge-1.21.11-1.0.0.jar
             metadata_kind: forge
           - name: Forge 26.1.2
             project_dir: GradleMC/Forge/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-forge-26.1.2-1.0.0.jar
             metadata_kind: forge
           - name: Forge 1.20.1
             project_dir: GradleMC/Forge/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
-            expected_artifact: gradlemc-1.0.2-forge-1.20.1.jar
             metadata_kind: forge
           - name: Fabric 1.21.11
             project_dir: GradleMC/Fabric/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-fabric-1.21.11-1.0.0.jar
             metadata_kind: fabric
           - name: Fabric 26.1.2
             project_dir: GradleMC/Fabric/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-fabric-26.1.2-1.0.0.jar
             metadata_kind: fabric
           - name: Fabric 1.20.1
             project_dir: GradleMC/Fabric/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-fabric-1.20.1-1.0.0.jar
             metadata_kind: fabric
           - name: NeoForge 1.21.11
             project_dir: GradleMC/NeoForge/Minecraft 1.21.11
             java: "21"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble
-            expected_artifact: gradlemc-neoforge-1.21.11-1.0.0.jar
             metadata_kind: neoforge
           - name: NeoForge 26.1.2
             project_dir: GradleMC/NeoForge/Minecraft 26.1.2
             java: "25"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-neoforge-26.1.2-1.0.0.jar
             metadata_kind: neoforge
           - name: Quilt 1.20.1
             project_dir: GradleMC/Quilt/Minecraft 1.20.1
             java: "17"
             command: ./gradlew --no-daemon --stacktrace --warning-mode all clean build
-            expected_artifact: gradlemc-quilt-1.20.1-1.0.0.jar
             metadata_kind: quilt
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -279,7 +271,7 @@ jobs:
           jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
 
           if grep -q '^org.gradle.java.home=' gradle.properties; then
-            echo "Removing local developer org.gradle.java.home from gradle.properties for CI. The setup-java toolchain is the source of truth here."
+            echo "Removing local developer org.gradle.java.home from gradle.properties for CI. setup-java is the source of truth."
             sed -i '/^org.gradle.java.home=/d' gradle.properties
           fi
 
@@ -303,7 +295,8 @@ jobs:
 
           ./gradlew --no-daemon --version
 
-      - name: Validate source metadata
+      - name: Resolve and validate source metadata
+        id: metadata
         shell: bash
         working-directory: ${{ matrix.project_dir }}
         run: |
@@ -330,13 +323,15 @@ jobs:
               else
                 [[ "$loader_name" == "neoforge" || "$loader_name" == "NeoForge" ]] || { echo "Unexpected NeoForge loader_name: $loader_name" >&2; exit 1; }
               fi
-              [[ "$variant_name" == "${{ matrix.metadata_kind }}-$minecraft_version" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} variant_name: $variant_name" >&2; exit 1; }
-              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} artifact_name: $artifact_name" >&2; exit 1; }
+              [[ "$variant_name" == "${{ matrix.metadata_kind }}-$minecraft_version" ]] || {
+                echo "Unexpected ${{ matrix.metadata_kind }} variant_name: $variant_name" >&2
+                exit 1
+              }
               ;;
             fabric|quilt)
               archives_base_name="$(get_property archives_base_name)"
+              [[ -n "$archives_base_name" ]] || { echo "archives_base_name is empty." >&2; exit 1; }
               artifact_name="${archives_base_name}-${mod_version}.jar"
-              [[ "$artifact_name" == "${{ matrix.expected_artifact }}" ]] || { echo "Unexpected ${{ matrix.metadata_kind }} artifact: $artifact_name" >&2; exit 1; }
               ;;
             *)
               echo "Unknown metadata kind: ${{ matrix.metadata_kind }}" >&2
@@ -344,9 +339,15 @@ jobs:
               ;;
           esac
 
+          [[ "$artifact_name" =~ ^[A-Za-z0-9._+-]+\.jar$ ]] || {
+            echo "Unsafe or invalid artifact filename: $artifact_name" >&2
+            exit 1
+          }
+
           echo "minecraft_version=$minecraft_version"
           echo "mod_version=$mod_version"
-          echo "expected_artifact=${{ matrix.expected_artifact }}"
+          echo "artifact_name=$artifact_name"
+          echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
 
       - name: Build and verify
         shell: bash
@@ -360,7 +361,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          artifact_name="${{ matrix.expected_artifact }}"
+          artifact_name="${{ steps.metadata.outputs.artifact-name }}"
           jar_path="build/libs/$artifact_name"
 
           [[ -f "$jar_path" ]] || {
@@ -371,13 +372,17 @@ jobs:
           }
 
           jar tf "$jar_path" >/dev/null
+          rm -rf build/ci-artifact-check
           mkdir -p build/ci-artifact-check
 
           case "${{ matrix.metadata_kind }}" in
             forge)
               (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta)
               for required_entry in META-INF/MANIFEST.MF META-INF/mods.toml pack.mcmeta; do
-                [[ -f "build/ci-artifact-check/$required_entry" ]] || { echo "Jar is missing required Forge entry: $required_entry" >&2; exit 1; }
+                [[ -f "build/ci-artifact-check/$required_entry" ]] || {
+                  echo "Jar is missing required Forge entry: $required_entry" >&2
+                  exit 1
+                }
               done
               grep -F 'modId="gradlemc"' build/ci-artifact-check/META-INF/mods.toml >/dev/null || {
                 echo "mods.toml inside jar does not contain modId=gradlemc." >&2
@@ -387,7 +392,10 @@ jobs:
             neoforge)
               (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF META-INF/neoforge.mods.toml pack.mcmeta)
               for required_entry in META-INF/MANIFEST.MF META-INF/neoforge.mods.toml pack.mcmeta; do
-                [[ -f "build/ci-artifact-check/$required_entry" ]] || { echo "Jar is missing required NeoForge entry: $required_entry" >&2; exit 1; }
+                [[ -f "build/ci-artifact-check/$required_entry" ]] || {
+                  echo "Jar is missing required NeoForge entry: $required_entry" >&2
+                  exit 1
+                }
               done
               grep -F 'modId="gradlemc"' build/ci-artifact-check/META-INF/neoforge.mods.toml >/dev/null || {
                 echo "neoforge.mods.toml inside jar does not contain modId=gradlemc." >&2
@@ -396,7 +404,10 @@ jobs:
               ;;
             fabric)
               (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF fabric.mod.json)
-              [[ -f build/ci-artifact-check/fabric.mod.json ]] || { echo "Jar is missing fabric.mod.json." >&2; exit 1; }
+              [[ -f build/ci-artifact-check/fabric.mod.json ]] || {
+                echo "Jar is missing fabric.mod.json." >&2
+                exit 1
+              }
               grep -F '"id": "gradlemc"' build/ci-artifact-check/fabric.mod.json >/dev/null || {
                 echo "fabric.mod.json inside jar does not contain id=gradlemc." >&2
                 exit 1
@@ -404,7 +415,10 @@ jobs:
               ;;
             quilt)
               (cd build/ci-artifact-check && jar xf "../libs/$artifact_name" META-INF/MANIFEST.MF quilt.mod.json)
-              [[ -f build/ci-artifact-check/quilt.mod.json ]] || { echo "Jar is missing quilt.mod.json." >&2; exit 1; }
+              [[ -f build/ci-artifact-check/quilt.mod.json ]] || {
+                echo "Jar is missing quilt.mod.json." >&2
+                exit 1
+              }
               grep -F '"id": "gradlemc"' build/ci-artifact-check/quilt.mod.json >/dev/null || {
                 echo "quilt.mod.json inside jar does not contain id=gradlemc." >&2
                 exit 1
