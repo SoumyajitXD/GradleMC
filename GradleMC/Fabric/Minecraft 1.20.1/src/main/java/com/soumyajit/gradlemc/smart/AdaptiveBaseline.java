@@ -35,9 +35,18 @@ public final class AdaptiveBaseline {
     }
 
     public record MetricStats(int samples, double average, double min, double max) {
+        public MetricStats {
+            if (samples < 1) throw new IllegalArgumentException("samples must be positive");
+            if (!Double.isFinite(average) || !Double.isFinite(min) || !Double.isFinite(max)) {
+                throw new IllegalArgumentException("baseline metrics must be finite");
+            }
+        }
+
         public MetricStats add(double value, int maxSamples) {
-            int boundedSamples = Math.max(1, Math.min(samples, maxSamples - 1));
-            int nextSamples = Math.min(maxSamples, samples + 1);
+            if (!Double.isFinite(value)) return this;
+            int boundedMaximum = Math.max(1, maxSamples);
+            int boundedSamples = Math.max(0, Math.min(samples, boundedMaximum - 1));
+            int nextSamples = Math.min(boundedMaximum, samples + 1);
             double nextAverage = ((average * boundedSamples) + value) / (boundedSamples + 1);
             return new MetricStats(nextSamples, nextAverage, Math.min(min, value), Math.max(max, value));
         }

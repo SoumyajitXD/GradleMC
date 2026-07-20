@@ -4,6 +4,10 @@ import com.soumyajit.gradlemc.profiler.ProfilerSessionConfig;
 import com.soumyajit.gradlemc.profiler.sampling.StackTraceAggregator;
 import com.soumyajit.gradlemc.profiler.tick.TickRecord;
 import com.soumyajit.gradlemc.report.ReportFileNames;
+import com.soumyajit.gradlemc.util.AtomicFiles;
+import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,8 +24,8 @@ public final class ProfilingReportWriter {
         Instant now = Instant.now();
         Path text = ReportFileNames.unique(directory, "gradlemc-profile-", now, ".txt");
         Path json = text.resolveSibling(text.getFileName().toString().replace(".txt", ".json"));
-        Files.write(text, textLines(summary, config, directory), StandardCharsets.UTF_8);
-        Files.writeString(json, json(summary, config), StandardCharsets.UTF_8);
+        AtomicFiles.writeUtf8(text, String.join(System.lineSeparator(), textLines(summary, config, directory)) + System.lineSeparator());
+        AtomicFiles.writeUtf8(json, json(summary, config));
         return new Result(text, json);
     }
 
@@ -80,7 +84,7 @@ public final class ProfilingReportWriter {
         lines.add("- This is Java-level sampling, not async-profiler native CPU profiling.");
         lines.add("- Memory-lite reports pressure and GC correlation; it is not true allocation profiling.");
         lines.add("- Low-confidence attribution means possible contributor, not culprit.");
-        lines.add("Reports directory: " + directory.normalize());
+        lines.add("Reports directory: " + GradleMcPaths.displayPath(directory));
         return lines;
     }
 
@@ -94,35 +98,14 @@ public final class ProfilingReportWriter {
     }
 
     private static String json(ProfilingSummary summary, ProfilerSessionConfig config) {
-        return "{\n"
-                + "  \"format\": \"gradlemc-profile-v1\",\n"
-                + "  \"mode\": \"" + escape(config.mode().id()) + "\",\n"
-                + "  \"durationSeconds\": " + summary.duration().toSeconds() + ",\n"
-                + "  \"sampleIntervalMillis\": " + config.intervalMillis() + ",\n"
-                + "  \"threadPattern\": \"" + escape(config.threadPattern()) + "\",\n"
-                + "  \"slowTickThresholdMillis\": " + format(config.onlyTicksOverMillis()) + ",\n"
-                + "  \"startedAt\": \"" + summary.startedAt() + "\",\n"
-                + "  \"endedAt\": \"" + summary.endedAt() + "\",\n"
-                + "  \"environment\": {\"gradlemc\": \"" + escape(summary.gradleMcVersion()) + "\", \"minecraft\": \"" + escape(summary.minecraftVersion())
-                + "\", \"loader\": \"" + escape(summary.loaderVersion()) + "\", \"java\": \"" + escape(summary.javaVersion()) + "\", \"mods\": " + summary.loadedModCount() + "},\n"
-                + "  \"tickSummary\": {\"samples\": " + summary.tickSummary().sampleCount()
-                + ", \"averageMspt\": " + format(summary.tickSummary().averageMspt())
-                + ", \"medianMspt\": " + format(summary.tickSummary().medianMspt())
-                + ", \"p95Mspt\": " + format(summary.tickSummary().p95Mspt())
-                + ", \"p99Mspt\": " + format(summary.tickSummary().p99Mspt())
-                + ", \"maxMspt\": " + format(summary.tickSummary().maxMspt())
-                + ", \"slowTicks\": " + summary.tickSummary().slowTickCount() + "},\n"
-                + "  \"cpuLiteSamples\": " + summary.cpuSamples() + ",\n"
-                + "  \"memory\": {\"heapStartMiB\": " + summary.usedHeapStartMiB() + ", \"heapEndMiB\": " + summary.usedHeapEndMiB()
-                + ", \"heapMaxMiB\": " + summary.maxHeapMiB() + ", \"gcCountDelta\": " + summary.gcCountDelta()
-                + ", \"gcTimeDeltaMillis\": " + summary.gcTimeDeltaMillis() + "},\n"
-                + "  \"interpretation\": \"" + escape(summary.interpretation()) + "\"\n"
-                + "}\n";
+        JsonObject root = new JsonObject(); root.addProperty("format", "gradlemc-profile-v1"); root.addProperty("mode", config.mode().id()); root.addProperty("durationSeconds", summary.duration().toSeconds()); root.addProperty("sampleIntervalMillis", config.intervalMillis()); root.addProperty("threadPattern", config.threadPattern()); root.addProperty("slowTickThresholdMillis", finite(config.onlyTicksOverMillis())); root.addProperty("startedAt", summary.startedAt().toString()); root.addProperty("endedAt", summary.endedAt().toString());
+        JsonObject environment = new JsonObject(); environment.addProperty("gradlemc", summary.gradleMcVersion()); environment.addProperty("minecraft", summary.minecraftVersion()); environment.addProperty("loader", summary.loaderVersion()); environment.addProperty("java", summary.javaVersion()); environment.addProperty("mods", summary.loadedModCount()); root.add("environment", environment);
+        JsonObject ticks = new JsonObject(); ticks.addProperty("samples", summary.tickSummary().sampleCount()); ticks.addProperty("averageMspt", finite(summary.tickSummary().averageMspt())); ticks.addProperty("medianMspt", finite(summary.tickSummary().medianMspt())); ticks.addProperty("p95Mspt", finite(summary.tickSummary().p95Mspt())); ticks.addProperty("p99Mspt", finite(summary.tickSummary().p99Mspt())); ticks.addProperty("maxMspt", finite(summary.tickSummary().maxMspt())); ticks.addProperty("slowTicks", summary.tickSummary().slowTickCount()); root.add("tickSummary", ticks);
+        root.addProperty("cpuLiteSamples", summary.cpuSamples()); root.addProperty("interpretation", summary.interpretation());
+        return new GsonBuilder().setPrettyPrinting().create().toJson(root) + System.lineSeparator();
     }
 
-    private static String escape(String value) {
-        return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
+    private static Double finite(double value) { return Double.isFinite(value) ? value : null; }
 
     private static String format(double value) {
         return String.format(Locale.ROOT, "%.2f", Double.isFinite(value) ? value : 0.0D);

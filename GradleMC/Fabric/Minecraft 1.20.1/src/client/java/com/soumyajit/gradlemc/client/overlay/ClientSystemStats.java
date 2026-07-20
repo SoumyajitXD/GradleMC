@@ -41,10 +41,7 @@ public final class ClientSystemStats {
 
     public static String cpuName() {
         if (cpuName == null) {
-            String processor = System.getenv("PROCESSOR_IDENTIFIER");
-            if (processor == null || processor.isBlank()) {
-                processor = BASE_OS_BEAN.getArch();
-            }
+            String processor = BASE_OS_BEAN.getArch();
             cpuName = processor == null || processor.isBlank() ? "Unavailable" : processor;
         }
         return cpuName;

@@ -1,6 +1,7 @@
 package com.soumyajit.gradlemc.report;
 
 import com.soumyajit.gradlemc.metrics.PerformanceTestResult;
+import com.soumyajit.gradlemc.util.AtomicFiles;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,9 +13,8 @@ import java.util.Locale;
 
 public class PerformanceTestReportWriter {
     public Path write(PerformanceTestResult result, Path reportDirectory) throws IOException {
-        Files.createDirectories(reportDirectory);
         Path reportFile = ReportFileNames.unique(reportDirectory, "gradlemc-perf-test-", result.endedAt(), ".txt");
-        Files.write(reportFile, linesFor(result), StandardCharsets.UTF_8);
+        AtomicFiles.writeUtf8(reportFile, String.join(System.lineSeparator(), linesFor(result)) + System.lineSeparator());
         return reportFile;
     }
 

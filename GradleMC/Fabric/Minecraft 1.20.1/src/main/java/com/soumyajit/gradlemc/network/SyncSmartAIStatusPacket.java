@@ -5,15 +5,34 @@ import com.soumyajit.gradlemc.ai.ThreatLevel;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
 import net.minecraft.network.FriendlyByteBuf;
 
-public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot guiStatus) {
+import java.util.Optional;
+
+public record SyncSmartAIStatusPacket(
+        int protocolVersion,
+        int requestId,
+        boolean serverDiagnosticsAllowed,
+        boolean administrativeDiagnosticsAllowed,
+        String serverVersion,
+        String statusMessage,
+        SmartAIStatus status,
+        GuiStatusSnapshot guiStatus
+) {
     private static final int MAX_RECENT_ADAPTATION_LENGTH = 128;
     private static final int MAX_TOP_FACTORS_LENGTH = 192;
     private static final int MAX_PATH_LENGTH = 192;
     private static final int MAX_SUMMARY_LENGTH = 192;
+    private static final int MAX_VERSION_LENGTH = 32;
+    private static final int MAX_DURATION_SECONDS = 86_400;
 
     public static void encode(SyncSmartAIStatusPacket packet, FriendlyByteBuf buffer) {
         SmartAIStatus status = packet.status() == null ? SmartAIStatus.disabled() : packet.status();
         GuiStatusSnapshot guiStatus = packet.guiStatus() == null ? GuiStatusSnapshot.empty() : packet.guiStatus();
+        buffer.writeInt(packet.protocolVersion());
+        buffer.writeInt(Math.max(0, packet.requestId()));
+        buffer.writeBoolean(packet.serverDiagnosticsAllowed());
+        buffer.writeBoolean(packet.administrativeDiagnosticsAllowed());
+        buffer.writeUtf(trim(packet.serverVersion(), MAX_VERSION_LENGTH), MAX_VERSION_LENGTH);
+        buffer.writeUtf(trim(packet.statusMessage(), MAX_SUMMARY_LENGTH), MAX_SUMMARY_LENGTH);
         buffer.writeBoolean(status.adaptiveSmartAIEnabled());
         buffer.writeBoolean(status.adaptiveAmbienceEnabled());
         buffer.writeBoolean(status.adaptiveEventsEnabled());
@@ -48,8 +67,16 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
         buffer.writeUtf(trim(guiStatus.latestProfileSummary(), MAX_SUMMARY_LENGTH), MAX_SUMMARY_LENGTH);
     }
 
-    public static SyncSmartAIStatusPacket decode(FriendlyByteBuf buffer) {
-        SmartAIStatus status = new SmartAIStatus(
+    public static Optional<SyncSmartAIStatusPacket> decode(FriendlyByteBuf buffer) {
+        if (buffer == null || buffer.readableBytes() < 16) return Optional.empty();
+        try {
+            int protocolVersion = buffer.readInt();
+            int requestId = buffer.readInt();
+            boolean serverDiagnosticsAllowed = buffer.readBoolean();
+            boolean administrativeDiagnosticsAllowed = buffer.readBoolean();
+            String serverVersion = buffer.readUtf(MAX_VERSION_LENGTH);
+            String statusMessage = buffer.readUtf(MAX_SUMMARY_LENGTH);
+            SmartAIStatus status = new SmartAIStatus(
                 buffer.readBoolean(),
                 buffer.readBoolean(),
                 buffer.readBoolean(),
@@ -70,7 +97,7 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
                 buffer.readInt(),
                 buffer.readUtf(MAX_TOP_FACTORS_LENGTH)
         );
-        GuiStatusSnapshot guiStatus = new GuiStatusSnapshot(
+            GuiStatusSnapshot guiStatus = new GuiStatusSnapshot(
                 buffer.readInt(),
                 buffer.readUtf(32),
                 buffer.readUtf(32),
@@ -85,11 +112,28 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
                 buffer.readUtf(MAX_PATH_LENGTH),
                 buffer.readUtf(MAX_SUMMARY_LENGTH)
         );
-        return new SyncSmartAIStatusPacket(status, guiStatus);
+            if (!valid(protocolVersion, requestId, status, guiStatus) || buffer.readableBytes() != 0) {
+                return Optional.empty();
+            }
+            return Optional.of(new SyncSmartAIStatusPacket(protocolVersion, requestId, serverDiagnosticsAllowed,
+                    administrativeDiagnosticsAllowed, serverVersion, statusMessage, status, guiStatus));
+        } catch (RuntimeException ignored) {
+            return Optional.empty();
+        }
     }
 
-    public static void handle(SyncSmartAIStatusPacket packet) {
-        GradleMCGuiBridge.updateStatus(packet.status(), packet.guiStatus());
+    private static boolean valid(int protocolVersion, int requestId, SmartAIStatus status, GuiStatusSnapshot guiStatus) {
+        if (protocolVersion <= 0 || requestId < 0 || status == null || guiStatus == null) return false;
+        return validProgress(guiStatus.performanceProgress()) && validProgress(guiStatus.worldgenProgress());
+    }
+
+    private static boolean validProgress(DiagnosticTestProgress progress) {
+        return progress != null
+                && progress.requestedSeconds() >= 0
+                && progress.requestedSeconds() <= MAX_DURATION_SECONDS
+                && progress.elapsedSeconds() >= 0
+                && progress.elapsedSeconds() <= MAX_DURATION_SECONDS
+                && progress.elapsedSeconds() <= Math.max(progress.requestedSeconds(), 0);
     }
 
     private static void writeProgress(FriendlyByteBuf buffer, DiagnosticTestProgress progress) {

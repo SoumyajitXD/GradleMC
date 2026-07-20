@@ -1,127 +1,146 @@
 package com.soumyajit.gradlemc.client;
 
-import com.mojang.brigadier.Command;
-import com.soumyajit.gradlemc.metrics.FpsTestResult;
+import com.soumyajit.gradlemc.client.overlay.FpsRollingStatsCalculator;
+import com.soumyajit.gradlemc.client.overlay.FpsSamplingService;
+import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
+import com.soumyajit.gradlemc.metrics.FpsTestResult;
 import com.soumyajit.gradlemc.report.FpsTestReportWriter;
 import com.soumyajit.gradlemc.smart.AdaptiveBaselineStore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
-import java.util.OptionalDouble;
+import java.util.Optional;
 
+/** Client-side facade for the single authoritative rendered-frame sampler. */
 public final class FpsTestManager {
-    private static Session currentSession;
+    private static final FpsSamplingService SAMPLER =
+            new FpsSamplingService(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
     private static FpsTestResult latestResult;
     private static Path latestReportPath;
+    private static int configuredWindowSeconds = -1;
 
     private FpsTestManager() {
     }
 
-    public static int start(CommandSourceStack source, int seconds) {
-        if (currentSession != null) {
-            source.sendFailure(Component.literal("An FPS test is already running. Use /gradlemc testfps stop first."));
-            return 0;
+    public static boolean startFromClient(int seconds) {
+        if (seconds < 5 || seconds > maxDurationSeconds()) {
+            sendClientMessage(Component.literal("FPS test duration must be between 5 and " + maxDurationSeconds() + " seconds."));
+            return false;
         }
-        currentSession = new Session(seconds, Instant.now());
-        source.sendSuccess(() -> Component.literal("FPS test started for " + seconds + " seconds."), false);
-        return Command.SINGLE_SUCCESS;
-    }
-
-    public static int stop(CommandSourceStack source) {
-        if (currentSession == null) {
-            source.sendFailure(Component.literal("No FPS test is currently running."));
-            return 0;
+        if (!SAMPLER.startTest(seconds, Instant.now())) {
+            sendClientMessage(Component.literal("An FPS test is already running. Stop it before starting another."));
+            return false;
         }
-        finish(FpsTestResult.EndReason.STOPPED);
-        return Command.SINGLE_SUCCESS;
+        sendClientMessage(Component.literal("FPS test started for " + seconds + " active gameplay seconds."));
+        return true;
     }
 
     public static boolean stopFromClient() {
-        if (currentSession == null) {
+        return SAMPLER.stopTest(Instant.now()).map(result -> {
+            publish(result);
+            return true;
+        }).orElseGet(() -> {
             sendClientMessage(Component.literal("No FPS test is currently running."));
             return false;
-        }
-        finish(FpsTestResult.EndReason.STOPPED);
-        return true;
-    }
-
-    public static boolean startFromClient(int seconds) {
-        if (currentSession != null) {
-            sendClientMessage(Component.literal("An FPS test is already running. Use the stop button or /gradlemc testfps stop first."));
-            return false;
-        }
-        currentSession = new Session(seconds, Instant.now());
-        sendClientMessage(Component.literal("FPS test started for " + seconds + " seconds."));
-        return true;
+        });
     }
 
     public static boolean isRunning() {
-        return currentSession != null;
+        return SAMPLER.isTestRunning();
     }
 
-    public static FpsTestResult latestResult() {
-        return latestResult;
+    public static Optional<FpsTestResult> latestResult() {
+        return Optional.ofNullable(latestResult);
     }
 
-    public static Path latestReportPath() {
-        return latestReportPath;
+    public static Optional<Path> latestReportPath() {
+        return Optional.ofNullable(latestReportPath);
     }
 
     public static DiagnosticTestProgress progress() {
-        Session session = currentSession;
-        if (session == null) {
-            return DiagnosticTestProgress.idle();
-        }
-        int elapsed = (int) Duration.between(session.startedAt, Instant.now()).getSeconds();
-        return new DiagnosticTestProgress(true, session.requestedSeconds, elapsed);
+        return SAMPLER.progress();
     }
 
-    public static void onClientTick() {
-        Session session = currentSession;
-        if (session == null) {
-            return;
-        }
+    public static FpsRollingStatsCalculator.Snapshot latestSnapshot() {
+        return SAMPLER.snapshot(false);
+    }
 
+    public static FpsRollingStatsCalculator.Snapshot latestSnapshot(boolean refreshPercentiles) {
+        return SAMPLER.snapshot(refreshPercentiles);
+    }
+
+    /** Cancels only on world loss. Menu, pause, focus and loading transitions merely reset the pending interval. */
+    public static void onClientTick(boolean inWorld) {
+        if (!inWorld) {
+            SAMPLER.cancelTest(Instant.now()).ifPresent(FpsTestManager::publish);
+            SAMPLER.clearRollingStatistics();
+        }
+    }
+
+    public static void pause() {
+        SAMPLER.pause();
+    }
+
+    /** A world/dimension replacement ends an active test and prevents prior samples leaking into the next world. */
+    public static void onWorldChanged() {
+        SAMPLER.cancelTest(Instant.now()).ifPresent(FpsTestManager::publish);
+        SAMPLER.clearRollingStatistics();
+    }
+
+    /** Invoked exactly once from Fabric's HUD render callback for every active gameplay frame. */
+    public static void onRenderedFrame(long nowNanos) {
+        if (!shouldSample()) return;
         try {
-            session.addSample(Minecraft.getInstance().getFps());
-            if (Duration.between(session.startedAt, Instant.now()).getSeconds() >= session.requestedSeconds) {
-                finish(FpsTestResult.EndReason.COMPLETED);
+            int configured = GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get();
+            if (configured != configuredWindowSeconds) {
+                SAMPLER.setRollingWindowSeconds(configured);
+                configuredWindowSeconds = configured;
             }
+            SAMPLER.onRenderedFrame(nowNanos).ifPresent(FpsTestManager::publish);
         } catch (RuntimeException exception) {
-            sendClientMessage(Component.literal("FPS test failed: " + safeMessage(exception)));
-            finish(FpsTestResult.EndReason.ERROR);
+            SAMPLER.failTest(Instant.now()).ifPresent(FpsTestManager::publish);
+            sendClientMessage(Component.literal("FPS sampler failed: " + safeMessage(exception)));
         }
     }
 
-    private static void finish(FpsTestResult.EndReason endReason) {
-        Session session = currentSession;
-        if (session == null) {
-            return;
-        }
-        currentSession = null;
+    private static boolean shouldSample() {
+        return SAMPLER.isTestRunning() || (GradleMCConfig.OVERLAY_ENABLED.get()
+                && (GradleMCConfig.OVERLAY_SHOW_FPS.get() || GradleMCConfig.OVERLAY_SHOW_AVERAGE_FPS.get()
+                || GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get() || GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get()));
+    }
 
-        FpsTestResult result = session.toResult(endReason, Instant.now());
+    private static int maxDurationSeconds() {
+        return Math.max(5, Math.min(1800, GradleMCConfig.MAX_FPS_TEST_SECONDS.get()));
+    }
+
+    private static void publish(FpsTestResult result) {
         latestResult = result;
-        AdaptiveBaselineStore.recordFps(result);
+        if (result.hasSamples()) {
+            AdaptiveBaselineStore.recordFps(result);
+        }
         try {
             latestReportPath = new FpsTestReportWriter().write(result, GradleMcPaths.reportDirectory());
             sendClientMessage(GradleMcPaths.pathComponent(summary(result) + " Report: ", latestReportPath));
         } catch (IOException exception) {
             latestReportPath = null;
-            sendClientMessage(Component.literal("FPS test complete, but report export failed: " + safeMessage(exception)));
-            sendClientMessage(Component.literal(summary(result)));
+            sendClientMessage(Component.literal(summary(result) + " Report export failed: " + safeMessage(exception)));
         }
+    }
+
+    private static String summary(FpsTestResult result) {
+        if (!result.hasSamples()) {
+            return "FPS test " + result.endReason().name().toLowerCase(Locale.ROOT) + ": no valid rendered-frame samples were collected.";
+        }
+        return "FPS test " + result.endReason().name().toLowerCase(Locale.ROOT) + ": avg "
+                + String.format(Locale.ROOT, "%.1f", result.averageFps()) + " FPS, min " + result.minFps()
+                + ", max " + result.maxFps() + ", 1% low " + result.onePercentLowFps().stream()
+                .mapToObj(value -> String.format(Locale.ROOT, "%.0f", value)).findFirst().orElse("unavailable") + ".";
     }
 
     private static void sendClientMessage(Component message) {
@@ -131,77 +150,8 @@ public final class FpsTestManager {
         }
     }
 
-    private static String summary(FpsTestResult result) {
-        return "FPS test complete: avg " + String.format(Locale.ROOT, "%.1f", result.averageFps())
-                + " FPS, min " + result.minFps()
-                + ", max " + result.maxFps()
-                + ", 1% low " + result.onePercentLowFps()
-                .stream()
-                .mapToObj(value -> String.format(Locale.ROOT, "%.0f", value))
-                .findFirst()
-                .orElse("n/a") + ".";
-    }
-
     private static String safeMessage(Exception exception) {
         String message = exception.getMessage();
         return message == null || message.isBlank() ? exception.getClass().getSimpleName() : message;
-    }
-
-    private static final class Session {
-        private final int requestedSeconds;
-        private final Instant startedAt;
-        private final int maxSamples;
-        private final List<Integer> samples;
-        private int minFps = Integer.MAX_VALUE;
-        private int maxFps = Integer.MIN_VALUE;
-        private long fpsTotal;
-
-        private Session(int requestedSeconds, Instant startedAt) {
-            this.requestedSeconds = requestedSeconds;
-            this.startedAt = startedAt;
-            this.maxSamples = requestedSeconds * 20;
-            this.samples = new ArrayList<>(maxSamples);
-        }
-
-        private void addSample(int fps) {
-            int boundedFps = Math.max(0, fps);
-            if (samples.size() >= maxSamples) {
-                return;
-            }
-            samples.add(boundedFps);
-            fpsTotal += boundedFps;
-            minFps = Math.min(minFps, boundedFps);
-            maxFps = Math.max(maxFps, boundedFps);
-        }
-
-        private FpsTestResult toResult(FpsTestResult.EndReason endReason, Instant endedAt) {
-            int sampleCount = samples.size();
-            double average = sampleCount == 0 ? 0.0D : (double) fpsTotal / sampleCount;
-            return new FpsTestResult(
-                    requestedSeconds,
-                    Math.max(0.0D, Duration.between(startedAt, endedAt).toMillis() / 1000.0D),
-                    sampleCount,
-                    average,
-                    sampleCount == 0 ? 0 : minFps,
-                    sampleCount == 0 ? 0 : maxFps,
-                    onePercentLow(),
-                    startedAt,
-                    endedAt,
-                    endReason
-            );
-        }
-
-        private OptionalDouble onePercentLow() {
-            int sampleCount = samples.size();
-            if (sampleCount == 0) {
-                return OptionalDouble.empty();
-            }
-            int lowSampleCount = Math.max(1, (int) Math.ceil(sampleCount * 0.01D));
-            return samples.stream()
-                    .sorted(Comparator.naturalOrder())
-                    .limit(lowSampleCount)
-                    .mapToInt(Integer::intValue)
-                    .average();
-        }
     }
 }

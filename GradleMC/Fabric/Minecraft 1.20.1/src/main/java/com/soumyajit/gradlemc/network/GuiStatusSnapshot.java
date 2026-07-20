@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public record GuiStatusSnapshot(
@@ -52,10 +53,10 @@ public record GuiStatusSnapshot(
 
     public static GuiStatusSnapshot capture(MinecraftServer server) {
         StabilityScore score = StabilityAdvisor.evaluate(server, List.of());
-        Path latestReport = latestIn(List.of(GradleMcPaths.reportDirectory(), GradleMcPaths.legacyReportDirectory()), "gradlemc-");
-        Path latestExport = latestIn(List.of(GradleMcPaths.exportDirectory()), "gradlemc-");
-        Path latestIssueBundle = latestIn(List.of(GradleMcPaths.issueBundleDirectory()), "gradlemc-");
-        Path latestProfile = latestIn(List.of(GradleMcPaths.profileDirectory()), "gradlemc-profile-");
+        Optional<Path> latestReport = latestIn(List.of(GradleMcPaths.reportDirectory(), GradleMcPaths.legacyReportDirectory()), "gradlemc-");
+        Optional<Path> latestExport = latestIn(List.of(GradleMcPaths.exportDirectory()), "gradlemc-");
+        Optional<Path> latestIssueBundle = latestIn(List.of(GradleMcPaths.issueBundleDirectory()), "gradlemc-");
+        Optional<Path> latestProfile = latestIn(List.of(GradleMcPaths.profileDirectory()), "gradlemc-profile-");
         return new GuiStatusSnapshot(
                 score.score(),
                 score.riskLevel().name(),
@@ -73,22 +74,23 @@ public record GuiStatusSnapshot(
         );
     }
 
-    private static Path latestIn(List<Path> directories, String prefix) {
-        return directories.stream()
-                .filter(Files::isDirectory)
-                .flatMap(GuiStatusSnapshot::safeList)
-                .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().startsWith(prefix))
-                .max(Comparator.comparing(GuiStatusSnapshot::modifiedTimeSafe))
-                .orElse(null);
-    }
-
-    private static Stream<Path> safeList(Path directory) {
-        try {
-            return Files.list(directory);
-        } catch (IOException exception) {
-            return Stream.empty();
+    private static Optional<Path> latestIn(List<Path> directories, String prefix) {
+        Path latest = null;
+        for (Path directory : directories) {
+            if (!Files.isDirectory(directory)) continue;
+            try (Stream<Path> paths = Files.list(directory)) {
+                Optional<Path> candidate = paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().startsWith(prefix))
+                        .max(Comparator.comparing(GuiStatusSnapshot::modifiedTimeSafe));
+                if (candidate.isPresent() && (latest == null
+                        || modifiedTimeSafe(candidate.get()) > modifiedTimeSafe(latest))) {
+                    latest = candidate.get();
+                }
+            } catch (IOException ignored) {
+                // Output discovery is optional; an unreadable directory is represented as unavailable.
+            }
         }
+        return Optional.ofNullable(latest);
     }
 
     private static long modifiedTimeSafe(Path path) {
@@ -99,11 +101,11 @@ public record GuiStatusSnapshot(
         }
     }
 
-    private static String latestSummary(Path path) {
-        if (path == null) {
+    private static String latestSummary(Optional<Path> path) {
+        if (path.isEmpty()) {
             return "";
         }
-        try (Stream<String> lines = Files.lines(path)) {
+        try (Stream<String> lines = Files.lines(path.get())) {
             return lines.filter(line -> line.startsWith("Summary:")
                             || line.startsWith("Stability Score:")
                             || line.startsWith("Technical Stability Score:")
@@ -121,7 +123,9 @@ public record GuiStatusSnapshot(
         }
     }
 
-    private static String display(Path path) {
-        return path == null ? "" : GradleMcPaths.displayPath(path);
+    private static String display(Optional<Path> path) {
+        // A server report is not a client file. Never send server-relative or
+        // absolute paths to the client where they could be copied or opened.
+        return path.map(Path::getFileName).map(Path::toString).orElse("");
     }
 }

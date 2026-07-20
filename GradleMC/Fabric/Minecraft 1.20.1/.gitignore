@@ -12,6 +12,7 @@ out
 *.iws
 *.iml
 .idea
+.vscode/
 
 # gradle
 /build/
@@ -42,6 +43,10 @@ __pycache__/
 *.py[cod]
 *.tmp
 *.bak
+*.orig
+*.rej
+*.swp
+*.swo
 
 # Files from Forge MDK
 forge*changelog.txt

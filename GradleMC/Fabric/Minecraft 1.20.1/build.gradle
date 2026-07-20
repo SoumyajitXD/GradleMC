@@ -1,6 +1,5 @@
 plugins {
     id 'net.fabricmc.fabric-loom-remap' version '1.17.13'
-    id 'maven-publish'
 }
 
 version = project.mod_version
@@ -26,9 +25,16 @@ loom {
             sourceSet sourceSets.client
         }
     }
-}
 
-repositories {
+    // Exact Loom 1.17.13 RunConfigSettings API; disposable development instances only.
+    runs {
+        client {
+            runDir 'build/rc-client-run'
+        }
+        server {
+            runDir 'build/rc-server-run'
+        }
+    }
 }
 
 dependencies {
@@ -36,18 +42,97 @@ dependencies {
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Kept explicit and cached locally: these are ordinary JVM tests, not Loader tests.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
 }
 
+tasks.register('gradlemcSelfTest', JavaExec) {
+    group = 'verification'
+    description = 'Runs deterministic GradleMC Fabric logic self-tests.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.soumyajit.gradlemc.GradleMcSelfTest'
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Pure JVM regression tests cover client-side calculators without creating a test mod.
+sourceSets.test.compileClasspath += sourceSets.client.output
+sourceSets.test.runtimeClasspath += sourceSets.client.output
+
+tasks.named('test') {
+    useJUnitPlatform()
+    dependsOn tasks.named('gradlemcSelfTest')
+    failOnNoDiscoveredTests = true
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    maxParallelForks = 1
+    testLogging {
+        events 'failed', 'skipped'
+        exceptionFormat = 'full'
+    }
+}
+
+def releaseVersion = project.version.toString()
+
 processResources {
-    inputs.property 'version', project.version
+    inputs.property 'version', releaseVersion
 
     filesMatching('fabric.mod.json') {
-        expand 'version': project.version
+        expand 'version': releaseVersion
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.release = 17
+    options.compilerArgs.addAll(['-Xlint:deprecation', '-Xlint:unchecked', '-Xlint:rawtypes', '-Xlint:fallthrough', '-Xlint:cast'])
+}
+
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.register('verifyCommonEnvironmentBoundary') {
+    group = 'verification'
+    description = 'Rejects client-only API references from Fabric common source.'
+    def commonSource = layout.projectDirectory.dir('src/main/java')
+    inputs.dir(commonSource)
+    doLast {
+        def forbidden = [
+                'net.minecraft.client.',
+                'MinecraftClient',
+                'Minecraft.getInstance',
+                'net.fabricmc.fabric.api.client.',
+                'HudRenderCallback',
+                'KeyBindingHelper'
+        ]
+        def violations = []
+        fileTree(commonSource).matching { include '**/*.java' }.files.sort().each { source ->
+            def content = source.getText('UTF-8')
+            forbidden.each { token ->
+                if (content.contains(token)) violations << "${source}: ${token}"
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException('Common source set references client-only APIs:\n' + violations.join('\n'))
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyCommonEnvironmentBoundary')
 }
 
 jar {

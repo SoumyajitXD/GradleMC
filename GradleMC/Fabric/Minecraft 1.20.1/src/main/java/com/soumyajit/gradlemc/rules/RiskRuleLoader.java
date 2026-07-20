@@ -11,6 +11,7 @@ import com.soumyajit.gradlemc.check.CheckResult;
 import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.util.GradleMcLimits;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -44,11 +45,11 @@ public final class RiskRuleLoader {
 
     public static Path rulesPath() {
         String configured = sanitizeFileName(GradleMCConfig.RULES_FILE_NAME.get());
-        return GradleMcPaths.rulesDirectory().resolve(configured).normalize();
+        return GradleMcPaths.resolveOwnedFile(GradleMcPaths.rulesDirectory(), configured);
     }
 
     public static Path examplePath() {
-        return GradleMcPaths.rulesDirectory().resolve("gradlemc-rules.example.json").normalize();
+        return GradleMcPaths.resolveOwnedFile(GradleMcPaths.rulesDirectory(), "gradlemc-rules.example.json");
     }
 
     public static boolean writeExampleIfMissing() throws IOException {
@@ -66,27 +67,33 @@ public final class RiskRuleLoader {
     private static RiskRuleSet load() {
         Path path = rulesPath();
         List<CheckResult> loadResults = new ArrayList<>();
-        if (!Files.exists(path)) {
+        if (!Files.exists(path, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
             loadResults.add(CheckResult.of(
                     Severity.INFO,
                     CheckCategory.CONFIG,
                     "Risk rule file not found",
-                    path.toString(),
+                    GradleMcPaths.displayPath(path),
                     "Create this file or run /gradlemc rules example to generate a template."
             ));
             return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
         }
-        if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
+        if (!Files.isRegularFile(path, java.nio.file.LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path) || !Files.isReadable(path)) {
             loadResults.add(CheckResult.of(
                     Severity.WARN,
                     CheckCategory.CONFIG,
                     "Risk rule file is not readable",
-                    path.toString(),
+                    GradleMcPaths.displayPath(path),
                     "Check file permissions and keep the rule file inside gradlemc/rules."
             ));
             return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
         }
 
+        try {
+            if (Files.size(path) > GradleMcLimits.MAX_RULES_FILE_BYTES) throw new IOException("Rule file exceeds the GradleMC size limit");
+        } catch (IOException exception) {
+            loadResults.add(CheckResult.of(Severity.WARN, CheckCategory.CONFIG, "Risk rule file could not be read", safeMessage(exception), "Keep GradleMC rule files bounded."));
+            return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
+        }
         try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             JsonElement root = JsonParser.parseReader(reader);
             JsonObject object = root.isJsonObject() ? root.getAsJsonObject() : null;
@@ -98,7 +105,7 @@ public final class RiskRuleLoader {
                         Severity.WARN,
                         CheckCategory.CONFIG,
                         "Risk rule file has no rules array",
-                        path.toString(),
+                        GradleMcPaths.displayPath(path),
                         "Use {\"rules\": [...]} as the top-level shape."
                 ));
                 return new RiskRuleSet(path, List.of(), loadResults, Instant.now());
@@ -107,6 +114,7 @@ public final class RiskRuleLoader {
             List<RiskRule> parsed = new ArrayList<>();
             int index = 0;
             for (JsonElement element : rules) {
+                if (index >= GradleMcLimits.MAX_RISK_RULES) { invalid(index + 1, "Too many rules; remaining entries were ignored", loadResults); break; }
                 index++;
                 parseRule(element, index, parsed, loadResults);
             }
@@ -114,7 +122,7 @@ public final class RiskRuleLoader {
                     Severity.INFO,
                     CheckCategory.CONFIG,
                     "Risk rules loaded",
-                    parsed.size() + " valid rule(s) from " + path,
+                    parsed.size() + " valid rule(s) from " + GradleMcPaths.displayPath(path),
                     "Run /gradlemc rules reload after editing the file."
             ));
             return new RiskRuleSet(path, List.copyOf(parsed), List.copyOf(loadResults), Instant.now());

@@ -17,9 +17,9 @@ public final class ProfilingSummaryBuilder {
     public ProfilingSummary build(ProfilerSession session) {
         List<ModAttribution> attributions = attributions(session.stackAggregator().packageCounts());
         return new ProfilingSummary(
-                GradleMCVersion.lookup(),
+                GradleMC.version(),
                 SharedConstants.getCurrentVersion().getName(),
-                loaderVersion(),
+                GradleMC.fabricLoaderVersion(),
                 System.getProperty("java.version", "unknown"),
                 System.getProperty("java.vendor", "unknown"),
                 System.getProperty("os.name", "unknown") + " " + System.getProperty("os.arch", ""),
@@ -90,19 +90,4 @@ public final class ProfilingSummaryBuilder {
         return "No severe spike was proven by this bounded session. Longer or more targeted profiling may be needed.";
     }
 
-    private static final class GradleMCVersion {
-        private static String lookup() {
-            return FabricLoader.getInstance()
-                    .getModContainer(GradleMC.MOD_ID)
-                    .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                    .orElse("unknown");
-        }
-    }
-
-    private static String loaderVersion() {
-        return FabricLoader.getInstance()
-                .getModContainer("fabricloader")
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("unknown");
-    }
 }

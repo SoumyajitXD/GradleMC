@@ -8,9 +8,6 @@ public final class GradleMCGuiOpener {
 
     public static void open() {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) {
-            return;
-        }
         if (minecraft.screen instanceof GradleMCScreen) {
             return;
         }

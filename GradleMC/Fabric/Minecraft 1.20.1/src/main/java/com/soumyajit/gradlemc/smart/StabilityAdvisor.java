@@ -66,7 +66,7 @@ public final class StabilityAdvisor {
                         || result.severity() == Severity.CRITICAL)
                 .limit(6)
                 .forEach(result -> {
-                    DiagnosticEvidence evidence = new DiagnosticEvidence(
+                    DiagnosticEvidence evidence = DiagnosticEvidence.observed(
                             result.category().name(),
                             result.severity() + " - " + result.title(),
                             "Default GradleMC check result",
@@ -90,7 +90,7 @@ public final class StabilityAdvisor {
                                        List<String> trends, ScoreAccumulator score, AdaptiveBaseline baseline) {
         RuntimeSnapshots.MemorySnapshot memory = RuntimeSnapshots.memory();
         double pressure = memory.maxMiB() <= 0 ? 0.0D : (double) memory.usedMiB() / memory.maxMiB();
-        DiagnosticEvidence evidence = new DiagnosticEvidence(
+        DiagnosticEvidence evidence = DiagnosticEvidence.observed(
                 "memory.usedMiB",
                 memory.usedMiB() + "/" + memory.maxMiB() + " MiB (" + percent(pressure) + ")",
                 "warn 80%, critical 95%",
@@ -129,7 +129,7 @@ public final class StabilityAdvisor {
                 : modCount >= 150 ? AnomalySeverity.LOW : AnomalySeverity.NONE;
         if (severity != AnomalySeverity.NONE) {
             score.deduct(severity == AnomalySeverity.HIGH ? 12 : severity == AnomalySeverity.MEDIUM ? 7 : 3);
-            DiagnosticEvidence evidence = new DiagnosticEvidence("mods.count", String.valueOf(modCount), "watch 150, risky 250, unstable 350", "Large packs have more interaction surface.");
+            DiagnosticEvidence evidence = DiagnosticEvidence.observed("mods.count", String.valueOf(modCount), "watch 150, risky 250, unstable 350", "Large packs have more interaction surface.");
             findings.add(new DiagnosticFinding("Large loaded mod set", severity, ConfidenceLevel.MEDIUM, List.of(evidence)));
             recommendations.add(new SmartRecommendation(
                     "Check local risk rules",
@@ -144,8 +144,8 @@ public final class StabilityAdvisor {
 
     private static void evaluatePerf(List<DiagnosticFinding> findings, List<SmartRecommendation> recommendations,
                                      List<String> missing, List<String> trends, ScoreAccumulator score, AdaptiveBaseline baseline) {
-        PerformanceTestResult result = PerformanceTestManager.latestResult();
-        if (result == null) {
+        java.util.Optional<PerformanceTestResult> latestResult = PerformanceTestManager.latestResult();
+        if (latestResult.isEmpty()) {
             missing.add("No latest server performance sample in this session.");
             recommendations.add(new SmartRecommendation(
                     "Collect server tick data",
@@ -157,8 +157,9 @@ public final class StabilityAdvisor {
             ));
             return;
         }
-        DiagnosticEvidence tps = new DiagnosticEvidence("perf.tps", format(result.approximateTps()), "warn <18, critical <15", "Latest bounded perf sample.");
-        DiagnosticEvidence mspt = new DiagnosticEvidence("perf.mspt", format(result.averageTickMs()), "warn >45, critical >70", "Latest bounded perf sample.");
+        PerformanceTestResult result = latestResult.get();
+        DiagnosticEvidence tps = DiagnosticEvidence.observed("perf.tps", format(result.approximateTps()), "warn <18, critical <15", "Latest bounded performance sample.");
+        DiagnosticEvidence mspt = DiagnosticEvidence.observed("perf.mspt", format(result.averageTickMs()), "warn >45, critical >70", "Latest bounded performance sample.");
         if (result.approximateTps() < 15.0D || result.averageTickMs() > 70.0D) {
             score.deduct(22);
             addPerfRecommendation(findings, recommendations, List.of(tps, mspt), AnomalySeverity.CRITICAL);
@@ -188,8 +189,8 @@ public final class StabilityAdvisor {
 
     private static void evaluateWorldgen(List<DiagnosticFinding> findings, List<SmartRecommendation> recommendations,
                                          List<String> missing, List<String> trends, ScoreAccumulator score, AdaptiveBaseline baseline) {
-        WorldgenObservationResult result = WorldgenObservationManager.latestResult();
-        if (result == null) {
+        java.util.Optional<WorldgenObservationResult> latestResult = WorldgenObservationManager.latestResult();
+        if (latestResult.isEmpty()) {
             missing.add("No latest passive worldgen observation in this session.");
             recommendations.add(new SmartRecommendation(
                     "Collect worldgen pressure data",
@@ -201,7 +202,8 @@ public final class StabilityAdvisor {
             ));
             return;
         }
-        DiagnosticEvidence evidence = new DiagnosticEvidence("worldgen.maxMspt", format(result.maxTickMs()), "warn avg >50 or max >100", "Latest passive worldgen observation.");
+        WorldgenObservationResult result = latestResult.get();
+        DiagnosticEvidence evidence = DiagnosticEvidence.observed("worldgen.maxMspt", format(result.maxTickMs()), "warn average >50 or max >100", "Latest passive worldgen observation.");
         if (!result.warnings().isEmpty() || result.maxTickMs() >= 100.0D) {
             score.deduct(12);
             findings.add(new DiagnosticFinding("Worldgen pressure suspected", AnomalySeverity.HIGH, ConfidenceLevel.MEDIUM, List.of(evidence)));
@@ -225,7 +227,7 @@ public final class StabilityAdvisor {
                                             List<String> missing, List<String> trends, ScoreAccumulator score, AdaptiveBaseline baseline) {
         SmartMetricSnapshots.latestEntityScan().ifPresentOrElse(scan -> {
             AdaptiveThresholds.Threshold threshold = AdaptiveThresholds.higherIsWorse(AdaptiveBaselineStore.entityMetric(), 180, 350, baseline);
-            DiagnosticEvidence evidence = new DiagnosticEvidence("entities.count", String.valueOf(scan.count()), "warn " + round(threshold.warn()) + ", critical " + round(threshold.critical()), "Latest /gradlemc entities scan.");
+            DiagnosticEvidence evidence = DiagnosticEvidence.observed("entities.count", String.valueOf(scan.count()), "warn " + round(threshold.warn()) + ", critical " + round(threshold.critical()), "Latest /gradlemc entities scan.");
             if (scan.count() >= threshold.critical()) {
                 score.deduct(14);
                 addScanRecommendation(findings, recommendations, evidence, "High entity count detected", "Run /gradlemc entities 64 and inspect top entity types.", AnomalySeverity.HIGH);
@@ -242,7 +244,7 @@ public final class StabilityAdvisor {
 
         SmartMetricSnapshots.latestBlockEntityScan().ifPresentOrElse(scan -> {
             AdaptiveThresholds.Threshold threshold = AdaptiveThresholds.higherIsWorse(AdaptiveBaselineStore.blockEntityMetric(), 256, 512, baseline);
-            DiagnosticEvidence evidence = new DiagnosticEvidence("blockEntities.count", String.valueOf(scan.count()), "warn " + round(threshold.warn()) + ", critical " + round(threshold.critical()), "Latest /gradlemc blockentities scan.");
+            DiagnosticEvidence evidence = DiagnosticEvidence.observed("blockEntities.count", String.valueOf(scan.count()), "warn " + round(threshold.warn()) + ", critical " + round(threshold.critical()), "Latest /gradlemc blockentities scan.");
             if (scan.count() >= threshold.critical()) {
                 score.deduct(14);
                 addScanRecommendation(findings, recommendations, evidence, "High block entity density detected", "Run /gradlemc blockentities 64 near laggy bases.", AnomalySeverity.HIGH);

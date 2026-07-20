@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -81,12 +82,12 @@ public final class WorldgenObservationManager {
         return Command.SINGLE_SUCCESS;
     }
 
-    public static WorldgenObservationResult latestResult() {
-        return latestResult;
+    public static Optional<WorldgenObservationResult> latestResult() {
+        return Optional.ofNullable(latestResult);
     }
 
-    public static Path latestReportPath() {
-        return latestReportPath;
+    public static Optional<Path> latestReportPath() {
+        return Optional.ofNullable(latestReportPath);
     }
 
     public static boolean isRunning() {

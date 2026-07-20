@@ -1,12 +1,13 @@
 package com.soumyajit.gradlemc.profiler.memory;
 
+import com.soumyajit.gradlemc.util.RuntimeSnapshots;
+
 public final class MemoryPressureTracker {
     private static final long MIB = 1024L * 1024L;
 
     public Snapshot snapshot() {
-        Runtime runtime = Runtime.getRuntime();
-        long used = runtime.totalMemory() - runtime.freeMemory();
-        return new Snapshot(used / MIB, runtime.maxMemory() / MIB);
+        RuntimeSnapshots.MemorySnapshot memory = RuntimeSnapshots.memory();
+        return new Snapshot(memory.usedMiB(), memory.totalMiB(), memory.maxMiB(), memory.nonHeapUsedMiB());
     }
 
     public String pressureLabel(Snapshot snapshot) {
@@ -23,6 +24,6 @@ public final class MemoryPressureTracker {
         return "normal";
     }
 
-    public record Snapshot(long usedHeapMiB, long maxHeapMiB) {
+    public record Snapshot(long usedHeapMiB, long committedHeapMiB, long maxHeapMiB, long usedNonHeapMiB) {
     }
 }
