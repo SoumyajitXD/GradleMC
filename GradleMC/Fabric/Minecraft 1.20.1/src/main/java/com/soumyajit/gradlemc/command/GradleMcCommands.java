@@ -16,14 +16,18 @@ import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.check.impl.ConfigSanityCheck;
 import com.soumyajit.gradlemc.check.impl.RiskRuleCheck;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
+import com.soumyajit.gradlemc.config.DiagnosticDurationPolicy;
 import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
+import com.soumyajit.gradlemc.modaudit.FabricModAuditReportWriter;
+import com.soumyajit.gradlemc.modaudit.FabricModAuditService;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
 import com.soumyajit.gradlemc.profiler.GradleMcProfilerService;
 import com.soumyajit.gradlemc.report.IssueBundleExporter;
 import com.soumyajit.gradlemc.report.Report;
 import com.soumyajit.gradlemc.report.ReportFileNames;
 import com.soumyajit.gradlemc.report.ReportWriter;
+import com.soumyajit.gradlemc.util.AtomicFiles;
 import com.soumyajit.gradlemc.rules.RiskRuleLoader;
 import com.soumyajit.gradlemc.rules.RiskRuleSet;
 import com.soumyajit.gradlemc.smart.AdaptiveBaseline;
@@ -35,6 +39,13 @@ import com.soumyajit.gradlemc.smart.SmartMetricSnapshots;
 import com.soumyajit.gradlemc.smart.SmartRecommendation;
 import com.soumyajit.gradlemc.smart.StabilityAdvisor;
 import com.soumyajit.gradlemc.smart.StabilityScore;
+import com.soumyajit.gradlemc.task.DiagnosticTask;
+import com.soumyajit.gradlemc.task.DiagnosticWorkflows;
+import com.soumyajit.gradlemc.task.FabricDiagnosticService;
+import com.soumyajit.gradlemc.task.TaskEngine;
+import com.soumyajit.gradlemc.task.TaskEnvironment;
+import com.soumyajit.gradlemc.task.WorkflowPlan;
+import com.soumyajit.gradlemc.task.WorkflowResult;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -62,6 +73,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,14 +82,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class GradleMcCommands {
-    private static final int DEFAULT_ENTITY_RADIUS = 64;
     private static final int MIN_RADIUS = 8;
     private static final int MAX_RADIUS = 512;
-    private static final int MIN_PERF_SECONDS = 5;
-    private static final int MAX_PERF_SECONDS = 1800;
-    private static final int MIN_WORLDGEN_SECONDS = 10;
-    private static final int MAX_WORLDGEN_SECONDS = 1800;
     private static final long MIB = 1024L * 1024L;
+    private static final TaskEngine TASK_ENGINE = FabricDiagnosticService.registry();
 
     private GradleMcCommands() {
     }
@@ -89,6 +97,25 @@ public final class GradleMcCommands {
                         .executes(context -> showHelp(context.getSource())))
                 .then(Commands.literal("status")
                         .executes(context -> showStatus(context.getSource())))
+                .then(Commands.literal("tasks")
+                        .executes(context -> listTasks(context.getSource())))
+                .then(Commands.literal("task")
+                        .then(Commands.literal("graph").then(Commands.argument("target", StringArgumentType.word())
+                                .executes(context -> taskGraph(context.getSource(), StringArgumentType.getString(context, "target"))))))
+                .then(Commands.literal("workflows")
+                        .executes(context -> listWorkflows(context.getSource())))
+                .then(Commands.literal("workflow")
+                        .executes(context -> workflowList(context.getSource()))
+                        .then(Commands.literal("status").executes(context -> workflowStatus(context.getSource())))
+                        .then(Commands.literal("cancel").requires(source -> source.hasPermission(2)).executes(context -> workflowCancel(context.getSource())))
+                        .then(Commands.literal("latest").executes(context -> workflowLatest(context.getSource())))
+                        .then(Commands.literal("report").requires(source -> source.hasPermission(2)).executes(context -> workflowReport(context.getSource())))
+                        .then(Commands.literal("describe").then(Commands.argument("workflow", StringArgumentType.word())
+                                .executes(context -> workflowDescribe(context.getSource(), StringArgumentType.getString(context, "workflow")))))
+                        .then(Commands.literal("dryrun").then(Commands.argument("workflow", StringArgumentType.word())
+                                .executes(context -> workflowDryRun(context.getSource(), StringArgumentType.getString(context, "workflow")))))
+                        .then(Commands.literal("run").requires(source -> source.hasPermission(2)).then(Commands.argument("workflow", StringArgumentType.word())
+                                .executes(context -> workflowRun(context.getSource(), StringArgumentType.getString(context, "workflow"))))))
                 .then(Commands.literal("check")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> runCheck(context.getSource())))
@@ -123,19 +150,26 @@ public final class GradleMcCommands {
                                         .executes(context -> searchMods(
                                                 context.getSource(),
                                                 StringArgumentType.getString(context, "modid")
-                                        )))))
+                                        ))))
+                        .then(Commands.literal("inspect")
+                                .then(Commands.argument("modid", StringArgumentType.word())
+                                        .executes(context -> inspectMod(context.getSource(), StringArgumentType.getString(context, "modid")))))
+                        .then(Commands.literal("audit")
+                                .executes(context -> auditMods(context.getSource())))
+                        .then(Commands.literal("export").requires(source -> source.hasPermission(2))
+                                .executes(context -> exportModAudit(context.getSource()))))
                 .then(Commands.literal("perf")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> showPerfHelp(context.getSource()))
                         .then(Commands.literal("start")
-                                .then(Commands.argument("seconds", IntegerArgumentType.integer(MIN_PERF_SECONDS, MAX_PERF_SECONDS))
+                                .then(Commands.argument("seconds", IntegerArgumentType.integer(DiagnosticDurationPolicy.MIN_PERFORMANCE_SECONDS, DiagnosticDurationPolicy.HARD_MAX_SECONDS))
                                         .executes(context -> runPerf(
                                                 context.getSource(),
                                                 IntegerArgumentType.getInteger(context, "seconds")
                                         ))))
                         .then(Commands.literal("stop")
                                 .executes(context -> PerformanceTestManager.stop(context.getSource())))
-                        .then(Commands.argument("seconds", IntegerArgumentType.integer(MIN_PERF_SECONDS, MAX_PERF_SECONDS))
+                        .then(Commands.argument("seconds", IntegerArgumentType.integer(DiagnosticDurationPolicy.MIN_PERFORMANCE_SECONDS, DiagnosticDurationPolicy.HARD_MAX_SECONDS))
                                 .executes(context -> runPerf(
                                         context.getSource(),
                                         IntegerArgumentType.getInteger(context, "seconds")
@@ -144,7 +178,7 @@ public final class GradleMcCommands {
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> showWorldgenHelp(context.getSource()))
                         .then(Commands.literal("start")
-                                .then(Commands.argument("seconds", IntegerArgumentType.integer(MIN_WORLDGEN_SECONDS, MAX_WORLDGEN_SECONDS))
+                                .then(Commands.argument("seconds", IntegerArgumentType.integer(DiagnosticDurationPolicy.MIN_WORLDGEN_SECONDS, DiagnosticDurationPolicy.HARD_MAX_SECONDS))
                                         .executes(context -> startWorldgenObservation(
                                                 context.getSource(),
                                                 IntegerArgumentType.getInteger(context, "seconds")
@@ -248,6 +282,7 @@ public final class GradleMcCommands {
                         .then(Commands.literal("create")
                                 .executes(context -> createIssueBundle(context.getSource()))))
                 .then(Commands.literal("reports")
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("list")
                                 .executes(context -> listReports(context.getSource())))
                         .then(Commands.literal("latest")
@@ -257,8 +292,8 @@ public final class GradleMcCommands {
                 .then(Commands.literal("testfps")
                         .then(Commands.literal("start")
                                 .then(Commands.argument("seconds", IntegerArgumentType.integer(
-                                        FpsTestCommandBridge.MIN_SECONDS,
-                                        FpsTestCommandBridge.HARD_MAX_SECONDS
+                                        DiagnosticDurationPolicy.MIN_FPS_SECONDS,
+                                        DiagnosticDurationPolicy.HARD_MAX_SECONDS
                                 ))
                                         .executes(context -> FpsTestCommandBridge.start(
                                                 context.getSource(),
@@ -278,6 +313,9 @@ public final class GradleMcCommands {
         send(source, "/gradlemc gui - Open the GradleMC panel.");
         send(source, "/gradlemc status - Show a compact diagnostics summary.");
         send(source, "/gradlemc check - Run basic stability checks.");
+        send(source, "/gradlemc tasks - List deterministic task plans.");
+        send(source, "/gradlemc task graph <task> - Explain a task dependency order.");
+        send(source, "/gradlemc workflows - List planned workflow vocabulary.");
         send(source, "/gradlemc version - Show GradleMC version info.");
         send(source, "/gradlemc memory - Show memory usage.");
         send(source, "/gradlemc help - Show this help.");
@@ -316,6 +354,9 @@ public final class GradleMcCommands {
         send(source, "/gradlemc mods list - List loaded mods.");
         send(source, "/gradlemc mods count - Count loaded mods.");
         send(source, "/gradlemc mods search <modid> - Search loaded mods by mod ID.");
+        send(source, "/gradlemc mods inspect <modid> - Inspect Fabric Loader metadata and dependencies.");
+        send(source, "/gradlemc mods audit - Audit loaded Fabric metadata and dependencies.");
+        send(source, "/gradlemc mods export - Export bounded TXT and JSON mod-audit reports. Requires permission level 2.");
         send(source, "/gradlemc entities <radius> - Count nearby entities.");
         send(source, "/gradlemc blockentities <radius> - Count nearby block entities.");
         send(source, "/gradlemc files - Show useful GradleMC paths.");
@@ -387,9 +428,7 @@ public final class GradleMcCommands {
         send(source, "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT);
         send(source, "Minecraft: " + SharedConstants.getCurrentVersion().getName());
         send(source, "Loader: " + GradleMC.CURRENT_LOADER_NAME);
-        send(source, "Fabric Loader: " + FabricLoader.getInstance().getModContainer("fabricloader")
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("unknown"));
+        send(source, "Fabric Loader: " + GradleMC.fabricLoaderVersion());
         send(source, "Java: " + System.getProperty("java.version", "unknown"));
         send(source, "Loaded mods: " + FabricLoader.getInstance().getAllMods().size());
         return Command.SINGLE_SUCCESS;
@@ -420,7 +459,7 @@ public final class GradleMcCommands {
                 .map(GradleMcCommands::modLabel)
                 .collect(Collectors.joining(", "));
         send(source, "Loaded mods: " + mods.size() + (preview.isBlank() ? "" : " (" + preview + ")"));
-        if (mods.size() > 12) {
+        if (mods.size() > 12 && source.hasPermission(2) && GradleMCConfig.REPORTS_ENABLED.get()) {
             try {
                 Path path = writeModListReport(mods);
                 sendPath(source, "Full mod list written to: ", path);
@@ -471,12 +510,142 @@ public final class GradleMcCommands {
         return PerformanceTestManager.start(source, seconds);
     }
 
+    private static int listTasks(CommandSourceStack source) {
+        send(source, "GradleMC diagnostic tasks: " + String.join(", ", TASK_ENGINE.taskIds()));
+        send(source, "Use /gradlemc task graph <task> or /gradlemc workflow dryrun <workflow> to inspect the authoritative execution plan.");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int taskGraph(CommandSourceStack source, String target) {
+        try {
+            send(source, "Task plan for " + target + ": " + String.join(" -> ", TASK_ENGINE.plan(target)));
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            source.sendFailure(Component.literal(safeMessage(exception)));
+            return 0;
+        }
+    }
+
+    private static int listWorkflows(CommandSourceStack source) {
+        send(source, "Fabric diagnostic workflows: " + String.join(", ", DiagnosticWorkflows.names()));
+        send(source, "Use /gradlemc workflow describe|dryrun|run <workflow>; status, cancel and latest observe the same active run.");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int workflowList(CommandSourceStack source) { return listWorkflows(source); }
+
+    private static int workflowDescribe(CommandSourceStack source, String workflowId) {
+        try {
+            WorkflowPlan plan = FabricDiagnosticService.plan(workflowId);
+            var definition = DiagnosticWorkflows.workflow(workflowId);
+            send(source, workflowId + " - " + definition.displayName() + ": " + definition.description());
+            send(source, "Timeout: " + definition.timeout().toSeconds() + " s; expected evidence: " + plan.expectedEvidence());
+            send(source, "Dependency order: " + plan.orderedTasks().stream().map(DiagnosticTask::id).collect(Collectors.joining(" -> ")));
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalArgumentException exception) { source.sendFailure(Component.literal(safeMessage(exception))); return 0; }
+    }
+
+    private static int workflowDryRun(CommandSourceStack source, String workflowId) {
+        try {
+            WorkflowPlan plan = FabricDiagnosticService.plan(workflowId);
+            send(source, "Dry-run " + workflowId + ": " + plan.orderedTasks().stream().map(DiagnosticTask::id).collect(Collectors.joining(" -> ")));
+            send(source, "No collectors ran. Environment-specific tasks will be marked unavailable at execution if their owning snapshot is absent.");
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalArgumentException exception) { source.sendFailure(Component.literal(safeMessage(exception))); return 0; }
+    }
+
+    private static int workflowRun(CommandSourceStack source, String workflowId) {
+        try {
+            EnumSet<TaskEnvironment> environments = EnumSet.of(TaskEnvironment.SERVER);
+            if (source.getEntity() instanceof ServerPlayer) environments.add(TaskEnvironment.PLAYER);
+            if (source.getLevel() != null) environments.add(TaskEnvironment.WORLD);
+            FabricDiagnosticService.start(workflowId, FabricDiagnosticService.captureSnapshot(), environments);
+            send(source, "GradleMC workflow " + workflowId + " started. Use /gradlemc workflow status; cancellation prevents dependent tasks from starting.");
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalArgumentException | IllegalStateException exception) { source.sendFailure(Component.literal(safeMessage(exception))); return 0; }
+    }
+
+    private static int workflowStatus(CommandSourceStack source) {
+        FabricDiagnosticService.activeWorkflow().ifPresentOrElse(active -> send(source, "GradleMC workflow running: " + active + "."),
+                () -> FabricDiagnosticService.latest().ifPresentOrElse(latest -> send(source, "GradleMC workflow idle; latest=" + latest.plan().workflowId() + " state=" + latest.state() + "."),
+                        () -> send(source, "GradleMC workflow idle; no completed workflow.")));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int workflowCancel(CommandSourceStack source) {
+        if (!FabricDiagnosticService.cancel("command-cancel")) { source.sendFailure(Component.literal("No GradleMC workflow is active.")); return 0; }
+        send(source, "GradleMC workflow cancellation requested; completed evidence is preserved and no new dependent task will start.");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int workflowLatest(CommandSourceStack source) {
+        Optional<WorkflowResult> latest = FabricDiagnosticService.latest();
+        if (latest.isEmpty()) { source.sendFailure(Component.literal("No completed GradleMC workflow exists.")); return 0; }
+        WorkflowResult result = latest.get();
+        send(source, "Latest " + result.plan().workflowId() + ": " + result.state() + " in " + (result.elapsedNanos() / 1_000_000L) + " ms.");
+        result.taskResults().forEach(task -> send(source, "- " + task.taskId() + ": " + task.state() + (task.missingPrerequisite().isBlank() ? "" : " (" + task.missingPrerequisite() + ")")));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int workflowReport(CommandSourceStack source) {
+        try {
+            FabricDiagnosticService.writeLatestReport(GradleMcPaths.reportDirectory()).whenComplete((artifact, failure) ->
+                    source.getServer().execute(() -> {
+                        if (failure == null) {
+                            source.sendSuccess(() -> GradleMcPaths.pathComponent("GradleMC workflow report complete: ", artifact.textPath()), false);
+                        } else {
+                            source.sendFailure(Component.literal("GradleMC workflow report failed: " + safeMessage(failure)));
+                        }
+                    }));
+            send(source, "GradleMC workflow TXT/JSON report serialization started from the immutable latest result.");
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException exception) { source.sendFailure(Component.literal(safeMessage(exception))); return 0; }
+    }
+
     private static int showPerfHelp(CommandSourceStack source) {
         send(source, "GradleMC performance commands:");
         send(source, "/gradlemc perf start <seconds> - Start a server TPS/MSPT sample.");
         send(source, "/gradlemc perf stop - Stop the active server performance sample.");
         send(source, "Compatibility alias: /gradlemc perf <seconds>.");
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int inspectMod(CommandSourceStack source, String id) {
+        FabricModAuditService.ModDescriptor mod = FabricModAuditService.inspect().mods().stream()
+                .filter(candidate -> candidate.id().equals(id)).findFirst().orElse(null);
+        if (mod == null) {
+            source.sendFailure(Component.literal("No loaded Fabric mod has id: " + id));
+            return 0;
+        }
+        send(source, mod.id() + " (" + mod.name() + ") " + mod.version() + " [" + mod.environment() + "]");
+        send(source, "Origin: " + (mod.origins().isEmpty() ? "unavailable" : String.join(", ", mod.origins())));
+        if (!mod.description().isBlank()) send(source, "Description: " + mod.description());
+        if (mod.dependencies().isEmpty()) send(source, "Dependencies: none declared.");
+        else mod.dependencies().stream().limit(12).forEach(dependency -> send(source, "Dependency: " + dependency.kind()
+                + " " + dependency.id() + " " + dependency.constraints() + " (required=" + dependency.required()
+                + ", match=" + dependency.matchesLoadedVersion() + ")"));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int auditMods(CommandSourceStack source) {
+        FabricModAuditService.Audit audit = FabricModAuditService.inspect();
+        send(source, "Fabric mod audit: " + audit.mods().size() + " loaded mods, " + audit.requiredDependencyCount()
+                + " required dependency declarations, " + audit.findings().size() + " finding(s).");
+        audit.findings().stream().limit(8).forEach(finding -> send(source, "[" + finding.kind() + "] "
+                + finding.modId() + ": " + finding.detail()));
+        if (audit.findings().size() > 8) send(source, "More findings are available in /gradlemc mods export.");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int exportModAudit(CommandSourceStack source) {
+        try {
+            List<Path> reports = new FabricModAuditReportWriter().write(FabricModAuditService.inspect(), GradleMcPaths.reportDirectory());
+            reports.forEach(path -> sendPath(source, "Fabric mod audit written: ", path));
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException exception) {
+            source.sendFailure(Component.literal("Could not export Fabric mod audit: " + safeMessage(exception)));
+            return 0;
+        }
     }
 
     private static int showWorldgenHelp(CommandSourceStack source) {
@@ -502,7 +671,7 @@ public final class GradleMcCommands {
 
     private static int createIssueBundle(CommandSourceStack source) {
         if (!GradleMCConfig.ISSUE_BUNDLE_ENABLED.get()) {
-            source.sendFailure(Component.literal("Issue bundles are disabled in gradlemc-common.toml."));
+            source.sendFailure(Component.literal("Issue bundles are disabled in the GradleMC Fabric configuration."));
             return 0;
         }
         try {
@@ -607,7 +776,7 @@ public final class GradleMcCommands {
 
     private static int showConfigPath(CommandSourceStack source) {
         send(source, "Minecraft config directory: " + GradleMcPaths.configDirectory());
-        send(source, "GradleMC config: " + GradleMcPaths.configDirectory().resolve("gradlemc-common.toml").normalize());
+        send(source, "GradleMC Fabric config: " + GradleMCConfig.SPEC.path());
         send(source, "GradleMC output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()));
         return Command.SINGLE_SUCCESS;
     }
@@ -684,7 +853,7 @@ public final class GradleMcCommands {
 
     private static int showSmartHelp(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in the GradleMC Fabric configuration.");
             return 0;
         }
         AdaptiveBaseline baseline = AdaptiveBaselineStore.load();
@@ -697,7 +866,7 @@ public final class GradleMcCommands {
 
     private static int smartScore(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in the GradleMC Fabric configuration.");
             return 0;
         }
         AdaptiveBaselineStore.updateMemorySnapshot();
@@ -723,7 +892,7 @@ public final class GradleMcCommands {
 
     private static int smartAdvice(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in the GradleMC Fabric configuration.");
             return 0;
         }
         StabilityScore score = currentSmartScore(source);
@@ -744,7 +913,7 @@ public final class GradleMcCommands {
 
     private static int smartExplain(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in the GradleMC Fabric configuration.");
             return 0;
         }
         StabilityScore score = currentSmartScore(source);
@@ -799,7 +968,7 @@ public final class GradleMcCommands {
 
     private static int smartThresholds(CommandSourceStack source) {
         if (!GradleMCConfig.SMART_DIAGNOSTICS_ENABLED.get()) {
-            send(source, "Smart diagnostics are disabled in gradlemc-common.toml.");
+            send(source, "Smart diagnostics are disabled in the GradleMC Fabric configuration.");
             return 0;
         }
         AdaptiveBaseline baseline = AdaptiveBaselineStore.load();
@@ -819,7 +988,7 @@ public final class GradleMcCommands {
 
     private static int exportReport(CommandSourceStack source) {
         if (!GradleMCConfig.REPORTS_ENABLED.get()) {
-            source.sendFailure(Component.literal("GradleMC reports are disabled in gradlemc-common.toml."));
+            source.sendFailure(Component.literal("GradleMC reports are disabled in the GradleMC Fabric configuration."));
             return 0;
         }
         Report report = buildReport(source, "GradleMC exported diagnostics", List.of(
@@ -932,8 +1101,9 @@ public final class GradleMcCommands {
     }
 
     private static CheckResult latestPerfReportResult() {
-        Path path = PerformanceTestManager.latestReportPath();
-        if (path != null) {
+        Optional<Path> latestPath = PerformanceTestManager.latestReportPath();
+        if (latestPath.isPresent()) {
+            Path path = latestPath.get();
             return CheckResult.of(
                     Severity.INFO,
                     CheckCategory.PERFORMANCE,
@@ -952,8 +1122,9 @@ public final class GradleMcCommands {
     }
 
     private static CheckResult latestWorldgenReportResult() {
-        Path path = WorldgenObservationManager.latestReportPath();
-        if (path != null) {
+        Optional<Path> latestPath = WorldgenObservationManager.latestReportPath();
+        if (latestPath.isPresent()) {
+            Path path = latestPath.get();
             return CheckResult.of(
                     Severity.INFO,
                     CheckCategory.WORLDGEN,
@@ -988,7 +1159,7 @@ public final class GradleMcCommands {
                     writable ? Severity.PASS : Severity.WARN,
                     CheckCategory.FILES,
                     "Report directory " + (writable ? "is writable" : "is not writable"),
-                    GradleMcPaths.reportDirectory().toString(),
+                    GradleMcPaths.displayPath(GradleMcPaths.reportDirectory()),
                     writable ? "Reports can be exported here." : "Check permissions for the gradlemc output folder."
             );
         } catch (IOException exception) {
@@ -1009,7 +1180,7 @@ public final class GradleMcCommands {
     private static Optional<ServerPlayer> playerOrFailure(CommandSourceStack source, Component failureMessage) {
         try {
             return Optional.of(source.getPlayerOrException());
-        } catch (Exception exception) {
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
             source.sendFailure(failureMessage);
             return Optional.empty();
         }
@@ -1041,11 +1212,11 @@ public final class GradleMcCommands {
         lines.add("Loaded mods: " + mods.size());
         lines.add("");
         mods.forEach(mod -> lines.add(modLabel(mod)));
-        Files.write(path, lines, StandardCharsets.UTF_8);
+        AtomicFiles.writeUtf8(path, String.join(System.lineSeparator(), lines) + System.lineSeparator());
         return path;
     }
 
-    private static Path uniqueReportPath(String prefix, Instant instant) {
+    private static Path uniqueReportPath(String prefix, Instant instant) throws IOException {
         return ReportFileNames.unique(GradleMcPaths.reportDirectory(), prefix, instant, ".txt");
     }
 
@@ -1054,7 +1225,7 @@ public final class GradleMcCommands {
                 .filter(Files::isDirectory)
                 .flatMap(GradleMcCommands::safeList)
                 .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().startsWith("gradlemc-"))
+                .filter(path -> isDiscoverableTextReportName(path.getFileName().toString()))
                 .sorted((left, right) -> {
                     try {
                         return Files.getLastModifiedTime(right).compareTo(Files.getLastModifiedTime(left));
@@ -1064,6 +1235,12 @@ public final class GradleMcCommands {
                 })
                 .limit(maxReportsListed())
                 .toList();
+    }
+
+    /** Workflow reports use their stable workflow- prefix while other user-readable reports use gradlemc-. */
+    static boolean isDiscoverableTextReportName(String filename) {
+        return filename != null && filename.endsWith(".txt")
+                && (filename.startsWith("gradlemc-") || filename.startsWith("workflow-"));
     }
 
     private static Stream<Path> safeList(Path directory) {
@@ -1118,10 +1295,7 @@ public final class GradleMcCommands {
     }
 
     private static String gradleMcVersion() {
-        return FabricLoader.getInstance()
-                .getModContainer(GradleMC.MOD_ID)
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("unknown");
+        return GradleMC.version();
     }
 
     private static int defaultEntityRadius() {
@@ -1137,11 +1311,11 @@ public final class GradleMcCommands {
     }
 
     private static int maxPerfSeconds() {
-        return GradleMCConfig.MAX_PERF_SECONDS.get();
+        return DiagnosticDurationPolicy.maxPerformanceSeconds();
     }
 
     private static int maxWorldgenSeconds() {
-        return GradleMCConfig.MAX_WORLDGEN_OBSERVATION_SECONDS.get();
+        return DiagnosticDurationPolicy.maxWorldgenSeconds();
     }
 
     private static int maxReportsListed() {
@@ -1182,9 +1356,10 @@ public final class GradleMcCommands {
         return evidence.metric() + ": observed " + evidence.observed() + ", threshold " + evidence.threshold();
     }
 
-    private static String safeMessage(Exception exception) {
-        String message = exception.getMessage();
-        return message == null || message.isBlank() ? exception.getClass().getSimpleName() : message;
+    private static String safeMessage(Throwable failure) {
+        Throwable cause = failure.getCause() == null ? failure : failure.getCause();
+        String message = cause.getMessage();
+        return message == null || message.isBlank() ? cause.getClass().getSimpleName() : message;
     }
 
     private static String enabledLabel(boolean enabled) {

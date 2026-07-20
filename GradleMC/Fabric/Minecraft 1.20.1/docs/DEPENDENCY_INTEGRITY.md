@@ -1,0 +1,7 @@
+# Wrapper and dependency integrity decision
+
+The checked-in wrapper scripts and single `gradle-wrapper.jar` target Gradle 9.5.1. `gradle-wrapper.properties` uses the official HTTPS `services.gradle.org` binary distribution and contains no local distribution path. This pass does not upgrade or regenerate the wrapper. Local structural inspection confirms the wrapper main class and expected supporting classes; no independent trusted checksum was available in-project, so the JAR's local SHA-256 is recorded during validation rather than claimed as an official match.
+
+Direct dependencies are pinned: Minecraft 1.20.1, Fabric Loader 0.19.3, Fabric API 0.92.9+1.20.1, Loom 1.17.13, and JUnit/Platform 5.10.1/1.10.1. Fabric and Maven Central are the only dependency repositories; the Gradle Plugin Portal is used only for plugins. There is no `mavenLocal`, `flatDir`, dynamic version, local JAR dependency, or bundling declaration.
+
+Gradle dependency verification is not enabled in this pass. Loom resolves and transforms Minecraft/Fabric artifacts, and the project contains no previously reviewed verification metadata or independent trust record for the cached artifacts. Generating metadata and blindly accepting every cached/transformed entry would not establish authenticity and would create a high false-maintenance burden. A future integrity pass may introduce it only with independently reviewed checksums/signatures and an offline revalidation procedure. Dependency verification is an integrity control, not a vulnerability scanner.

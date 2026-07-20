@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public final class GradleMcProfilerService {
@@ -81,22 +82,22 @@ public final class GradleMcProfilerService {
     }
 
     public static int latest(CommandSourceStack source) {
-        Path latest = latestProfileText();
-        if (latest == null) {
+        Optional<Path> latest = latestProfileText();
+        if (latest.isEmpty()) {
             source.sendSuccess(() -> Component.literal("No GradleMC profiles found under " + GradleMcPaths.displayPath(GradleMcPaths.profileDirectory()) + "."), false);
             return 0;
         }
-        source.sendSuccess(() -> GradleMcPaths.pathComponent("Latest GradleMC profile: ", latest), false);
+        source.sendSuccess(() -> GradleMcPaths.pathComponent("Latest GradleMC profile: ", latest.get()), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int summary(CommandSourceStack source) {
-        Path latest = latestProfileText();
-        if (latest == null) {
+        Optional<Path> latest = latestProfileText();
+        if (latest.isEmpty()) {
             source.sendFailure(Component.literal("No GradleMC profile summary is available yet."));
             return 0;
         }
-        try (Stream<String> lines = Files.lines(latest)) {
+        try (Stream<String> lines = Files.lines(latest.get())) {
             lines.filter(line -> line.startsWith("Summary:")
                             || line.startsWith("Mode:")
                             || line.startsWith("Average MSPT:")
@@ -118,12 +119,12 @@ public final class GradleMcProfilerService {
     }
 
     public static int export(CommandSourceStack source) {
-        Path latest = latestProfileText();
-        if (latest == null) {
+        Optional<Path> latest = latestProfileText();
+        if (latest.isEmpty()) {
             source.sendFailure(Component.literal("No GradleMC profile is available to export."));
             return 0;
         }
-        source.sendSuccess(() -> GradleMcPaths.pathComponent("Latest profile is already local/offline: ", latest), false);
+        source.sendSuccess(() -> GradleMcPaths.pathComponent("Latest profile is already local/offline: ", latest.get()), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -137,8 +138,7 @@ public final class GradleMcProfilerService {
             return "Profiler: idle";
         }
         long elapsed = Duration.between(session.startedAt(), Instant.now()).toSeconds();
-        long remaining = Math.max(0L, session.config().timeoutSeconds() - elapsed);
-        return "Profiler: " + session.config().mode().id() + " " + elapsed + "s/" + remaining + "s, samples "
+        return "Profiler: " + session.config().mode().id() + " " + elapsed + "s/" + session.config().timeoutSeconds() + "s, samples "
                 + session.stackAggregator().sampleCount() + ", slow " + session.tickRecorder().summary().slowTickCount();
     }
 
@@ -157,6 +157,15 @@ public final class GradleMcProfilerService {
         }
         if (session.onTickEnd(server)) {
             finish(server, ProfilerSessionState.COMPLETED, null);
+        }
+    }
+
+    /** Lifecycle owner: prevents the sampler executor from surviving a stopped server. */
+    public static void onServerStopping() {
+        ProfilerSession session = currentSession;
+        currentSession = null;
+        if (session != null && session.state() == ProfilerSessionState.RUNNING) {
+            session.cancel();
         }
     }
 
@@ -182,21 +191,20 @@ public final class GradleMcProfilerService {
         }
     }
 
-    private static Path latestProfileText() {
+    private static Optional<Path> latestProfileText() {
         if (latestReport != null && Files.isRegularFile(latestReport.textPath())) {
-            return latestReport.textPath();
+            return Optional.of(latestReport.textPath());
         }
         if (!Files.isDirectory(GradleMcPaths.profileDirectory())) {
-            return null;
+            return Optional.empty();
         }
         try (Stream<Path> paths = Files.list(GradleMcPaths.profileDirectory())) {
             return paths.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().startsWith("gradlemc-profile-"))
                     .filter(path -> path.getFileName().toString().endsWith(".txt"))
-                    .max(Comparator.comparing(GradleMcProfilerService::modifiedTimeSafe))
-                    .orElse(null);
+                    .max(Comparator.comparing(GradleMcProfilerService::modifiedTimeSafe));
         } catch (IOException exception) {
-            return null;
+            return Optional.empty();
         }
     }
 

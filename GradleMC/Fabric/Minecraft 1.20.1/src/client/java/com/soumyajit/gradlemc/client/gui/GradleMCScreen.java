@@ -2,6 +2,7 @@ package com.soumyajit.gradlemc.client.gui;
 
 import com.soumyajit.gradlemc.ai.SmartAIStatus;
 import com.soumyajit.gradlemc.client.FpsTestManager;
+import com.soumyajit.gradlemc.client.ClientWorkflowBridge;
 import com.soumyajit.gradlemc.client.gui.model.GradleMCGuiState;
 import com.soumyajit.gradlemc.client.overlay.OverlayConfigActions;
 import com.soumyajit.gradlemc.client.overlay.OverlayPosition;
@@ -10,7 +11,9 @@ import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
 import com.soumyajit.gradlemc.network.GradleMCClientNetwork;
 import com.soumyajit.gradlemc.network.GuiStatusSnapshot;
+import com.soumyajit.gradlemc.network.ServerCapabilityState;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
+import com.soumyajit.gradlemc.task.FabricDiagnosticService;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -38,6 +41,7 @@ public class GradleMCScreen extends Screen {
     private static final int LINE_HEIGHT = 11;
     private static final int SCROLL_STEP = 18;
     private static final long REFRESH_COOLDOWN_MS = 750L;
+    private static final int VIEW_REFRESH_TICKS = 5;
     private static final int BACKGROUND = 0xE010141C;
     private static final int PANEL = 0xD0182230;
     private static final int PANEL_DARK = 0xE00C1118;
@@ -79,6 +83,10 @@ public class GradleMCScreen extends Screen {
     private boolean profilerIncludeSleeping;
     private String profilerThreadPattern = "server";
     private Component statusLine = Component.translatable("screen.gradlemc.status.ready");
+    private GradleMCGuiState viewState;
+    private boolean contentDirty = true;
+    private int viewRefreshCountdown;
+    private long cancelWorkflowConfirmationUntilMillis;
 
     public GradleMCScreen() {
         super(Component.translatable("screen.gradlemc.title"));
@@ -87,6 +95,7 @@ public class GradleMCScreen extends Screen {
     @Override
     protected void init() {
         rebuildGuiWidgets();
+        refreshViewState();
         requestStatusRefresh(true);
         ticksUntilStatusRefresh = refreshIntervalTicks();
     }
@@ -100,6 +109,7 @@ public class GradleMCScreen extends Screen {
             Button tab = Button.builder(section.label(), button -> {
                 selectedSection = section;
                 scrollOffset = 0;
+                contentDirty = true;
                 rebuildGuiWidgets();
             }).bounds(tabX, tabY, SIDEBAR_WIDTH - MARGIN, TAB_HEIGHT).build();
             tab.active = section != selectedSection;
@@ -134,8 +144,8 @@ public class GradleMCScreen extends Screen {
     }
 
     private void buildQuickActionWidgets(int x, int y, int width) {
-        GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
-        int col = Math.max(112, (width - GAP * 2) / 3);
+        GradleMCGuiState state = currentViewState();
+        int col = columnWidth(width, 3);
         int rowY = y;
         addCommandButton("screen.gradlemc.action.status", "gradlemc status", x, rowY, col, "screen.gradlemc.tooltip.status");
         addCommandButton("screen.gradlemc.action.memory", "gradlemc memory", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.memory");
@@ -159,6 +169,8 @@ public class GradleMCScreen extends Screen {
                     String query = modSearchText.trim();
                     if (query.isEmpty()) {
                         setStatus(Component.translatable("screen.gradlemc.status.enter_modid"));
+                    } else if (query.length() > 64 || !query.matches("[a-z0-9_.-]+")) {
+                        setStatus(Component.literal("Enter a mod ID containing only lowercase letters, digits, '.', '_' or '-'."));
                     } else {
                         runServerCommand("gradlemc mods search " + query);
                     }
@@ -175,10 +187,8 @@ public class GradleMCScreen extends Screen {
                 }).bounds(x, rowY, col, BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_entities"), button -> runServerCommand("gradlemc entities " + entityRadius))
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
-                .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.entities")))
-                .build());
+        addRenderableWidget(commandButton(Component.translatable("screen.gradlemc.action.scan_entities"), "gradlemc entities " + entityRadius,
+                x + col + GAP, rowY, col, "screen.gradlemc.tooltip.entities"));
         addRenderableWidget(Button.builder(Component.literal("Block entities: " + blockEntityRadius), button -> {
                     blockEntityRadius = nextRadius(blockEntityRadius);
                     rebuildGuiWidgets();
@@ -186,10 +196,8 @@ public class GradleMCScreen extends Screen {
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.radius")))
                 .build());
         rowY += BUTTON_HEIGHT + GAP;
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.scan_block_entities"), button -> runServerCommand("gradlemc blockentities " + blockEntityRadius))
-                .bounds(x, rowY, col, BUTTON_HEIGHT)
-                .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.block_entities")))
-                .build());
+        addRenderableWidget(commandButton(Component.translatable("screen.gradlemc.action.scan_block_entities"), "gradlemc blockentities " + blockEntityRadius,
+                x, rowY, col, "screen.gradlemc.tooltip.block_entities"));
         addDurationButton("FPS", x + col + GAP, rowY, col, true);
         Button startFps = Button.builder(Component.translatable("screen.gradlemc.action.start_selected_fps"), button -> startFps(selectedFpsDuration))
                 .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
@@ -198,16 +206,16 @@ public class GradleMCScreen extends Screen {
         startFps.active = !state.fpsTestRunning();
         addRenderableWidget(startFps);
         rowY += BUTTON_HEIGHT + GAP;
-        addDurationButton("Perf", x, rowY, col, false);
+        addDurationButton("Performance", x, rowY, col, false);
         Button startPerf = commandButton(Component.translatable("screen.gradlemc.action.start_selected_perf"),
                 "gradlemc perf start " + selectedPerfDuration, x + col + GAP, rowY, col, "screen.gradlemc.tooltip.perf_start");
-        startPerf.active = !state.performanceTestRunning();
+        startPerf.active = startPerf.active && !state.performanceTestRunning();
         addRenderableWidget(startPerf);
         addDurationButton("Worldgen", x + (col + GAP) * 2, rowY, col, false);
         rowY += BUTTON_HEIGHT + GAP;
         Button startWorldgen = commandButton(Component.translatable("screen.gradlemc.action.start_selected_worldgen"),
                 "gradlemc worldgen start " + selectedWorldgenDuration, x, rowY, col, "screen.gradlemc.tooltip.worldgen_start");
-        startWorldgen.active = !state.worldgenObservationRunning();
+        startWorldgen.active = startWorldgen.active && !state.worldgenObservationRunning();
         addRenderableWidget(startWorldgen);
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.open_folder"), button -> openOutputFolder())
                 .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
@@ -217,12 +225,47 @@ public class GradleMCScreen extends Screen {
                 .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.tooltip.copy_path")))
                 .build());
+        rowY += BUTTON_HEIGHT + GAP;
+        Button fpsWorkflow = Button.builder(Component.literal("FPS workflow"), button -> {
+                    ClientWorkflowBridge.StartResult result = ClientWorkflowBridge.startFpsWorkflow();
+                    setStatus(Component.literal(result.message()));
+                    rebuildGuiWidgets();
+                })
+                .bounds(x, rowY, col, BUTTON_HEIGHT)
+                .tooltip(Tooltip.create(Component.literal("Uses the completed authoritative frame sampler; it will not start a competing FPS test.")))
+                .build();
+        fpsWorkflow.active = !FpsTestManager.isRunning() && FabricDiagnosticService.activeWorkflow().isEmpty();
+        addRenderableWidget(fpsWorkflow);
+        addRenderableWidget(Button.builder(Component.literal("Workflow status"), button -> setStatus(Component.literal(
+                        FabricDiagnosticService.activeWorkflow().map(value -> "Workflow running: " + value).orElseGet(() -> FabricDiagnosticService.latest().map(value -> "Workflow " + value.plan().workflowId() + ": " + value.state()).orElse("No workflow result.")))))
+                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
+                .tooltip(Tooltip.create(Component.literal("Shows the same workflow state used by commands and reports.")))
+                .build());
+        Button cancelWorkflow = Button.builder(Component.literal("Cancel workflow"), button -> {
+                    long now = System.currentTimeMillis();
+                    if (now > cancelWorkflowConfirmationUntilMillis) {
+                        cancelWorkflowConfirmationUntilMillis = now + 5_000L;
+                        setStatus(Component.literal("Press Cancel workflow again within 5 seconds to cancel the active workflow."));
+                    } else if (FabricDiagnosticService.cancel("gui-cancel")) {
+                        cancelWorkflowConfirmationUntilMillis = 0L;
+                        setStatus(Component.literal("Workflow cancellation requested."));
+                    } else {
+                        cancelWorkflowConfirmationUntilMillis = 0L;
+                        setStatus(Component.literal("No workflow is active."));
+                    }
+                    rebuildGuiWidgets();
+                })
+                .bounds(x + (col + GAP) * 2, rowY, col, BUTTON_HEIGHT)
+                .tooltip(Tooltip.create(Component.literal("Cancels the active workflow at its next checked boundary.")))
+                .build();
+        cancelWorkflow.active = FabricDiagnosticService.activeWorkflow().isPresent();
+        addRenderableWidget(cancelWorkflow);
         markWidgetContentBottom(rowY);
     }
 
     private void buildTestWidgets(int x, int y, int width) {
         GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
-        int col = Math.max(106, (width - GAP * 3) / 4);
+        int col = columnWidth(width, 4);
         int rowY = y;
         for (int duration : DURATIONS) {
             Button button = Button.builder(Component.literal(duration + "s FPS"), ignored -> startFps(duration))
@@ -236,14 +279,14 @@ public class GradleMCScreen extends Screen {
         for (int duration : DURATIONS) {
             Button button = commandButton(Component.literal(duration + "s perf"), "gradlemc perf start " + duration,
                     x + (durationIndex(duration, DURATIONS) * (col + GAP)), rowY, col, "screen.gradlemc.tooltip.perf_start");
-            button.active = !state.performanceTestRunning();
+            button.active = button.active && !state.performanceTestRunning();
             addRenderableWidget(button);
         }
         rowY += BUTTON_HEIGHT + GAP;
         for (int duration : WORLDGEN_DURATIONS) {
             Button button = commandButton(Component.literal(duration + "s worldgen"), "gradlemc worldgen start " + duration,
                     x + (durationIndex(duration, WORLDGEN_DURATIONS) * (col + GAP)), rowY, col, "screen.gradlemc.tooltip.worldgen_start");
-            button.active = !state.worldgenObservationRunning();
+            button.active = button.active && !state.worldgenObservationRunning();
             addRenderableWidget(button);
         }
         rowY += BUTTON_HEIGHT + GAP;
@@ -254,16 +297,16 @@ public class GradleMCScreen extends Screen {
         stopFps.active = state.fpsTestRunning();
         addRenderableWidget(stopFps);
         Button stopPerf = commandButton(Component.translatable("screen.gradlemc.action.stop_perf"), "gradlemc perf stop", x + col + GAP, rowY, col, "screen.gradlemc.tooltip.stop");
-        stopPerf.active = state.performanceTestRunning();
+        stopPerf.active = stopPerf.active && state.performanceTestRunning();
         addRenderableWidget(stopPerf);
         Button stopWorldgen = commandButton(Component.translatable("screen.gradlemc.action.stop_worldgen"), "gradlemc worldgen stop", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.tooltip.stop");
-        stopWorldgen.active = state.worldgenObservationRunning();
+        stopWorldgen.active = stopWorldgen.active && state.worldgenObservationRunning();
         addRenderableWidget(stopWorldgen);
         markWidgetContentBottom(rowY);
     }
 
     private void buildProfilerWidgets(int x, int y, int width) {
-        int col = Math.max(112, (width - GAP * 2) / 3);
+        int col = columnWidth(width, 3);
         int rowY = y;
         addRenderableWidget(Button.builder(Component.literal("Mode: " + profilerMode()), button -> {
                     selectedProfilerModeIndex = (selectedProfilerModeIndex + 1) % PROFILER_MODES.length;
@@ -330,10 +373,8 @@ public class GradleMCScreen extends Screen {
                     .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.sleeping")))
                     .build());
         }
-        addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.profiler.start"), button -> runServerCommand(profilerStartCommand()))
-                .bounds(x + col + GAP, rowY, col, BUTTON_HEIGHT)
-                .tooltip(Tooltip.create(Component.translatable("screen.gradlemc.profiler.tooltip.start")))
-                .build());
+        addRenderableWidget(commandButton(Component.translatable("screen.gradlemc.profiler.start"), profilerStartCommand(),
+                x + col + GAP, rowY, col, "screen.gradlemc.profiler.tooltip.start"));
         addCommandButton("screen.gradlemc.profiler.status", "gradlemc profiler status", x + (col + GAP) * 2, rowY, col, "screen.gradlemc.profiler.tooltip.status");
         rowY += BUTTON_HEIGHT + GAP;
         addCommandButton("screen.gradlemc.profiler.stop", "gradlemc profiler stop", x, rowY, col, "screen.gradlemc.profiler.tooltip.stop");
@@ -353,7 +394,7 @@ public class GradleMCScreen extends Screen {
     }
 
     private void buildReportWidgets(int x, int y, int width) {
-        int col = Math.max(120, (width - GAP * 2) / 3);
+        int col = columnWidth(width, 3);
         addCommandButton("screen.gradlemc.action.view_summary", "gradlemc reports latest", x, y, col, "screen.gradlemc.tooltip.latest_report");
         addRenderableWidget(Button.builder(Component.translatable("screen.gradlemc.action.copy_path"), button -> copyLatestPath())
                 .bounds(x + col + GAP, y, col, BUTTON_HEIGHT)
@@ -367,7 +408,7 @@ public class GradleMCScreen extends Screen {
     }
 
     private void buildSettingWidgets(int x, int y, int width) {
-        int col = Math.max(120, (width - GAP * 2) / 3);
+        int col = columnWidth(width, 3);
         int rowY = y;
         addSettingButton(toggleLabel("screen.gradlemc.setting.overlay_enabled", GradleMCConfig.OVERLAY_ENABLED.get()),
                 () -> OverlayConfigActions.toggleEnabled(), x, rowY, col);
@@ -428,18 +469,20 @@ public class GradleMCScreen extends Screen {
     }
 
     private Button commandButton(Component label, String command, int x, int y, int width, String tooltipKey) {
-        return Button.builder(label, button -> runServerCommand(command))
+        Button button = Button.builder(label, ignored -> runServerCommand(command))
                 .bounds(x, y, width, BUTTON_HEIGHT)
                 .tooltip(Tooltip.create(Component.translatable(tooltipKey)))
                 .build();
+        button.active = canRunServerCommand(command);
+        return button;
     }
 
     private void addDurationButton(String label, int x, int y, int width, boolean fps) {
-        int duration = fps ? selectedFpsDuration : "Perf".equals(label) ? selectedPerfDuration : selectedWorldgenDuration;
+        int duration = fps ? selectedFpsDuration : "Performance".equals(label) ? selectedPerfDuration : selectedWorldgenDuration;
         addRenderableWidget(Button.builder(Component.literal(label + ": " + duration + "s"), button -> {
                     if (fps) {
                         selectedFpsDuration = nextOf(selectedFpsDuration, DURATIONS);
-                    } else if ("Perf".equals(label)) {
+                    } else if ("Performance".equals(label)) {
                         selectedPerfDuration = nextOf(selectedPerfDuration, DURATIONS);
                     } else {
                         selectedWorldgenDuration = nextOf(selectedWorldgenDuration, WORLDGEN_DURATIONS);
@@ -453,6 +496,10 @@ public class GradleMCScreen extends Screen {
 
     @Override
     public void tick() {
+        if (--viewRefreshCountdown <= 0) {
+            refreshViewState();
+            viewRefreshCountdown = VIEW_REFRESH_TICKS;
+        }
         if (ticksUntilStatusRefresh > 0) {
             ticksUntilStatusRefresh--;
             return;
@@ -465,7 +512,7 @@ public class GradleMCScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         Layout layout = layout();
-        GradleMCGuiState state = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
+        GradleMCGuiState state = currentViewState();
         renderShell(graphics, layout);
         renderHeader(graphics, layout, state);
         renderSidebar(graphics, layout);
@@ -506,27 +553,30 @@ public class GradleMCScreen extends Screen {
         int y = layout.mainTop();
         int width = layout.contentWidth();
         int height = layout.mainHeight();
-        currentContentWidth = width;
         graphics.fill(x - GAP, y - GAP, x + width + GAP, y + height + GAP, PANEL);
         graphics.fill(x - GAP, y - GAP, x + width + GAP, y - GAP + 1, BORDER);
         graphics.fill(x - GAP, y + height + GAP - 1, x + width + GAP, y + height + GAP, BORDER);
 
-        contentLines.clear();
-        switch (selectedSection) {
-            case OVERVIEW -> renderOverviewSection(state, width);
-            case QUICK_ACTIONS -> renderQuickActionsSection(state, width);
-            case TESTS -> renderTestsSection(state, width);
-            case PROFILER -> renderProfilerSection(state, width);
-            case REPORTS -> renderReportsSection(state, width);
-            case SETTINGS -> renderSettingsSection(state, width);
-            case ABOUT -> renderAboutSection(state, width);
+        if (contentDirty || currentContentWidth != width) {
+            currentContentWidth = width;
+            contentLines.clear();
+            switch (selectedSection) {
+                case OVERVIEW -> renderOverviewSection(state, width);
+                case QUICK_ACTIONS -> renderQuickActionsSection(state, width);
+                case TESTS -> renderTestsSection(state, width);
+                case PROFILER -> renderProfilerSection(state, width);
+                case REPORTS -> renderReportsSection(state, width);
+                case SETTINGS -> renderSettingsSection(state, width);
+                case ABOUT -> renderAboutSection(state, width);
+            }
+            contentHeight = contentLines.stream().mapToInt(ContentLine::height).sum();
+            contentDirty = false;
         }
-        contentHeight = contentLines.stream().mapToInt(ContentLine::height).sum();
         int contentTopOffset = contentTopOffset(layout);
         int textTop = y + contentTopOffset;
         int viewportHeight = Math.max(0, height - contentTopOffset);
         int maxScroll = maxScroll(viewportHeight);
-        scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
+        scrollOffset = clampScroll(scrollOffset, contentHeight, viewportHeight);
 
         if (viewportHeight > 0) {
             graphics.enableScissor(x, textTop, x + width, y + height);
@@ -560,7 +610,7 @@ public class GradleMCScreen extends Screen {
         addKeyValue("screen.gradlemc.label.adaptive_risk", Component.translatable("screen.gradlemc.threat.with_value",
                 threatLabel(state.smartAIStatus()), state.smartAIStatus().threatScore()));
         addKeyValue("screen.gradlemc.label.memory", Component.literal(state.memory().usedMiB() + "/" + state.memory().maxMiB() + " MiB JVM"));
-        addKeyValue("screen.gradlemc.label.current_fps", Component.literal(state.currentFps() + " FPS"));
+        addKeyValue("screen.gradlemc.label.current_fps", Component.literal(fpsLabel(state.currentFps())));
         addKeyValue("screen.gradlemc.label.rolling_fps", Component.literal("avg " + whole(state.rollingAverageFps())
                 + ", 1% " + lowLabel(state.rollingOnePercentLowFps())
                 + ", 0.1% " + lowLabel(state.rollingPointOnePercentLowFps())));
@@ -569,6 +619,7 @@ public class GradleMCScreen extends Screen {
         addKeyValue("screen.gradlemc.label.fps_test", progressComponent(state.fpsProgress()));
         addKeyValue("screen.gradlemc.label.performance_test", progressComponent(state.performanceProgress()));
         addKeyValue("screen.gradlemc.label.worldgen_observation", progressComponent(state.worldgenProgress()));
+        addKeyValue("Server diagnostics", serverCapabilityLabel(state.serverCapabilities()));
         addGap();
         addHeading(Component.translatable("screen.gradlemc.reports.latest"));
         addKeyValue("screen.gradlemc.label.latest_report", pathOrUnavailable(state.guiStatus().latestReportPath()));
@@ -609,7 +660,7 @@ public class GradleMCScreen extends Screen {
     private void renderReportsSection(GradleMCGuiState state, int width) {
         GuiStatusSnapshot status = state.guiStatus();
         addHeading(Component.translatable("screen.gradlemc.nav.reports"));
-        addKeyValue("screen.gradlemc.label.latest_fps_report", pathOrUnavailable(state.latestFpsReportPath()));
+        addKeyValue("screen.gradlemc.label.latest_fps_report", localPathOrUnavailable(state.latestFpsReportPath()));
         addKeyValue("screen.gradlemc.label.latest_perf_report", pathOrUnavailable(status.latestPerformanceReportPath()));
         addKeyValue("screen.gradlemc.label.latest_worldgen_report", pathOrUnavailable(status.latestWorldgenReportPath()));
         addKeyValue("screen.gradlemc.label.latest_export", pathOrUnavailable(status.latestExportPath()));
@@ -643,6 +694,10 @@ public class GradleMCScreen extends Screen {
     }
 
     private void runServerCommand(String command) {
+        if (!canRunServerCommand(command)) {
+            setStatus(Component.literal(serverDisabledReason(command)));
+            return;
+        }
         if (minecraft == null || minecraft.player == null || minecraft.player.connection == null) {
             setStatus(Component.translatable("screen.gradlemc.status.no_connection"));
             return;
@@ -678,7 +733,7 @@ public class GradleMCScreen extends Screen {
     }
 
     private void copyLatestPath() {
-        String path = latestPath(GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus()));
+        String path = latestPath(currentViewState());
         if (path.isBlank()) {
             setStatus(Component.translatable("screen.gradlemc.status.no_latest_path"));
             return;
@@ -690,44 +745,19 @@ public class GradleMCScreen extends Screen {
     }
 
     private void copyLatestProfilePath() {
-        String path = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus()).guiStatus().latestProfilePath();
-        if (path == null || path.isBlank()) {
-            setStatus(Component.translatable("screen.gradlemc.status.no_latest_path"));
-            return;
-        }
-        if (minecraft != null) {
-            minecraft.keyboardHandler.setClipboard(path);
-        }
-        setStatus(Component.translatable("screen.gradlemc.status.copied_path"));
+        setStatus(Component.literal("Server profile filenames cannot be copied as local paths."));
     }
 
     private String latestPath(GradleMCGuiState state) {
-        if (!state.guiStatus().latestReportPath().isBlank()) {
-            return state.guiStatus().latestReportPath();
-        }
         if (!state.latestFpsReportPath().isBlank()) {
             return state.latestFpsReportPath();
-        }
-        if (!state.guiStatus().latestExportPath().isBlank()) {
-            return state.guiStatus().latestExportPath();
-        }
-        if (!state.guiStatus().latestPerformanceReportPath().isBlank()) {
-            return state.guiStatus().latestPerformanceReportPath();
-        }
-        if (!state.guiStatus().latestWorldgenReportPath().isBlank()) {
-            return state.guiStatus().latestWorldgenReportPath();
-        }
-        if (!state.guiStatus().latestIssueBundlePath().isBlank()) {
-            return state.guiStatus().latestIssueBundlePath();
-        }
-        if (!state.guiStatus().latestProfilePath().isBlank()) {
-            return state.guiStatus().latestProfilePath();
         }
         return "";
     }
 
     private void setStatus(Component status) {
         statusLine = status;
+        contentDirty = true;
     }
 
     private int contentTopOffset(Layout layout) {
@@ -748,7 +778,10 @@ public class GradleMCScreen extends Screen {
         }
         lastRefreshMillis = now;
         if (minecraft != null && minecraft.player != null && minecraft.getConnection() != null) {
-            GradleMCClientNetwork.requestSmartAIStatus();
+            if (!GradleMCClientNetwork.requestSmartAIStatus()) {
+                if (explicit) setStatus(Component.literal(serverDisabledReason("gradlemc status")));
+                return;
+            }
             if (explicit) {
                 setStatus(Component.translatable("screen.gradlemc.status.refreshed"));
             }
@@ -763,7 +796,7 @@ public class GradleMCScreen extends Screen {
         int viewportHeight = Math.max(0, layout.mainHeight() - contentTopOffset);
         if (mouseX >= layout.contentLeft() && mouseX <= layout.contentLeft() + layout.contentWidth()
                 && mouseY >= textTop && mouseY <= layout.mainTop() + layout.mainHeight()) {
-            scrollOffset = Math.max(0, Math.min(scrollOffset - (int) (delta * SCROLL_STEP), maxScroll(viewportHeight)));
+            scrollOffset = clampScroll(scrollOffset - (int) (delta * SCROLL_STEP), contentHeight, viewportHeight);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
@@ -779,22 +812,36 @@ public class GradleMCScreen extends Screen {
     }
 
     private Layout layout() {
-        int width = Math.max(300, Math.min(MAX_CONTENT_WIDTH, this.width - 24));
-        if (this.width >= MIN_CONTENT_WIDTH + 24) {
-            width = Math.max(MIN_CONTENT_WIDTH, width);
-        }
-        int height = Math.max(240, this.height - 32);
-        int left = (this.width - width) / 2;
-        int top = (this.height - height) / 2;
+        return layoutFor(this.width, this.height);
+    }
+
+    static Layout layoutFor(int screenWidth, int screenHeight) {
+        int availableWidth = Math.max(1, screenWidth - 24);
+        int width = Math.min(MAX_CONTENT_WIDTH, availableWidth);
+        if (availableWidth >= MIN_CONTENT_WIDTH) width = Math.max(MIN_CONTENT_WIDTH, width);
+        int height = Math.max(1, screenHeight - 32);
+        int left = (screenWidth - width) / 2;
+        int top = (screenHeight - height) / 2;
         int right = left + width;
         int bottom = top + height;
-        int headerBottom = top + HEADER_HEIGHT;
-        int footerTop = bottom - FOOTER_HEIGHT;
-        int mainTop = headerBottom + MARGIN;
-        int mainHeight = Math.max(60, footerTop - mainTop - MARGIN);
+        int headerHeight = Math.min(HEADER_HEIGHT, Math.max(20, height / 3));
+        int footerHeight = Math.min(FOOTER_HEIGHT, Math.max(20, height / 4));
+        int headerBottom = top + headerHeight;
+        int footerTop = Math.max(headerBottom, bottom - footerHeight);
+        int mainTop = Math.min(footerTop, headerBottom + Math.min(MARGIN, Math.max(1, height / 12)));
+        int mainHeight = Math.max(1, footerTop - mainTop - Math.min(MARGIN, Math.max(0, (footerTop - mainTop) / 4)));
         int contentLeft = left + SIDEBAR_WIDTH + MARGIN * 2;
-        int contentWidth = Math.max(140, right - contentLeft - MARGIN);
+        int contentWidth = Math.max(1, right - contentLeft - MARGIN);
         return new Layout(left, top, right, bottom, headerBottom, footerTop, mainTop, mainHeight, contentLeft, contentWidth);
+    }
+
+    static int columnWidth(int contentWidth, int columns) {
+        if (columns < 1) throw new IllegalArgumentException("columns must be positive");
+        return Math.max(1, (contentWidth - GAP * (columns - 1)) / columns);
+    }
+
+    static int clampScroll(int requested, int contentHeight, int viewportHeight) {
+        return Math.max(0, Math.min(requested, Math.max(0, contentHeight - viewportHeight)));
     }
 
     private void addHeading(Component label) {
@@ -869,7 +916,57 @@ public class GradleMCScreen extends Screen {
         if (value == null || value.isBlank()) {
             return Component.translatable("screen.gradlemc.placeholder.unavailable");
         }
-        return Component.literal(value);
+        return Component.literal("Server: " + value);
+    }
+
+    private Component localPathOrUnavailable(String value) {
+        if (value == null || value.isBlank()) {
+            return Component.translatable("screen.gradlemc.placeholder.unavailable");
+        }
+        return Component.literal("Client: " + value);
+    }
+
+    private GradleMCGuiState currentViewState() {
+        if (viewState == null) refreshViewState();
+        return viewState;
+    }
+
+    private void refreshViewState() {
+        viewState = GradleMCGuiState.capture(GradleMCGuiBridge.latestSmartAIStatus());
+        contentDirty = true;
+    }
+
+    private boolean canRunServerCommand(String command) {
+        ServerCapabilityState capabilities = currentViewState().serverCapabilities();
+        if (!capabilities.supportsServerOperations()) return false;
+        return !requiresAdministrativePermission(command) || capabilities.administrativeDiagnosticsAllowed();
+    }
+
+    private boolean requiresAdministrativePermission(String command) {
+        return command.startsWith("gradlemc perf ")
+                || command.startsWith("gradlemc worldgen ")
+                || command.startsWith("gradlemc profiler ")
+                || command.startsWith("gradlemc smart ")
+                || command.startsWith("gradlemc export")
+                || command.startsWith("gradlemc issuebundle")
+                || command.startsWith("gradlemc entities ")
+                || command.startsWith("gradlemc blockentities ");
+    }
+
+    private String serverDisabledReason(String command) {
+        ServerCapabilityState capabilities = currentViewState().serverCapabilities();
+        if (capabilities.supportsServerOperations() && requiresAdministrativePermission(command)) {
+            return "Server diagnostics require permission level 2.";
+        }
+        return capabilities.reason().isBlank() ? "Server diagnostics are unavailable; local features remain available." : capabilities.reason();
+    }
+
+    private Component serverCapabilityLabel(ServerCapabilityState capabilities) {
+        if (capabilities.supportsServerOperations()) {
+            return Component.literal(capabilities.administrativeDiagnosticsAllowed() ? "Available (admin diagnostics allowed)" : "Available (read-only diagnostics)");
+        }
+        String reason = capabilities.reason();
+        return Component.literal(reason.isBlank() ? "Unavailable; local diagnostics remain available." : reason);
     }
 
     private Component statusAgeComponent(long ageMillis) {
@@ -898,8 +995,13 @@ public class GradleMCScreen extends Screen {
         return value == null ? "warming up" : whole(value);
     }
 
-    private String whole(double value) {
-        return String.format(Locale.ROOT, "%.0f", Double.isFinite(value) ? Math.max(0.0D, value) : 0.0D);
+    private String fpsLabel(Double value) {
+        return value == null || !Double.isFinite(value) ? "unavailable" : whole(value) + " FPS";
+    }
+
+    private String whole(Double value) {
+        return value == null || !Double.isFinite(value) ? "unavailable"
+                : String.format(Locale.ROOT, "%.0f", Math.max(0.0D, value));
     }
 
     private int nextRadius(int value) {
@@ -960,9 +1062,9 @@ public class GradleMCScreen extends Screen {
         return 0.75D;
     }
 
-    private record Layout(int left, int top, int right, int bottom, int headerBottom, int footerTop,
-                          int mainTop, int mainHeight, int contentLeft, int contentWidth) {
-        private int width() {
+    static record Layout(int left, int top, int right, int bottom, int headerBottom, int footerTop,
+                         int mainTop, int mainHeight, int contentLeft, int contentWidth) {
+        int width() {
             return right - left;
         }
     }

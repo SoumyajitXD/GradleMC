@@ -161,7 +161,7 @@ public final class AdaptiveSmartAIManager {
     private static Optional<ServerPlayer> playerOrFailure(CommandSourceStack source) {
         try {
             return Optional.of(source.getPlayerOrException());
-        } catch (Exception exception) {
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
             source.sendFailure(Component.literal("Adaptive diagnostics status requires an in-game player."));
             return Optional.empty();
         }

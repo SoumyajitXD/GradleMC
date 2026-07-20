@@ -23,7 +23,7 @@ public record ProfilerSessionConfig(
         int safeTimeout = clamp(timeoutSeconds, MIN_TIMEOUT_SECONDS, MAX_TIMEOUT_SECONDS);
         int safeInterval = clamp(intervalMillis, MIN_INTERVAL_MILLIS, MAX_INTERVAL_MILLIS);
         String safeThread = threadPattern == null || threadPattern.isBlank() ? "server" : threadPattern.trim();
-        double safeThreshold = onlyTicksOverMillis <= 0.0D
+        double safeThreshold = !Double.isFinite(onlyTicksOverMillis) ? MIN_SLOW_TICK_MILLIS : onlyTicksOverMillis <= 0.0D
                 ? 0.0D
                 : Math.max(MIN_SLOW_TICK_MILLIS, Math.min(MAX_SLOW_TICK_MILLIS, onlyTicksOverMillis));
         ProfilerMode safeMode = mode == null ? ProfilerMode.COMBINED : mode;

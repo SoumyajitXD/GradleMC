@@ -8,13 +8,12 @@ import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
 import com.soumyajit.gradlemc.network.GuiStatusSnapshot;
+import com.soumyajit.gradlemc.network.ServerCapabilityState;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import com.soumyajit.gradlemc.util.RuntimeSnapshots;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 
-import java.nio.file.Path;
 
 public record GradleMCGuiState(
         String modVersion,
@@ -23,10 +22,11 @@ public record GradleMCGuiState(
         String playerName,
         SmartAIStatus smartAIStatus,
         GuiStatusSnapshot guiStatus,
+        ServerCapabilityState serverCapabilities,
         long smartAIStatusAgeMillis,
         RuntimeSnapshots.MemorySnapshot memory,
-        int currentFps,
-        double rollingAverageFps,
+        Double currentFps,
+        Double rollingAverageFps,
         Double rollingOnePercentLowFps,
         Double rollingPointOnePercentLowFps,
         boolean reportsEnabled,
@@ -48,13 +48,9 @@ public record GradleMCGuiState(
         int ambienceCooldownTicks,
         double adaptiveDifficultyMultiplier
 ) {
-    private static final String MOD_VERSION = FabricLoader.getInstance().getModContainer(GradleMC.MOD_ID)
-            .map(container -> container.getMetadata().getVersion().getFriendlyString())
-            .orElse("");
+    private static final String MOD_VERSION = GradleMC.version();
     private static final String MINECRAFT_VERSION = SharedConstants.getCurrentVersion().getName();
-    private static final String LOADER_VERSION = FabricLoader.getInstance().getModContainer("fabricloader")
-            .map(container -> container.getMetadata().getVersion().getFriendlyString())
-            .orElse("");
+    private static final String LOADER_VERSION = GradleMC.fabricLoaderVersion();
 
     public static GradleMCGuiState capture(SmartAIStatus status) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -72,9 +68,10 @@ public record GradleMCGuiState(
                 player,
                 safeStatus,
                 guiStatus,
+                GradleMCGuiBridge.serverCapabilities(),
                 GradleMCGuiBridge.smartAIStatusAgeMillis(),
                 RuntimeSnapshots.memory(),
-                minecraft.getFps(),
+                rollingFps.currentFps(),
                 rollingFps.averageFps(),
                 rollingFps.onePercentLowFps(),
                 rollingFps.pointOnePercentLowFps(),
@@ -91,7 +88,7 @@ public record GradleMCGuiState(
                 fpsProgress,
                 performanceProgress,
                 worldgenProgress,
-                display(FpsTestManager.latestReportPath()),
+                FpsTestManager.latestReportPath().map(GradleMcPaths::displayPath).orElse(""),
                 GradleMCConfig.MAX_THREAT_LEVEL.get(),
                 GradleMCConfig.EVENT_COOLDOWN_TICKS.get(),
                 GradleMCConfig.AMBIENCE_COOLDOWN_TICKS.get(),
@@ -99,7 +96,4 @@ public record GradleMCGuiState(
         );
     }
 
-    private static String display(Path path) {
-        return path == null ? "" : GradleMcPaths.displayPath(path);
-    }
 }

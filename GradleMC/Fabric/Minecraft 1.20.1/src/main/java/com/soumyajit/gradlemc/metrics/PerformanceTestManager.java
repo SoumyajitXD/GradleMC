@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
@@ -51,12 +52,12 @@ public final class PerformanceTestManager {
         return currentSession != null;
     }
 
-    public static PerformanceTestResult latestResult() {
-        return latestResult;
+    public static Optional<PerformanceTestResult> latestResult() {
+        return Optional.ofNullable(latestResult);
     }
 
-    public static Path latestReportPath() {
-        return latestReportPath;
+    public static Optional<Path> latestReportPath() {
+        return Optional.ofNullable(latestReportPath);
     }
 
     public static DiagnosticTestProgress progress() {

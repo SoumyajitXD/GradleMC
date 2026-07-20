@@ -8,18 +8,27 @@ import com.soumyajit.gradlemc.client.overlay.OverlayConfigActions;
 import com.soumyajit.gradlemc.command.FpsTestCommandBridge;
 import com.soumyajit.gradlemc.network.GradleMCClientNetwork;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
+import com.soumyajit.gradlemc.task.FabricDiagnosticService;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class GradleMCFabricClient implements ClientModInitializer {
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean();
+    private ClientLevel observedWorld;
+
     @Override
     public void onInitializeClient() {
+        if (!INITIALIZED.compareAndSet(false, true)) return;
         KeyBindingHelper.registerKeyBinding(GradleMCKeyMappings.OPEN_GUI);
         KeyBindingHelper.registerKeyBinding(GradleMCKeyMappings.TOGGLE_OVERLAY);
         KeyBindingHelper.registerKeyBinding(GradleMCKeyMappings.CYCLE_OVERLAY_POSITION);
@@ -28,29 +37,43 @@ public final class GradleMCFabricClient implements ClientModInitializer {
 
         FpsTestCommandBridge.registerClientHandler(new FpsTestCommandBridge.ClientCommandHandler() {
             @Override
-            public int start(net.minecraft.commands.CommandSourceStack source, int seconds) {
-                return FpsTestManager.start(source, seconds);
+            public boolean requestStart(int seconds) {
+                Minecraft.getInstance().execute(() -> FpsTestManager.startFromClient(seconds));
+                return true;
             }
 
             @Override
-            public int stop(net.minecraft.commands.CommandSourceStack source) {
-                return FpsTestManager.stop(source);
+            public boolean requestStop() {
+                Minecraft.getInstance().execute(FpsTestManager::stopFromClient);
+                return true;
             }
         });
         GradleMCGuiBridge.registerClientOpener(GradleMCGuiOpener::open);
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            FpsTestManager.onClientTick();
+            GradleMCClientNetwork.onClientTick();
+            if (client.level != observedWorld) {
+                observedWorld = client.level;
+                if (observedWorld != null) {
+                    FpsTestManager.onWorldChanged();
+                } else {
+                    FabricDiagnosticService.onWorldUnavailable("client-disconnect");
+                }
+            }
+            FpsTestManager.onClientTick(client.level != null && client.player != null);
             handleOpenGuiKey(client);
             handleOverlayKeys(client);
         });
         HudRenderCallback.EVENT.register(GradleMCStatsOverlay::render);
         GradleMCClientNetwork.registerReceivers();
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> GradleMCClientNetwork.onJoin());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GradleMCClientNetwork.onDisconnect());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> FabricDiagnosticService.shutdown());
     }
 
     private static void handleOpenGuiKey(Minecraft minecraft) {
         while (GradleMCKeyMappings.OPEN_GUI.consumeClick()) {
-            if (minecraft.player != null && minecraft.screen == null) {
+            if (minecraft.screen == null || minecraft.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
                 GradleMCGuiOpener.open();
             }
         }

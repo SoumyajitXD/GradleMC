@@ -9,6 +9,7 @@ import com.soumyajit.gradlemc.smart.DiagnosticEvidence;
 import com.soumyajit.gradlemc.smart.DiagnosticFinding;
 import com.soumyajit.gradlemc.smart.SmartRecommendation;
 import com.soumyajit.gradlemc.smart.StabilityAdvisor;
+import com.soumyajit.gradlemc.util.AtomicFiles;
 import com.soumyajit.gradlemc.smart.StabilityScore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import net.fabricmc.loader.api.FabricLoader;
@@ -26,9 +27,8 @@ import java.util.stream.Collectors;
 
 public class ReportWriter {
     public Path write(Report report, Path reportDirectory) throws IOException {
-        Files.createDirectories(reportDirectory);
         Path reportFile = ReportFileNames.unique(reportDirectory, "gradlemc-", report.createdAt(), ".txt");
-        Files.write(reportFile, linesFor(report, reportFile), StandardCharsets.UTF_8);
+        AtomicFiles.writeUtf8(reportFile, String.join(System.lineSeparator(), linesFor(report, reportFile)) + System.lineSeparator());
         return reportFile;
     }
 
@@ -49,7 +49,7 @@ public class ReportWriter {
         lines.add("Fabric Loader: " + loaderVersion());
         lines.add("Java: " + System.getProperty("java.version", "unknown"));
         lines.add("Physical side: " + FabricLoader.getInstance().getEnvironmentType());
-        lines.add("Output root: " + GradleMcPaths.gradleMcDirectory());
+        lines.add("Output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()));
         lines.add("Loaded mods: " + FabricLoader.getInstance().getAllMods().size());
         lines.add("");
         lines.add("Command Summary");
@@ -125,7 +125,7 @@ public class ReportWriter {
                 lines.add("");
             }
         }
-        lines.add("Report path: " + reportFile);
+        lines.add("Report path: " + GradleMcPaths.displayPath(reportFile));
         return lines;
     }
 
@@ -145,9 +145,12 @@ public class ReportWriter {
         } else {
             for (DiagnosticFinding finding : score.findings().stream().limit(8).toList()) {
                 lines.add("[" + finding.severity() + "] " + finding.title() + " (confidence " + finding.confidence() + ")");
+                lines.add("Interpretation: " + finding.interpretation());
+                lines.add("Next investigation: " + finding.nextInvestigation());
                 for (DiagnosticEvidence evidence : finding.evidence()) {
                     lines.add("- " + evidence.metric() + ": observed " + evidence.observed()
-                            + ", threshold " + evidence.threshold() + ". " + evidence.detail());
+                            + ", threshold " + evidence.threshold() + ". " + evidence.detail()
+                            + " [source=" + evidence.sourceTaskId() + ", availability=" + evidence.availability() + "]");
                 }
             }
         }
@@ -193,16 +196,10 @@ public class ReportWriter {
     }
 
     private String modVersion() {
-        return FabricLoader.getInstance()
-                .getModContainer(GradleMC.MOD_ID)
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("unknown");
+        return GradleMC.version();
     }
 
     private String loaderVersion() {
-        return FabricLoader.getInstance()
-                .getModContainer("fabricloader")
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("unknown");
+        return GradleMC.fabricLoaderVersion();
     }
 }

@@ -98,8 +98,10 @@ public class RiskRuleCheck implements StabilityCheck {
     }
 
     private java.util.Optional<CheckResult> evaluateConfigFile(RiskRule rule) {
-        Path configPath = GradleMcPaths.configDirectory().resolve(rule.configFile()).normalize();
-        if (!configPath.startsWith(GradleMcPaths.configDirectory())) {
+        final Path configPath;
+        try {
+            configPath = GradleMcPaths.resolveOwnedRelativeFile(GradleMcPaths.configDirectory(), rule.configFile());
+        } catch (IllegalArgumentException exception) {
             return java.util.Optional.of(CheckResult.of(
                     Severity.WARN,
                     CheckCategory.CONFIG,
@@ -108,7 +110,7 @@ public class RiskRuleCheck implements StabilityCheck {
                     "Keep config_file_exists paths relative to the Minecraft config directory."
             ));
         }
-        boolean exists = Files.exists(configPath);
+        boolean exists = Files.isRegularFile(configPath, java.nio.file.LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(configPath);
         if (exists == rule.expectExists()) {
             return hit(rule);
         }

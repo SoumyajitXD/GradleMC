@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -85,9 +86,9 @@ public class LogNoiseClassificationCheck implements StabilityCheck {
 
     private static List<String> tail(Path path) throws IOException {
         try (Stream<String> stream = Files.lines(path, StandardCharsets.UTF_8)) {
-            List<String> lines = stream.toList();
-            int from = Math.max(0, lines.size() - MAX_TAIL_LINES);
-            return lines.subList(from, lines.size());
+            ArrayDeque<String> lines = new ArrayDeque<>(MAX_TAIL_LINES);
+            stream.forEach(line -> { if (lines.size() == MAX_TAIL_LINES) lines.removeFirst(); lines.addLast(line); });
+            return List.copyOf(lines);
         }
     }
 

@@ -6,6 +6,7 @@ import com.soumyajit.gradlemc.check.CheckResult;
 import com.soumyajit.gradlemc.check.Severity;
 import com.soumyajit.gradlemc.check.StabilityCheck;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
+import com.soumyajit.gradlemc.util.GradleMcPaths;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +36,7 @@ public class ReportDirectoryCheck implements StabilityCheck {
                     writable ? Severity.PASS : Severity.WARN,
                     CheckCategory.FILES,
                     "Report directory " + (writable ? "is writable" : "is not writable"),
-                    context.reportDirectory().toString(),
+                    GradleMcPaths.displayPath(context.reportDirectory()),
                     writable ? "Reports can be exported here." : "Check file permissions for the GradleMC output directory."
             ));
         } catch (IOException exception) {

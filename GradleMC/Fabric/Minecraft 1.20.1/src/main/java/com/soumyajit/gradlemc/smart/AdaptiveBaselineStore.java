@@ -7,10 +7,11 @@ import com.soumyajit.gradlemc.metrics.PerformanceTestResult;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationResult;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import com.soumyajit.gradlemc.util.RuntimeSnapshots;
+import com.soumyajit.gradlemc.util.AtomicFiles;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -85,7 +86,7 @@ public final class AdaptiveBaselineStore {
     }
 
     public static void recordFps(FpsTestResult result) {
-        if (result.endReason() != FpsTestResult.EndReason.ERROR && result.samples() > 0) {
+        if (result.endReason() != FpsTestResult.EndReason.ERROR && result.hasSamples()) {
             updateMetric(FPS_AVERAGE, result.averageFps());
         }
     }
@@ -120,6 +121,7 @@ public final class AdaptiveBaselineStore {
     }
 
     private static void updateMetric(String name, double value) {
+        if (!Double.isFinite(value)) return;
         updateMetrics(Map.of(name, value));
     }
 
@@ -129,7 +131,7 @@ public final class AdaptiveBaselineStore {
         }
         AdaptiveBaseline baseline = load();
         Map<String, AdaptiveBaseline.MetricStats> metrics = new LinkedHashMap<>(baseline.metrics());
-        int maxSamples = GradleMCConfig.MAX_BASELINE_SAMPLES_STORED.get();
+        int maxSamples = Math.max(1, Math.min(1_000, GradleMCConfig.MAX_BASELINE_SAMPLES_STORED.get()));
         for (Map.Entry<String, Double> entry : values.entrySet()) {
             AdaptiveBaseline.MetricStats previous = metrics.get(entry.getKey());
             if (previous == null) {
@@ -155,10 +157,9 @@ public final class AdaptiveBaselineStore {
             properties.setProperty(entry.getKey() + ".max", String.format(java.util.Locale.ROOT, "%.3f", stats.max()));
         }
         try {
-                Files.createDirectories(path().getParent());
-            try (OutputStream outputStream = Files.newOutputStream(path())) {
-                properties.store(outputStream, "GradleMC local adaptive diagnostics baseline. Aggregate metrics only.");
-            }
+            StringWriter output = new StringWriter();
+            properties.store(output, "GradleMC local adaptive diagnostics baseline. Aggregate metrics only.");
+            AtomicFiles.writeUtf8(path(), output.toString());
         } catch (IOException exception) {
             GradleMC.LOGGER.warn("Could not write GradleMC adaptive baseline", exception);
         }
@@ -211,7 +212,8 @@ public final class AdaptiveBaselineStore {
 
     private static double doubleValue(Properties properties, String key, double fallback) {
         try {
-            return Double.parseDouble(properties.getProperty(key, String.valueOf(fallback)));
+            double value = Double.parseDouble(properties.getProperty(key, String.valueOf(fallback)));
+            return Double.isFinite(value) ? value : fallback;
         } catch (NumberFormatException exception) {
             return fallback;
         }

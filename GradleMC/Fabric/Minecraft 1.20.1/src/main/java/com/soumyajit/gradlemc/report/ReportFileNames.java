@@ -1,5 +1,8 @@
 package com.soumyajit.gradlemc.report;
 
+import com.soumyajit.gradlemc.util.GradleMcLimits;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -15,13 +18,14 @@ public final class ReportFileNames {
     private ReportFileNames() {
     }
 
-    public static Path unique(Path directory, String prefix, Instant instant, String extension) {
+    public static Path unique(Path directory, String prefix, Instant instant, String extension) throws IOException {
         Path path = directory.resolve(prefix + FILE_TIMESTAMP.format(instant) + extension);
         int duplicate = 1;
-        while (Files.exists(path)) {
+        while (Files.exists(path) && duplicate <= GradleMcLimits.MAX_REPORT_NAME_COLLISION_ATTEMPTS) {
             path = directory.resolve(prefix + FILE_TIMESTAMP.format(instant) + "-" + duplicate + extension);
             duplicate++;
         }
+        if (Files.exists(path)) throw new IOException("Too many existing GradleMC reports share this timestamp");
         return path;
     }
 }
