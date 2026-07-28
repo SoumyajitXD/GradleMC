@@ -76,7 +76,8 @@ jobs:
               print('::error file=.github/workflows::Only the maintained ci.yml workflow is allowed')
               errors += 1
           text = workflow.read_text(encoding='utf-8')
-          if 'pull_request_target:' in text:
+          forbidden_trigger = 'pull_request' + '_target:'
+          if forbidden_trigger in text:
               print(f'::error file={workflow}::pull_request_target is forbidden')
               errors += 1
           if re.search(r'^\s+(?:contents|pull-requests|actions|id-token):\s+write\s*$', text, re.MULTILINE):
