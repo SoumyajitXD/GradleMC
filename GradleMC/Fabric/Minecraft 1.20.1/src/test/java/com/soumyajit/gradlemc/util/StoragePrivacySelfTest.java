@@ -19,7 +19,8 @@ public final class StoragePrivacySelfTest {
     private static void hidesAbsoluteGamePath() {
         Path game = Path.of("C:/Users/synthetic/game").toAbsolutePath().normalize();
         Path output = game.resolve("gradlemc/reports");
-        require("gradlemc\\reports".equals(GradleMcPaths.displayPath(output, game)), "owned report paths must not expose the game-directory prefix");
+        String expected = Path.of("gradlemc", "reports").toString();
+        require(expected.equals(GradleMcPaths.displayPath(output, game)), "owned report paths must not expose the game-directory prefix");
     }
     private static void pathComponentsDoNotEmbedAbsoluteGamePaths() {
         Path game = Path.of("C:/Users/synthetic/game").toAbsolutePath().normalize();
@@ -28,7 +29,8 @@ public final class StoragePrivacySelfTest {
         var pathSibling = component.getSiblings().get(0);
         String copied = pathSibling.getStyle().getClickEvent().getValue();
         String hovered = pathSibling.getStyle().getHoverEvent().getValue(HoverEvent.Action.SHOW_TEXT).getString();
-        require("gradlemc\\reports\\report.txt".equals(copied), "click payload must contain only the owned relative display path");
+        String expected = Path.of("gradlemc", "reports", "report.txt").toString();
+        require(expected.equals(copied), "click payload must contain only the owned relative display path");
         require(copied.equals(hovered) && !hovered.contains("Users"), "hover payload must not expose the absolute game-directory prefix");
     }
     private static void rejectsLinkedRootsWhenSupported() {
