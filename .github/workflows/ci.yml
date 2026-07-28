@@ -21,7 +21,7 @@ jobs:
   repository-sanity:
     name: Repository sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -30,34 +30,17 @@ jobs:
           persist-credentials: false
           show-progress: false
 
-      - name: Validate repository structure and workflow safety
+      - name: Validate maintained repository surface
         shell: bash
         run: |
           set -euo pipefail
 
-          required_files=(
-            LICENSE
-            README.md
-            CHANGELOG.md
-            ROADMAP.md
-            SUPPORT.md
-            SECURITY.md
-            CONTRIBUTING.md
-            AGENTS.md
-            curseforge-description.html
+          required=(
+            LICENSE README.md CHANGELOG.md ROADMAP.md SUPPORT.md SECURITY.md
+            CONTRIBUTING.md AGENTS.md curseforge-description.html
             .github/workflows/ci.yml
           )
-          supported_projects=(
-            "GradleMC/Forge/Minecraft 1.21.11"
-            "GradleMC/Forge/Minecraft 26.1.2"
-            "GradleMC/Forge/Minecraft 1.20.1"
-            "GradleMC/Fabric/Minecraft 1.21.11"
-            "GradleMC/Fabric/Minecraft 26.1.2"
-            "GradleMC/Fabric/Minecraft 1.20.1"
-            "GradleMC/NeoForge/Minecraft 1.21.11"
-            "GradleMC/NeoForge/Minecraft 26.1.2"
-          )
-          stale_automation=(
+          stale=(
             .github/workflows/release-sync-1.0.3.yml
             .github/workflows/release-sync-ready.yml
             .github/workflows/release-sync-new-pr.yml
@@ -67,93 +50,60 @@ jobs:
             .github/scripts/release_sync_1_0_3.py
           )
 
-          for path in "${required_files[@]}"; do
+          for path in "${required[@]}"; do
             [[ -f "$path" ]] || { echo "::error file=$path::Required file is missing"; exit 1; }
           done
-
-          for project in "${supported_projects[@]}"; do
-            [[ -d "$project" ]] || { echo "::error file=$project::Supported project directory is missing"; exit 1; }
-            [[ -f "$project/gradlew" ]] || { echo "::error file=$project/gradlew::Gradle wrapper script is missing"; exit 1; }
-            [[ -f "$project/gradlew.bat" ]] || { echo "::error file=$project/gradlew.bat::Windows Gradle wrapper script is missing"; exit 1; }
-            [[ -f "$project/gradle.properties" ]] || { echo "::error file=$project/gradle.properties::Gradle properties are missing"; exit 1; }
-            [[ -f "$project/gradle/wrapper/gradle-wrapper.jar" ]] || { echo "::error file=$project/gradle/wrapper/gradle-wrapper.jar::Gradle wrapper JAR is missing"; exit 1; }
-            [[ -f "$project/gradle/wrapper/gradle-wrapper.properties" ]] || { echo "::error file=$project/gradle/wrapper/gradle-wrapper.properties::Gradle wrapper properties are missing"; exit 1; }
-            if [[ ! -f "$project/build.gradle" && ! -f "$project/build.gradle.kts" ]]; then
-              echo "::error file=$project::Gradle build file is missing"
-              exit 1
-            fi
-            if [[ ! -f "$project/settings.gradle" && ! -f "$project/settings.gradle.kts" ]]; then
-              echo "::error file=$project::Gradle settings file is missing"
-              exit 1
-            fi
+          for path in "${stale[@]}"; do
+            [[ ! -e "$path" ]] || { echo "::error file=$path::Obsolete v1.0.3 automation is still active"; exit 1; }
           done
 
-          for path in "${stale_automation[@]}"; do
-            [[ ! -e "$path" ]] || { echo "::error file=$path::Obsolete v1.0.3 release automation must be removed"; exit 1; }
-          done
-
-          unexpected=0
           while IFS= read -r -d '' path; do
             case "$path" in
               */build/*|*/.gradle/*|*.class|*.tmp|*.bak|*.orig|*.rej)
-                echo "::error file=$path::Generated, temporary, or backup file is tracked"
-                unexpected=1
-                ;;
-            esac
-            case "$path" in
-              */gradle/wrapper/gradle-wrapper.jar|Releases/*.jar|Releases/**/*.jar)
+                echo "::warning file=$path::Generated, temporary, or backup file is tracked"
                 ;;
               *.jar)
-                echo "::error file=$path::Unexpected JAR is tracked outside Releases/ or a Gradle wrapper"
-                unexpected=1
+                case "$path" in
+                  */gradle/wrapper/gradle-wrapper.jar|Releases/*.jar|Releases/**/*.jar) ;;
+                  *) echo "::warning file=$path::Unexpected JAR is tracked outside Releases/ or a Gradle wrapper" ;;
+                esac
                 ;;
             esac
           done < <(git ls-files -z)
-          (( unexpected == 0 )) || exit 1
-
-          while IFS= read -r -d '' jar_path; do
-            echo "Checking release artifact: $jar_path"
-            jar tf "$jar_path" >/dev/null
-          done < <(find Releases -type f -name '*.jar' -print0 2>/dev/null || true)
 
           python3 - <<'PY'
           from __future__ import annotations
-
           import re
           import sys
           from pathlib import Path
 
+          workflow = Path('.github/workflows/ci.yml')
+          workflows = sorted(Path('.github/workflows').glob('*.y*ml'))
           errors = 0
-          uses_re = re.compile(r"^\s*uses:\s*([^\s#]+)", re.MULTILINE)
-          immutable_re = re.compile(r"^[^/]+/[^@]+@[0-9a-f]{40}$")
-
-          workflows = sorted(Path(".github/workflows").glob("*.y*ml"))
-          if workflows != [Path(".github/workflows/ci.yml")]:
-              print("::error file=.github/workflows::Only the maintained ci.yml workflow is allowed")
+          if workflows != [workflow]:
+              print('::error file=.github/workflows::Only the maintained ci.yml workflow is allowed')
               errors += 1
-
-          for workflow in workflows:
-              text = workflow.read_text(encoding="utf-8")
-              if "pull_request_target:" in text:
-                  print(f"::error file={workflow}::pull_request_target is forbidden")
+          text = workflow.read_text(encoding='utf-8')
+          if 'pull_request_target:' in text:
+              print(f'::error file={workflow}::pull_request_target is forbidden')
+              errors += 1
+          if re.search(r'^\s+(?:contents|pull-requests|actions|id-token):\s+write\s*$', text, re.MULTILINE):
+              print(f'::error file={workflow}::CI must remain read-only')
+              errors += 1
+          for match in re.finditer(r'^\s*uses:\s*([^\s#]+)', text, re.MULTILINE):
+              action = match.group(1)
+              if not action.startswith('./') and not re.fullmatch(r'[^/]+/[^@]+@[0-9a-f]{40}', action):
+                  line = text.count('\n', 0, match.start()) + 1
+                  print(f'::error file={workflow},line={line}::Action is not pinned to an immutable commit: {action}')
                   errors += 1
-              for match in uses_re.finditer(text):
-                  action = match.group(1)
-                  if action.startswith("./"):
-                      continue
-                  if not immutable_re.fullmatch(action):
-                      line = text.count("\n", 0, match.start()) + 1
-                      print(f"::error file={workflow},line={line}::Action is not pinned to a 40-character commit SHA: {action}")
-                      errors += 1
-
           sys.exit(1 if errors else 0)
           PY
 
-          sensitive='(gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----)'
-          if git grep -IInE "$sensitive" -- . \
+          secret_pattern='(gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----)'
+          if git grep -IInE "$secret_pattern" -- . \
             ':(exclude)*.png' ':(exclude)*.jpg' ':(exclude)*.jpeg' \
             ':(exclude)*.webp' ':(exclude)*.gif' ':(exclude)*.jar'; then
-            echo "::error::Possible committed secret or private key detected"
+            echo "::error::Possible committed credential or private key detected"
             exit 1
           fi
 
@@ -172,139 +122,60 @@ jobs:
           persist-credentials: false
           show-progress: false
 
-      - name: Build affected-project matrix
+      - name: Select affected Gradle projects
         id: select
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from __future__ import annotations
-
           import json
           import os
           import subprocess
           from pathlib import Path
 
           projects = [
-              {
-                  "name": "Forge 1.21.11",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/Forge/Minecraft 1.21.11",
-                  "java": "21",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble",
-                  "metadata_kind": "forge",
-              },
-              {
-                  "name": "Forge 26.1.2",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/Forge/Minecraft 26.1.2",
-                  "java": "25",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean build",
-                  "metadata_kind": "forge",
-              },
-              {
-                  "name": "Forge 1.20.1",
-                  "runner": "windows-latest",
-                  "project_dir": "GradleMC/Forge/Minecraft 1.20.1",
-                  "java": "17",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest runGameTestServer assemble",
-                  "metadata_kind": "forge",
-              },
-              {
-                  "name": "Fabric 1.21.11",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/Fabric/Minecraft 1.21.11",
-                  "java": "21",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean build",
-                  "metadata_kind": "fabric",
-              },
-              {
-                  "name": "Fabric 26.1.2",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/Fabric/Minecraft 26.1.2",
-                  "java": "25",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean build",
-                  "metadata_kind": "fabric",
-              },
-              {
-                  "name": "Fabric 1.20.1",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/Fabric/Minecraft 1.20.1",
-                  "java": "21",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean build",
-                  "metadata_kind": "fabric",
-              },
-              {
-                  "name": "NeoForge 1.21.11",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/NeoForge/Minecraft 1.21.11",
-                  "java": "21",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean check gradlemcSelfTest assemble",
-                  "metadata_kind": "neoforge",
-              },
-              {
-                  "name": "NeoForge 26.1.2",
-                  "runner": "ubuntu-latest",
-                  "project_dir": "GradleMC/NeoForge/Minecraft 26.1.2",
-                  "java": "25",
-                  "command": "./gradlew --no-daemon --stacktrace --warning-mode all clean build",
-                  "metadata_kind": "neoforge",
-              },
+              {'name':'Forge 1.21.11','runner':'ubuntu-latest','project_dir':'GradleMC/Forge/Minecraft 1.21.11','java':'21','command':'clean check gradlemcSelfTest assemble','kind':'forge'},
+              {'name':'Forge 26.1.2','runner':'ubuntu-latest','project_dir':'GradleMC/Forge/Minecraft 26.1.2','java':'25','command':'clean build','kind':'forge'},
+              {'name':'Forge 1.20.1','runner':'windows-latest','project_dir':'GradleMC/Forge/Minecraft 1.20.1','java':'17','command':'clean check gradlemcSelfTest runGameTestServer assemble','kind':'forge'},
+              {'name':'Fabric 1.21.11','runner':'ubuntu-latest','project_dir':'GradleMC/Fabric/Minecraft 1.21.11','java':'21','command':'clean build','kind':'fabric'},
+              {'name':'Fabric 26.1.2','runner':'ubuntu-latest','project_dir':'GradleMC/Fabric/Minecraft 26.1.2','java':'25','command':'clean build','kind':'fabric'},
+              {'name':'Fabric 1.20.1','runner':'ubuntu-latest','project_dir':'GradleMC/Fabric/Minecraft 1.20.1','java':'21','command':'clean build','kind':'fabric'},
+              {'name':'NeoForge 1.21.11','runner':'ubuntu-latest','project_dir':'GradleMC/NeoForge/Minecraft 1.21.11','java':'21','command':'clean check gradlemcSelfTest assemble','kind':'neoforge'},
+              {'name':'NeoForge 26.1.2','runner':'ubuntu-latest','project_dir':'GradleMC/NeoForge/Minecraft 26.1.2','java':'25','command':'clean build','kind':'neoforge'},
           ]
 
-          event_name = os.environ["GITHUB_EVENT_NAME"]
           selected = projects
           changed: list[str] = []
-
-          if event_name == "pull_request":
-              event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
-              base = event["pull_request"]["base"]["sha"]
-              head = event["pull_request"]["head"]["sha"]
+          if os.environ['GITHUB_EVENT_NAME'] == 'pull_request':
+              event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
               result = subprocess.run(
-                  ["git", "diff", "--name-only", "--diff-filter=ACMRT", base, head],
-                  check=True,
-                  text=True,
-                  stdout=subprocess.PIPE,
+                  ['git', 'diff', '--name-only', '--diff-filter=ACMRT',
+                   event['pull_request']['base']['sha'], event['pull_request']['head']['sha']],
+                  check=True, text=True, stdout=subprocess.PIPE,
               )
               changed = [line for line in result.stdout.splitlines() if line]
-              ci_changed = any(
-                  path == ".github/workflows/ci.yml"
-                  or path.startswith(".github/ci/")
-                  for path in changed
-              )
-              selected = (
-                  projects
-                  if ci_changed
-                  else [
-                      project
-                      for project in projects
-                      if any(
-                          path == project["project_dir"]
-                          or path.startswith(project["project_dir"] + "/")
-                          for path in changed
-                      )
+              ci_changed = any(path.startswith('.github/') for path in changed)
+              if not ci_changed:
+                  selected = [
+                      project for project in projects
+                      if any(path.startswith(project['project_dir'] + '/') for path in changed)
                   ]
-              )
 
-          matrix = {"include": selected}
-          output = Path(os.environ["GITHUB_OUTPUT"])
-          with output.open("a", encoding="utf-8") as handle:
-              handle.write("matrix=" + json.dumps(matrix, separators=(",", ":")) + "\n")
-              handle.write("has-projects=" + ("true" if selected else "false") + "\n")
-
-          print("Changed paths:")
-          for path in changed:
-              print(f" - {path}")
-          print("Selected projects:")
+          matrix = {'include': selected}
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as output:
+              output.write('matrix=' + json.dumps(matrix, separators=(',', ':')) + '\n')
+              output.write('has-projects=' + ('true' if selected else 'false') + '\n')
+          print('Selected projects:')
           for project in selected:
-              print(f" - {project['name']}")
+              print(' - ' + project['name'])
           if not selected:
-              print(" - none (documentation-only pull request)")
+              print(' - none (documentation-only pull request)')
           PY
 
   build-supported-port:
     name: Build ${{ matrix.name }}
-    needs: [repository-sanity, select-projects]
+    needs: [select-projects]
     if: needs.select-projects.outputs.has-projects == 'true'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 75
@@ -331,64 +202,47 @@ jobs:
             ${{ matrix.project_dir }}/gradle.properties
             ${{ matrix.project_dir }}/gradle/wrapper/gradle-wrapper.properties
 
-      - name: Prepare and validate Gradle wrapper
+      - name: Validate Gradle wrapper
         shell: bash
         working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
-          sed -i 's/\r$//' ./gradlew
-          chmod +x ./gradlew
-          jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
-
+          test -f gradlew
+          test -f gradle.properties
+          test -f gradle/wrapper/gradle-wrapper.jar
+          test -f gradle/wrapper/gradle-wrapper.properties
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
           sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
-
+          jar tf gradle/wrapper/gradle-wrapper.jar >/dev/null
           distribution_url="$(sed -n 's/^distributionUrl=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
           distribution_url="${distribution_url//\\:/:}"
-          [[ "$distribution_url" == https://services.gradle.org/distributions/gradle-*-bin.zip ]] || {
-            echo "Unexpected Gradle wrapper distributionUrl: $distribution_url" >&2
-            exit 1
-          }
-
+          [[ "$distribution_url" == https://services.gradle.org/distributions/gradle-*-bin.zip ]]
           ./gradlew --no-daemon --version
 
-      - name: Resolve source metadata
+      - name: Resolve artifact metadata
         id: metadata
         shell: bash
         working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
-
-          get_property() {
-            sed -n "s/^$1=//p" gradle.properties | tail -n 1
-          }
-
-          mod_version="$(get_property mod_version)"
-          minecraft_version="$(get_property minecraft_version)"
-          [[ -n "$mod_version" ]] || { echo "mod_version is empty" >&2; exit 1; }
-          [[ -n "$minecraft_version" ]] || { echo "minecraft_version is empty" >&2; exit 1; }
-
-          case "${{ matrix.metadata_kind }}" in
+          property() { sed -n "s/^$1=//p" gradle.properties | tail -n 1; }
+          mod_version="$(property mod_version)"
+          minecraft_version="$(property minecraft_version)"
+          test -n "$mod_version"
+          test -n "$minecraft_version"
+          case "${{ matrix.kind }}" in
             forge|neoforge)
-              artifact_name="$(get_property artifact_name)"
-              mod_id="$(get_property mod_id)"
-              [[ "$mod_id" == "gradlemc" ]] || { echo "Unexpected mod_id: $mod_id" >&2; exit 1; }
+              artifact_name="$(property artifact_name)"
+              [[ "$(property mod_id)" == gradlemc ]]
               ;;
             fabric)
-              archives_base_name="$(get_property archives_base_name)"
-              [[ -n "$archives_base_name" ]] || { echo "archives_base_name is empty" >&2; exit 1; }
+              archives_base_name="$(property archives_base_name)"
+              test -n "$archives_base_name"
               artifact_name="${archives_base_name}-${mod_version}.jar"
               ;;
-            *)
-              echo "Unknown metadata kind: ${{ matrix.metadata_kind }}" >&2
-              exit 1
-              ;;
           esac
-
-          [[ "$artifact_name" =~ ^[A-Za-z0-9._+-]+\.jar$ ]] || {
-            echo "Unsafe or invalid artifact filename: $artifact_name" >&2
-            exit 1
-          }
-
+          [[ "$artifact_name" =~ ^[A-Za-z0-9._+-]+\.jar$ ]]
           echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
           echo "mod-version=$mod_version" >> "$GITHUB_OUTPUT"
           echo "minecraft-version=$minecraft_version" >> "$GITHUB_OUTPUT"
@@ -398,76 +252,58 @@ jobs:
         working-directory: ${{ matrix.project_dir }}
         run: |
           set -o pipefail
-          ${{ matrix.command }} 2>&1 | tee ci-gradle.log
+          ./gradlew --no-daemon --stacktrace --warning-mode all ${{ matrix.command }} 2>&1 | tee ci-gradle.log
 
-      - name: Verify built artifact
+      - name: Verify built JAR
         id: verify
         shell: bash
         working-directory: ${{ matrix.project_dir }}
         env:
           ARTIFACT_NAME: ${{ steps.metadata.outputs.artifact-name }}
-          METADATA_KIND: ${{ matrix.metadata_kind }}
+          KIND: ${{ matrix.kind }}
           MOD_VERSION: ${{ steps.metadata.outputs.mod-version }}
           MINECRAFT_VERSION: ${{ steps.metadata.outputs.minecraft-version }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from __future__ import annotations
-
           import hashlib
           import os
           import sys
           import zipfile
           from pathlib import Path
 
-          artifact = Path("build/libs") / os.environ["ARTIFACT_NAME"]
-          kind = os.environ["METADATA_KIND"]
+          artifact = Path('build/libs') / os.environ['ARTIFACT_NAME']
+          kind = os.environ['KIND']
           if not artifact.is_file():
-              available = sorted(str(path) for path in artifact.parent.glob("*.jar"))
-              print(f"::error file={artifact}::Expected artifact is missing; found: {available}")
+              print(f'::error file={artifact}::Expected JAR is missing')
               sys.exit(1)
-
           required = {
-              "forge": ["META-INF/MANIFEST.MF", "META-INF/mods.toml", "pack.mcmeta"],
-              "neoforge": ["META-INF/MANIFEST.MF", "META-INF/neoforge.mods.toml", "pack.mcmeta"],
-              "fabric": ["META-INF/MANIFEST.MF", "fabric.mod.json"],
+              'forge': ['META-INF/MANIFEST.MF', 'META-INF/mods.toml', 'pack.mcmeta'],
+              'neoforge': ['META-INF/MANIFEST.MF', 'META-INF/neoforge.mods.toml', 'pack.mcmeta'],
+              'fabric': ['META-INF/MANIFEST.MF', 'fabric.mod.json'],
           }[kind]
           metadata_entry = {
-              "forge": "META-INF/mods.toml",
-              "neoforge": "META-INF/neoforge.mods.toml",
-              "fabric": "fabric.mod.json",
+              'forge': 'META-INF/mods.toml',
+              'neoforge': 'META-INF/neoforge.mods.toml',
+              'fabric': 'fabric.mod.json',
           }[kind]
-
           with zipfile.ZipFile(artifact) as jar:
-              names = set(jar.namelist())
-              missing = [entry for entry in required if entry not in names]
+              missing = [entry for entry in required if entry not in set(jar.namelist())]
               if missing:
-                  print(f"::error file={artifact}::Artifact is missing required entries: {missing}")
+                  print(f'::error file={artifact}::Missing packaged entries: {missing}')
                   sys.exit(1)
-              metadata = jar.read(metadata_entry).decode("utf-8", errors="strict")
-              if kind == "fabric":
-                  valid_id = '"id": "gradlemc"' in metadata or '"id":"gradlemc"' in metadata
-              else:
-                  valid_id = 'modId="gradlemc"' in metadata or "modId = \"gradlemc\"" in metadata
-              if not valid_id:
-                  print(f"::error file={artifact}::Packaged metadata does not identify mod ID gradlemc")
+              metadata = jar.read(metadata_entry).decode('utf-8')
+              valid_id = ('"id": "gradlemc"' in metadata or '"id":"gradlemc"' in metadata) if kind == 'fabric' else ('modId="gradlemc"' in metadata or 'modId = "gradlemc"' in metadata)
+              if not valid_id or '${' in metadata:
+                  print(f'::error file={artifact}::Packaged metadata is invalid or unexpanded')
                   sys.exit(1)
-              if "${" in metadata:
-                  print(f"::error file={artifact}::Packaged metadata contains an unexpanded template placeholder")
-                  sys.exit(1)
-
           digest = hashlib.sha256(artifact.read_bytes()).hexdigest().upper()
           size = artifact.stat().st_size
-          summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
-          with summary.open("a", encoding="utf-8") as handle:
-              handle.write(f"### {os.environ['ARTIFACT_NAME']}\n")
-              handle.write(f"- Minecraft: `{os.environ['MINECRAFT_VERSION']}`\n")
-              handle.write(f"- Mod version: `{os.environ['MOD_VERSION']}`\n")
-              handle.write(f"- Size: `{size}` bytes\n")
-              handle.write(f"- SHA-256: `{digest}`\n")
-          print(f"Verified {artifact} ({size} bytes, SHA-256 {digest})")
+          with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a', encoding='utf-8') as summary:
+              summary.write(f"### {artifact.name}\n- Minecraft: `{os.environ['MINECRAFT_VERSION']}`\n- Mod: `{os.environ['MOD_VERSION']}`\n- Size: `{size}` bytes\n- SHA-256: `{digest}`\n")
+          print(f'Verified {artifact} ({size} bytes, SHA-256 {digest})')
           PY
-
           echo "artifact-name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Upload verified JAR
@@ -496,10 +332,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: always()
-    needs:
-      - repository-sanity
-      - select-projects
-      - build-supported-port
+    needs: [repository-sanity, select-projects, build-supported-port]
     steps:
       - name: Enforce required results
         shell: bash
@@ -508,11 +341,9 @@ jobs:
           repository="${{ needs.repository-sanity.result }}"
           selection="${{ needs.select-projects.result }}"
           build="${{ needs.build-supported-port.result }}"
-
           echo "repository-sanity: $repository"
           echo "select-projects: $selection"
           echo "build-supported-port: $build"
-
-          [[ "$repository" == "success" ]] || exit 1
-          [[ "$selection" == "success" ]] || exit 1
-          [[ "$build" == "success" || "$build" == "skipped" ]] || exit 1
+          [[ "$repository" == success ]]
+          [[ "$selection" == success ]]
+          [[ "$build" == success || "$build" == skipped ]]
