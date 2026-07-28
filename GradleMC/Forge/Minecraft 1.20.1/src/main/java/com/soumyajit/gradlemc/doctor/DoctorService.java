@@ -15,7 +15,7 @@ import java.util.*;
 
 public final class DoctorService {
     private DoctorService(){ }
-    public static List<DoctorResult> inspect(){List<DoctorResult> out=new ArrayList<>();out.add(new DoctorResult("version",DoctorResult.State.PASS,"GradleMC 1.0.3 / Minecraft 1.20.1 / Forge"));
+    public static List<DoctorResult> inspect(){List<DoctorResult> out=new ArrayList<>();out.add(new DoctorResult("version",DoctorResult.State.PASS,"GradleMC 1.0.4 / Minecraft 1.20.1 / Forge"));
         out.add(writable());try{GradleMCConfig.REPORTS_ENABLED.get();out.add(new DoctorResult("config",DoctorResult.State.PASS,"Forge common configuration is readable"));}catch(RuntimeException e){out.add(new DoctorResult("config",DoctorResult.State.FAIL,e.getClass().getSimpleName()));}
         try{var rules=RiskRuleLoader.current();long failures=rules.loadResults().stream().filter(r->r.severity().name().equals("FAIL")).count();out.add(new DoctorResult("rules",failures==0?DoctorResult.State.PASS:DoctorResult.State.FAIL,rules.rules().size()+" rules; "+failures+" parse failures"));}catch(RuntimeException e){out.add(new DoctorResult("rules",DoctorResult.State.WARN,e.getClass().getSimpleName()));}
         List<String> registry=DiagnosticRunService.registryIssues();out.add(new DoctorResult("task-registry",registry.isEmpty()?DoctorResult.State.PASS:DoctorResult.State.FAIL,registry.isEmpty()?DiagnosticRunService.tasks().size()+" valid unique tasks":registry.toString()));

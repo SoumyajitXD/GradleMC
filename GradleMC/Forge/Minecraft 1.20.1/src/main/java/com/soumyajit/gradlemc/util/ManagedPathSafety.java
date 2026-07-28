@@ -30,4 +30,19 @@ public final class ManagedPathSafety {
         if (!realDirectory.startsWith(realBase)) throw new IOException("Managed directory resolved outside its trusted base");
         return directory;
     }
+
+    /** Verifies an existing managed file without following any component below the trusted base. */
+    public static Path requireRegularFile(Path trustedBase, Path requestedFile) throws IOException {
+        Path base = trustedBase.toAbsolutePath().normalize();
+        Path file = requestedFile.toAbsolutePath().normalize();
+        if (!file.startsWith(base) || file.equals(base)) throw new IOException("Managed file escaped its trusted base");
+        ensureDirectory(base, file.getParent());
+        if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(file)) {
+            throw new IOException("Managed file is unavailable or unsafe");
+        }
+        if (!file.toRealPath(LinkOption.NOFOLLOW_LINKS).startsWith(base.toRealPath())) {
+            throw new IOException("Managed file resolved outside its trusted base");
+        }
+        return file;
+    }
 }

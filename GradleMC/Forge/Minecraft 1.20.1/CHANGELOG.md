@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — Forge 1.20.1
+
+- Finalized bounded, local-only Investigation commands, lifecycle persistence and recovery.
+- Finalized canonical server health, slow-tick monitoring and Java profiler reporting contracts.
+- Added isolated Forge client and dedicated-server finalization launch aliases.
+- Added deterministic, offline release verification and integrity-checked local exports.
+
 ## 1.0.3 — Forge 1.20.1
 
 - Hardened the diagnostic task engine with declared capabilities, side/cost/concurrency metadata, dependency explanations, input-change reasons, bounded history, timeouts, cancellation and best-effort execution-overhead accounting.

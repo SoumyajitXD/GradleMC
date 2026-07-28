@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.soumyajit.gradlemc.GradleMC;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
+import com.soumyajit.gradlemc.report.SharedReleaseEvidence;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -30,6 +31,13 @@ public final class AdaptiveSmartAIManager {
     private static final int EXTREME_EVENT_MIN_SCORE = 85;
     private static final int MAX_TRACKED_SIGNAL_TICKS = 24_000;
     private static final Map<UUID, PlayerState> STATES = new HashMap<>();
+    private static long evaluationsRequested;
+    private static long evaluationsSkipped;
+    private static long materialChanges;
+    private static long snapshotsSent;
+    private static long snapshotsSuppressed;
+    private static long explicitRefreshSends;
+    private static long loginSends;
 
     private AdaptiveSmartAIManager() {
     }
@@ -60,6 +68,12 @@ public final class AdaptiveSmartAIManager {
         }
     }
 
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            sync(player, true, true);
+        }
+    }
+
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             STATES.remove(player.getUUID());
@@ -73,7 +87,7 @@ public final class AdaptiveSmartAIManager {
         PlayerState state = state(player);
         state.recordDamage(Math.max(1, Math.round(event.getAmount())));
         state.refreshRisk(player);
-        sync(player);
+        sync(player, false, false);
     }
 
     public static void onLivingDeath(LivingDeathEvent event) {
@@ -89,14 +103,14 @@ public final class AdaptiveSmartAIManager {
                 state.ambienceCooldownTicks = Math.max(state.ambienceCooldownTicks, GradleMCConfig.AMBIENCE_COOLDOWN_TICKS.get() / 2);
                 state.recentAdaptation = "Reduced intensity after death";
             }
-            sync(player);
+            sync(player, false, false);
             return;
         }
         if (event.getEntity() instanceof Mob && event.getSource().getEntity() instanceof ServerPlayer player) {
             PlayerState state = state(player);
             state.recentMobKills = Math.min(80, state.recentMobKills + 1);
             state.refreshRisk(player);
-            sync(player);
+            sync(player, false, false);
         }
     }
 
@@ -136,7 +150,7 @@ public final class AdaptiveSmartAIManager {
         }
         ServerPlayer player = maybePlayer.get();
         STATES.remove(player.getUUID());
-        sync(player);
+        sync(player, true, false);
         source.sendSuccess(() -> Component.literal("Adaptive diagnostics runtime data reset for " + player.getGameProfile().getName() + "."), false);
         return Command.SINGLE_SUCCESS;
     }
@@ -153,12 +167,33 @@ public final class AdaptiveSmartAIManager {
         return state.toStatus();
     }
 
-    public static void sync(ServerPlayer player) {
+    public static void sync(ServerPlayer player) { sync(player, true, false); }
+    private static void sync(ServerPlayer player, boolean explicit, boolean login) {
         if (player == null) {
             return;
         }
-        GradleMCNetwork.syncSmartAIStatus(player, statusFor(player));
+        PlayerState state = state(player);
+        SmartAIStatus status = statusFor(player);
+        SharedReleaseEvidence.publishAdaptiveRisk(status);
+        String digest = materialDigest(status);
+        if (!explicit && digest.equals(state.lastPublishedDigest)) {
+            snapshotsSuppressed++;
+            return;
+        }
+        state.lastPublishedDigest = digest;
+        snapshotsSent++;
+        if (explicit) explicitRefreshSends++;
+        if (login) loginSends++;
+        GradleMCNetwork.syncSmartAIStatus(player, status);
     }
+
+    public static synchronized SyncCounters syncCounters() { return new SyncCounters(evaluationsRequested, evaluationsSkipped, materialChanges, snapshotsSent, snapshotsSuppressed, explicitRefreshSends, loginSends); }
+    /** Only material user-visible state belongs here; timers and counters would create packet churn. */
+    static String materialDigest(SmartAIStatus value) {
+        return value.threatScore() + "|" + value.threatLevel() + "|" + value.recentAdaptation() + "|"
+                + value.topRiskFactors() + "|" + value.adaptiveSmartAIEnabled();
+    }
+    public record SyncCounters(long evaluationsRequested, long evaluationsSkipped, long materialChanges, long snapshotsSent, long snapshotsSuppressed, long explicitRefreshSends, long loginSends) { }
 
     private static PlayerState state(ServerPlayer player) {
         return STATES.computeIfAbsent(player.getUUID(), ignored -> new PlayerState());
@@ -200,8 +235,10 @@ public final class AdaptiveSmartAIManager {
         private double lastX;
         private double lastZ;
         private boolean hasLastPosition;
+        private String lastPublishedDigest = "";
 
         private void sample(ServerPlayer player, long serverTick) {
+            evaluationsRequested++;
             BlockPos pos = player.blockPosition();
             int deltaTicks = SAMPLE_INTERVAL_TICKS;
             ticksSinceSleep = player.isSleeping() ? 0 : Math.min(MAX_TRACKED_SIGNAL_TICKS, ticksSinceSleep + deltaTicks);
@@ -216,16 +253,27 @@ public final class AdaptiveSmartAIManager {
                 undergroundTicks = Math.max(0, undergroundTicks - deltaTicks);
             }
 
-            refreshRisk(player);
             eventCooldownTicks = Math.max(0, eventCooldownTicks - deltaTicks);
             ambienceCooldownTicks = Math.max(0, ambienceCooldownTicks - deltaTicks);
             recentDamageTaken = Math.max(0, recentDamageTaken - 1);
             recentMobKills = Math.max(0, recentMobKills - 1);
             recentDeaths = Math.max(0, recentDeaths - (serverTick % 2400 == 0 ? 1 : 0));
 
+            // Derive the published score after decay.  Previously ordinary samples changed
+            // local signals but neither recomputed the post-decay score nor synchronized it,
+            // leaving client snapshots apparently stuck at their initial calm value.
+            int beforeScore = threatScore;
+            String beforeAdvice = recentAdaptation + "|" + topRiskFactors;
+            refreshRisk(player);
+
             maybeTriggerAmbience(player);
             maybeTriggerEvent(player);
             logDebug(player);
+            // One compact, server-authoritative update per bounded sample interval keeps the
+            // GUI current without tying network traffic to rendering or every game tick.
+            if (beforeScore == threatScore && beforeAdvice.equals(recentAdaptation + "|" + topRiskFactors)) evaluationsSkipped++;
+            else materialChanges++;
+            sync(player, false, false);
         }
 
         private void refreshRisk(ServerPlayer player) {
@@ -287,7 +335,7 @@ public final class AdaptiveSmartAIManager {
             ambienceCooldownTicks = randomizedCooldown(player, GradleMCConfig.AMBIENCE_COOLDOWN_TICKS.get());
             recentAdaptation = actionScore >= HIGH_EVENT_MIN_SCORE ? "Increased ambience frequency" : "Queued low intensity ambience";
             player.displayClientMessage(Component.translatable("message.gradlemc.ai.ambience", ThreatLevel.fromScore(actionScore).name()), true);
-            sync(player);
+            sync(player, false, false);
         }
 
         private void maybeTriggerEvent(ServerPlayer player) {
@@ -308,7 +356,7 @@ public final class AdaptiveSmartAIManager {
             eventCooldownTicks = randomizedCooldown(player, GradleMCConfig.EVENT_COOLDOWN_TICKS.get());
             recentAdaptation = actionScore >= HIGH_EVENT_MIN_SCORE ? "Raised adaptive event intensity" : "Scheduled a subtle adaptive warning";
             player.displayClientMessage(Component.translatable("message.gradlemc.ai.event", ThreatLevel.fromScore(actionScore).name()), false);
-            sync(player);
+            sync(player, false, false);
         }
 
         private int randomizedCooldown(ServerPlayer player, int baseTicks) {

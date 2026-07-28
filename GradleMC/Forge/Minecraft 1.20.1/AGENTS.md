@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is GradleMC `1.0.3` for Minecraft `1.20.1` on Forge. Production Java lives in `src/main/java/com/soumyajit/gradlemc/`, organized by capability such as `command/`, `metrics/`, `modaudit/`, `profiler/`, `report/`, and `task/`. Resources, language strings, and Forge metadata live in `src/main/resources/`; keep generated resources in `src/generated/resources/`. Dependency-free self-tests live in `src/test/java/`. Build outputs under `build/` are generated and must not be edited.
+This is GradleMC `1.0.4` for Minecraft `1.20.1` on Forge. Production Java lives in `src/main/java/com/soumyajit/gradlemc/`, organized by capability such as `command/`, `metrics/`, `modaudit/`, `profiler/`, `report/`, and `task/`. Resources, language strings, and Forge metadata live in `src/main/resources/`; keep generated resources in `src/test/java/`. Build outputs under `build/` are generated and must not be edited.
 
 ## Build, Test, and Development Commands
 
@@ -13,7 +13,7 @@ Use PowerShell 7 with the included wrapper:
 - `./gradlew.bat clean build` — final full build, tests, and reobfuscated Forge jar.
 - `./gradlew.bat runClient` or `./gradlew.bat runServer` — launch a development smoke-test environment when runtime verification is needed.
 
-Do not use `--refresh-dependencies`, upgrade the wrapper, or run generated-data tasks unless the change specifically requires it. The release artifact is `build/libs/gradlemc-1.0.3-forge-1.20.1.jar`.
+Do not use `--refresh-dependencies`, upgrade the wrapper, or run generated-data tasks unless the change specifically requires it. The release artifact is `build/libs/gradlemc-1.0.4-forge-1.20.1.jar`.
 
 ## Coding Style & Naming Conventions
 

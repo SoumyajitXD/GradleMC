@@ -7,6 +7,7 @@ import com.soumyajit.gradlemc.client.overlay.GradleMCStatsOverlay;
 import com.soumyajit.gradlemc.client.overlay.OverlayConfigActions;
 import com.soumyajit.gradlemc.command.FpsTestCommandBridge;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
+import com.soumyajit.gradlemc.metrics.MeasurementHub;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -41,8 +42,16 @@ public final class ClientEventHandler {
         if (event.phase == TickEvent.Phase.END) {
             Minecraft minecraft = Minecraft.getInstance();
             boolean inWorld = minecraft.level != null && minecraft.player != null;
+            boolean integratedPresent = minecraft.getSingleplayerServer() != null;
+            GradleMCGuiBridge.updateLocalRuntime(inWorld, integratedPresent, integratedPresent && minecraft.player != null,
+                    minecraft.getConnection() != null);
             if (inWorld != wasInWorld) {
                 GradleMCStatsOverlay.resetFpsMeasurement();
+                if (inWorld) {
+                    GradleMCGuiBridge.connected();
+                } else {
+                    GradleMCGuiBridge.disconnected();
+                }
                 if (!inWorld) {
                     FpsTestManager.pause();
                 }
@@ -65,13 +74,14 @@ public final class ClientEventHandler {
         if (!isActiveGameplay(minecraft)) {
             return;
         }
-        long nowNanos = System.nanoTime();
-        GradleMCStatsOverlay.onRenderedFrame(nowNanos);
-        FpsTestManager.onRenderedFrame(nowNanos);
+        MeasurementHub.instance().onRenderedFrame(System.nanoTime());
     }
 
     private static boolean isActiveGameplay(Minecraft minecraft) {
-        return minecraft.level != null && minecraft.player != null && minecraft.screen == null
+        // The post-GUI callback is our single completed-frame producer.  A diagnostics
+        // screen is still part of a live world frame; do not create an artificial gap
+        // merely because the user opened GradleMC.
+        return minecraft.level != null && minecraft.player != null
                 && minecraft.isWindowActive() && !minecraft.isPaused();
     }
 

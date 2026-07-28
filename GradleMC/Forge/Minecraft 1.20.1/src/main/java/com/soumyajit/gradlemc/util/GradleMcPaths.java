@@ -54,6 +54,16 @@ public final class GradleMcPaths {
         return gradleMcDirectory().resolve("incidents").normalize();
     }
 
+    /** Server-owned durable execution metadata.  This is deliberately not config. */
+    public static Path historyDirectory() {
+        return managedChild("history");
+    }
+
+    /** Local, validated static-task result cache.  This is deliberately not history. */
+    public static Path cacheDirectory() {
+        return managedChild("cache");
+    }
+
     public static Path instanceLockFile() {
         return gradleMcDirectory().resolve("gradlemc-instance-lock.json").normalize();
     }
@@ -108,6 +118,15 @@ public final class GradleMcPaths {
             return root.resolve(fallbackName).normalize();
         }
         return configured;
+    }
+
+    private static Path managedChild(String name) {
+        Path root = gradleMcDirectory();
+        Path child = root.resolve(name).normalize();
+        if (!child.startsWith(root)) {
+            throw new IllegalStateException("Unsafe GradleMC managed path");
+        }
+        return child;
     }
 
     static String safeOutputDirectoryName(String value, String fallbackName) {

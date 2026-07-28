@@ -72,7 +72,7 @@ public final class ProfilerCoreSelfTest {
     }
 
     private static void reportWriterCreatesTextAndJson() throws Exception {
-        Path directory = Path.of("build", "self-test-game", "gradlemc", "profiles").toAbsolutePath().normalize();
+        Path directory = Files.createTempDirectory("gradlemc-profile-self-test-").toAbsolutePath().normalize();
         ProfilingSummary summary = new ProfilingSummary(
                 "1.0.0",
                 "1.20.1",
@@ -100,11 +100,17 @@ public final class ProfilerCoreSelfTest {
                 0L,
                 "self-test"
         );
-        ProfilingReportWriter.Result result = new ProfilingReportWriter().write(summary, ProfilerSessionConfig.defaults(), directory);
-        assertTrue(result.textPath().startsWith(directory), "text profile should be written under profiles directory");
-        assertTrue(result.jsonPath().startsWith(directory), "json profile should be written under profiles directory");
-        assertTrue(Files.readString(result.jsonPath()).contains("\"format\": \"gradlemc-profile-v1\""), "json output should include format");
-        assertTrue(Files.readString(result.textPath()).contains("Memory-lite reports pressure"), "report should avoid fake allocation claims");
+        try {
+            ProfilingReportWriter.Result result = new ProfilingReportWriter().write(summary, ProfilerSessionConfig.defaults(), directory);
+            assertTrue(result.textPath().startsWith(directory), "text profile should be written under profiles directory");
+            assertTrue(result.jsonPath().startsWith(directory), "json profile should be written under profiles directory");
+            assertTrue(Files.readString(result.jsonPath()).contains("\"format\": \"gradlemc-profile-v1\""), "json output should include format");
+            assertTrue(Files.readString(result.textPath()).contains("Memory-lite reports pressure"), "report should avoid fake allocation claims");
+        } finally {
+            try (var paths = Files.walk(directory)) {
+                for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
+            }
+        }
     }
 
     private static TickRecord tick(double millis) {

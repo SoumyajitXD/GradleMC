@@ -3,11 +3,14 @@ package com.soumyajit.gradlemc.report;
 import com.soumyajit.gradlemc.GradleMC;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.PerformanceTestManager;
+import com.soumyajit.gradlemc.metrics.MeasurementHub;
+import com.soumyajit.gradlemc.metrics.MemorySnapshot;
+import com.soumyajit.gradlemc.metrics.ServerPerformanceSnapshot;
 import com.soumyajit.gradlemc.metrics.WorldgenObservationManager;
+import com.soumyajit.gradlemc.performance.PerformanceService;
 import com.soumyajit.gradlemc.rules.RiskRuleLoader;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import com.soumyajit.gradlemc.util.ManagedPathSafety;
-import com.soumyajit.gradlemc.util.RuntimeSnapshots;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.ModList;
@@ -33,6 +36,12 @@ import java.util.zip.ZipOutputStream;
 
 public class IssueBundleExporter {
     public Path create(MinecraftServer server) throws IOException {
+        // Capture shared immutable evidence once. Bundle assembly must not recollect live state.
+        MemorySnapshot memory = MeasurementHub.instance().latestMemorySnapshot();
+        ServerPerformanceSnapshot performance = MeasurementHub.instance().serverPerformanceSnapshot();
+        SharedReleaseEvidence.Snapshot evidence = SharedReleaseEvidence.snapshot();
+        BundleSnapshot snapshot = new BundleSnapshot(memory, performance, evidence, PerformanceService.policySnapshot(),
+                PerformanceService.guard().snapshot(), Instant.now());
         Path bundleDirectory = GradleMcPaths.issueBundleDirectory();
         Path reportDirectory = GradleMcPaths.reportDirectory();
         ManagedPathSafety.ensureDirectory(GradleMcPaths.gameDirectory(), bundleDirectory);
@@ -42,14 +51,15 @@ public class IssueBundleExporter {
             try (OutputStream outputStream = Files.newOutputStream(temporary);
                  ZipOutputStream zip = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
                 addText(zip, "HOW_TO_REPORT.txt", howToReport());
-                addText(zip, "environment-summary.txt", environmentSummary(server));
+                addText(zip, "environment-summary.txt", environmentSummary(server, snapshot));
+                addText(zip, "gradlemc-evidence-manifest.txt", evidenceManifest(snapshot));
                 addText(zip, "mod-list-summary.txt", modListSummary());
                 addText(zip, "gradlemc-config-summary.txt", configSummary());
                 addText(zip, "rule-check-summary.txt", ruleSummary());
                 addText(zip, "latest-test-summaries.txt", latestTestSummaries());
                 addLatestReports(zip, reportDirectory);
                 addText(zip, "log-snippet-skipped.txt",
-                        "latest.log is not included in GradleMC 1.0.3 issue bundles.\n"
+                        "latest.log is not included in GradleMC " + GradleMC.CURRENT_VERSION + " issue bundles.\n"
                                 + "Logs can contain chat, commands, addresses, UUIDs, coordinates, and session data; review and attach them manually only when appropriate.\n");
             }
             try { Files.move(temporary, bundle, StandardCopyOption.ATOMIC_MOVE); }
@@ -114,8 +124,10 @@ public class IssueBundleExporter {
                 """;
     }
 
-    private String environmentSummary(MinecraftServer server) {
-        RuntimeSnapshots.MemorySnapshot memory = RuntimeSnapshots.memory();
+    private String environmentSummary(MinecraftServer server, BundleSnapshot snapshot) {
+        MemorySnapshot memory = snapshot.memory();
+        ServerPerformanceSnapshot performance = snapshot.performance();
+        SharedReleaseEvidence.Snapshot evidence = snapshot.evidence();
         return "Product: " + GradleMC.PRODUCT_NAME + "\n"
                 + "Version: " + modVersion() + "\n"
                 + "Variant: " + GradleMC.CURRENT_DISPLAY_VARIANT + "\n"
@@ -126,9 +138,36 @@ public class IssueBundleExporter {
                 + "Output root: " + GradleMcPaths.displayPath(GradleMcPaths.gradleMcDirectory()) + "\n"
                 + "Loaded mods: " + ModList.get().getMods().size() + "\n"
                 + "Players online: " + server.getPlayerCount() + "\n"
-                + "Memory used/max: " + memory.usedMiB() + "/" + memory.maxMiB() + " MiB\n"
-                + "Average server tick time: " + String.format(Locale.ROOT, "%.2f", server.getAverageTickTime()) + " ms\n";
+                + "Memory evidence: " + memory.availability() + "/" + memory.freshness() + " (" + memory.provenance() + ")\n"
+                + "Memory used/max: " + memoryValue(memory.usedMiB()) + "/" + memoryValue(memory.maxMiB()) + " MiB\n"
+                + "Server-performance evidence: " + performance.availability() + "/" + performance.freshness()
+                + " (" + performance.provenance() + ")\n"
+                + "Average server tick time: " + decimalValue(performance.averageMspt()) + " ms\n"
+                + "Operation timestamp: " + snapshot.capturedAt() + "\n"
+                + "Performance Mode: " + snapshot.policy().policy().mode() + " revision=" + snapshot.policy().revision() + "\n"
+                + "Performance Guard: " + snapshot.guard().state() + "\n"
+                + "Client FPS evidence: " + evidence.fps().state() + "/" + evidence.fps().provenance()
+                + " current/average=" + decimalValue(evidence.fps().current()) + "/" + decimalValue(evidence.fps().average()) + "\n"
+                + "Technical Stability evidence: " + evidence.stability().state() + "/" + evidence.stability().provenance()
+                + " score=" + (evidence.stability().score() < 0 ? "unavailable" : evidence.stability().score()) + "\n"
+                + "Adaptive Risk evidence: " + evidence.adaptiveRisk().state() + "/" + evidence.adaptiveRisk().provenance()
+                + " score=" + (evidence.adaptiveRisk().score() < 0 ? "unavailable" : evidence.adaptiveRisk().score()) + "\n";
     }
+
+    private String evidenceManifest(BundleSnapshot snapshot) {
+        SharedReleaseEvidence.Snapshot evidence = snapshot.evidence();
+        return "operationTimestamp=" + snapshot.capturedAt() + "\n"
+                + "fps=" + evidence.fps().state() + "," + evidence.fps().provenance() + ",samples=" + evidence.fps().samples() + "\n"
+                + "memory=" + snapshot.memory().availability() + "," + snapshot.memory().freshness() + "," + snapshot.memory().provenance() + "\n"
+                + "server=" + snapshot.performance().availability() + "," + snapshot.performance().freshness() + "," + snapshot.performance().provenance() + "\n"
+                + "stability=" + evidence.stability().state() + "," + evidence.stability().provenance() + "\n"
+                + "adaptiveRisk=" + evidence.adaptiveRisk().state() + "," + evidence.adaptiveRisk().provenance() + "\n"
+                + "policy=" + snapshot.policy().policy().mode() + ",revision=" + snapshot.policy().revision() + "\n"
+                + "guard=" + snapshot.guard().state() + "\n";
+    }
+
+    private static String memoryValue(long value) { return value < 0L ? "unavailable" : Long.toString(value); }
+    private static String decimalValue(double value) { return Double.isFinite(value) ? String.format(Locale.ROOT, "%.2f", value) : "unavailable"; }
 
     private String modListSummary() {
         StringBuilder builder = new StringBuilder();
@@ -223,4 +262,9 @@ public class IssueBundleExporter {
                 .map(container -> container.getModInfo().getVersion().toString())
                 .orElse("unknown");
     }
+
+    private record BundleSnapshot(MemorySnapshot memory, ServerPerformanceSnapshot performance,
+                                  SharedReleaseEvidence.Snapshot evidence, PerformanceService.PolicySnapshot policy,
+                                  com.soumyajit.gradlemc.performance.PerformanceGuard.Snapshot guard,
+                                  Instant capturedAt) { }
 }

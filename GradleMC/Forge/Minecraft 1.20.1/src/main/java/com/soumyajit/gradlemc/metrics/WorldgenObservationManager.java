@@ -200,7 +200,8 @@ public final class WorldgenObservationManager {
 
         private void sample(MinecraftServer server) {
             int loadedChunks = loadedChunkCount(server);
-            double tickMs = Math.max(0.0D, server.getAverageTickTime());
+            ServerPerformanceSnapshot performance = MeasurementHub.instance().serverPerformanceSnapshot();
+            double tickMs = performance.availability() == ServerPerformanceSnapshot.Availability.AVAILABLE && Double.isFinite(performance.currentMspt()) ? performance.currentMspt() : 0.0D;
             sampleCount++;
             loadedChunksMin = Math.min(loadedChunksMin, loadedChunks);
             loadedChunksMax = Math.max(loadedChunksMax, loadedChunks);

@@ -8,6 +8,7 @@ import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
 import com.soumyajit.gradlemc.network.GuiStatusSnapshot;
+import com.soumyajit.gradlemc.capability.CapabilitySnapshot;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import com.soumyajit.gradlemc.util.RuntimeSnapshots;
 import net.minecraft.SharedConstants;
@@ -24,6 +25,7 @@ public record GradleMCGuiState(
         String playerName,
         SmartAIStatus smartAIStatus,
         GuiStatusSnapshot guiStatus,
+        CapabilitySnapshot capabilities,
         long smartAIStatusAgeMillis,
         RuntimeSnapshots.MemorySnapshot memory,
         int currentFps,
@@ -71,6 +73,7 @@ public record GradleMCGuiState(
                 player,
                 safeStatus,
                 guiStatus,
+                GradleMCGuiBridge.capabilities(),
                 GradleMCGuiBridge.smartAIStatusAgeMillis(),
                 RuntimeSnapshots.memory(),
                 (int) Math.round(rollingFps.currentFps()),

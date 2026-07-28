@@ -4,14 +4,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.soumyajit.gradlemc.client.FpsTestManager;
 import com.soumyajit.gradlemc.config.GradleMCConfig;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
+import com.soumyajit.gradlemc.metrics.MeasurementChannel;
+import com.soumyajit.gradlemc.metrics.MeasurementDemand;
+import com.soumyajit.gradlemc.metrics.MeasurementHub;
+import com.soumyajit.gradlemc.metrics.MeasurementSubscription;
+import com.soumyajit.gradlemc.metrics.ServerPerformanceSnapshot;
 import com.soumyajit.gradlemc.network.GradleMCGuiBridge;
 import com.soumyajit.gradlemc.network.GuiStatusSnapshot;
 import com.soumyajit.gradlemc.profiler.GradleMcProfilerService;
+import com.soumyajit.gradlemc.performance.PerformanceService;
+import com.soumyajit.gradlemc.performance.GradleMcOverheadMonitor;
 import com.soumyajit.gradlemc.util.RuntimeSnapshots;
+import com.soumyajit.gradlemc.report.SharedReleaseEvidence;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 import java.util.ArrayList;
@@ -23,65 +30,102 @@ public final class GradleMCStatsOverlay {
     private static final int MARGIN = 6;
     private static final int TEXT_COLOR = 0xFFEAF0F7;
     private static final int MUTED_COLOR = 0xFFC3CBD5;
-    private static final FpsRollingStatsCalculator FPS_STATS =
-            new FpsRollingStatsCalculator(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
+    private static MeasurementSubscription frameSubscription;
+    private static MeasurementSubscription memorySubscription;
 
     private static long lastDisplayUpdateMillis;
     private static long lastPercentileUpdateMillis;
     private static FpsRollingStatsCalculator.Snapshot cachedFps = FpsRollingStatsCalculator.Snapshot.empty();
     private static List<String> cachedLines = List.of();
+    private static Layout cachedLayout = Layout.empty();
 
     private GradleMCStatsOverlay() {
     }
 
     public static void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
+        long renderStarted = System.nanoTime();
         Minecraft minecraft = Minecraft.getInstance();
         if (!shouldRender(minecraft)) {
+            releaseFrameDemand();
+            releaseMemoryDemand();
             return;
         }
         if (!hasEnabledContent()) {
             cachedLines = List.of();
+            releaseFrameDemand();
+            releaseMemoryDemand();
             return;
         }
+        refreshFrameDemand();
+        refreshMemoryDemand();
 
         long now = System.currentTimeMillis();
-        int updateInterval = Math.max(250, GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get());
+        int updateInterval = Math.max(GradleMCConfig.OVERLAY_UPDATE_INTERVAL_MS.get(), PerformanceService.policy().overlayRefreshMillis());
+        if (PerformanceService.guard().deferOptionalWork()) {
+            updateInterval = Math.min(5_000, updateInterval * 2);
+            PerformanceService.overhead().coalesced();
+        }
         if (now - lastDisplayUpdateMillis >= updateInterval || cachedLines.isEmpty()) {
-            FPS_STATS.setWindowSeconds(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
             boolean wantsPercentiles = GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get()
                     || GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get();
             boolean refreshPercentiles = wantsPercentiles && now - lastPercentileUpdateMillis >= 1_000L;
-            cachedFps = FPS_STATS.snapshot(refreshPercentiles);
+            cachedFps = MeasurementHub.instance().frameSnapshot(refreshPercentiles);
+            SharedReleaseEvidence.publishFps(cachedFps.sampleCount(), cachedFps.currentFps(), cachedFps.averageFps(),
+                    cachedFps.onePercentLowFps(), cachedFps.pointOnePercentLowFps(), System.nanoTime());
             if (refreshPercentiles) lastPercentileUpdateMillis = now;
-            cachedLines = buildLines(minecraft, cachedFps);
+            List<String> refreshedLines = buildLines(minecraft, cachedFps);
+            if (!refreshedLines.equals(cachedLines)) cachedLayout = Layout.of(minecraft.font, refreshedLines);
+            cachedLines = refreshedLines;
             lastDisplayUpdateMillis = now;
         }
-        draw(graphics, minecraft.font, cachedLines, screenWidth, screenHeight);
+        draw(graphics, minecraft.font, cachedLines, cachedLayout, screenWidth, screenHeight);
+        PerformanceService.overhead().record(GradleMcOverheadMonitor.Category.OVERLAY_PREPARATION, System.nanoTime() - renderStarted);
     }
 
     public static FpsRollingStatsCalculator.Snapshot latestFpsSnapshot() {
-        return FPS_STATS.snapshot(false);
+        return MeasurementHub.instance().frameSnapshot(false);
     }
 
-    /** Called exactly once from the post-GUI render event for an active gameplay frame. */
-    public static void onRenderedFrame(long nowNanos) {
-        FPS_STATS.setWindowSeconds(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
-        FPS_STATS.recordRenderedFrame(nowNanos);
+    /** Invalidates presentation-only caches after an explicit overlay setting change. */
+    public static void onSettingsChanged() {
+        MeasurementHub.instance().setFrameWindowSeconds(GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.get());
+        releaseFrameDemand();
+        releaseMemoryDemand();
+        cachedLines = List.of();
+        cachedLayout = Layout.empty();
+        lastDisplayUpdateMillis = 0L;
     }
 
     /** Pauses interval measurement without treating time away from gameplay as a slow frame. */
     public static void pauseFpsMeasurement() {
-        FPS_STATS.resetInterval();
+        MeasurementHub.instance().pauseFrames();
     }
 
     /** Called when joining or leaving a world so no prior world's samples leak into the next one. */
     public static void resetFpsMeasurement() {
-        FPS_STATS.clear();
+        releaseFrameDemand();
+        MeasurementHub.instance().resetFrames();
         cachedFps = FpsRollingStatsCalculator.Snapshot.empty();
         cachedLines = List.of();
+        cachedLayout = Layout.empty();
         lastDisplayUpdateMillis = 0L;
         lastPercentileUpdateMillis = 0L;
     }
+
+    private static void refreshFrameDemand() {
+        boolean needsFrames = GradleMCConfig.OVERLAY_SHOW_FPS.get() || GradleMCConfig.OVERLAY_SHOW_AVERAGE_FPS.get()
+                || GradleMCConfig.OVERLAY_SHOW_ONE_PERCENT_LOW.get() || GradleMCConfig.OVERLAY_SHOW_POINT_ONE_PERCENT_LOW.get();
+        if (needsFrames && frameSubscription == null) frameSubscription = MeasurementHub.instance().acquire(MeasurementChannel.FRAME_TIMING, "overlay", MeasurementDemand.NORMAL);
+        if (!needsFrames) releaseFrameDemand();
+    }
+    private static void releaseFrameDemand() { if (frameSubscription != null) { frameSubscription.close(); frameSubscription = null; } }
+    private static void refreshMemoryDemand() {
+        if (GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get() && memorySubscription == null) {
+            memorySubscription = MeasurementHub.instance().acquire(MeasurementChannel.JVM_MEMORY, "overlay-memory", MeasurementDemand.LOW_FREQUENCY);
+        }
+        if (!GradleMCConfig.OVERLAY_SHOW_JVM_MEMORY.get()) releaseMemoryDemand();
+    }
+    private static void releaseMemoryDemand() { if (memorySubscription != null) { memorySubscription.close(); memorySubscription = null; } }
 
     private static boolean shouldRender(Minecraft minecraft) {
         return GradleMCConfig.OVERLAY_ENABLED.get()
@@ -188,12 +232,8 @@ public final class GradleMCStatsOverlay {
             parts.add("GPU usage unavailable");
         }
         if (GradleMCConfig.OVERLAY_SHOW_INTEGRATED_SERVER.get()) {
-            MinecraftServer server = minecraft.getSingleplayerServer();
-            if (server != null) {
-                double mspt = Math.max(0.0D, server.getAverageTickTime());
-                double tps = mspt <= 0.0D ? 20.0D : Math.min(20.0D, 1000.0D / mspt);
-                parts.add("Server " + format(tps) + " TPS");
-            }
+            ServerPerformanceSnapshot server = MeasurementHub.instance().serverPerformanceSnapshot();
+            if (minecraft.getSingleplayerServer() != null && server.availability() == ServerPerformanceSnapshot.Availability.AVAILABLE) parts.add("Server " + format(server.averageTps()) + " TPS");
         }
         if (!parts.isEmpty()) {
             lines.add(String.join(" | ", parts));
@@ -201,26 +241,19 @@ public final class GradleMCStatsOverlay {
     }
 
     private static List<String> integratedServerLine(Minecraft minecraft) {
-        MinecraftServer server = minecraft.getSingleplayerServer();
-        if (server == null) {
-            return List.of();
-        }
-        double mspt = Math.max(0.0D, server.getAverageTickTime());
-        double tps = mspt <= 0.0D ? 20.0D : Math.min(20.0D, 1000.0D / mspt);
-        return List.of("Integrated server: " + format(tps) + " TPS, " + format(mspt) + " MSPT");
+        if (minecraft.getSingleplayerServer() == null) return List.of();
+        ServerPerformanceSnapshot server = MeasurementHub.instance().serverPerformanceSnapshot();
+        if (server.availability() != ServerPerformanceSnapshot.Availability.AVAILABLE) return List.of("Integrated server: warming up");
+        return List.of("Integrated server: " + format(server.averageTps()) + " TPS, " + format(server.averageMspt()) + " MSPT");
     }
 
-    private static void draw(GuiGraphics graphics, Font font, List<String> lines, int screenWidth, int screenHeight) {
+    private static void draw(GuiGraphics graphics, Font font, List<String> lines, Layout layout, int screenWidth, int screenHeight) {
         if (lines.isEmpty()) {
             return;
         }
         double scale = Math.max(0.75D, Math.min(2.0D, GradleMCConfig.OVERLAY_SCALE.get()));
-        int maxWidth = 0;
-        for (String line : lines) {
-            maxWidth = Math.max(maxWidth, font.width(line));
-        }
         int lineHeight = font.lineHeight + 2;
-        int boxWidth = maxWidth + PADDING * 2;
+        int boxWidth = layout.maxWidth + PADDING * 2;
         int boxHeight = lines.size() * lineHeight + PADDING * 2;
         int scaledWidth = (int) Math.ceil(boxWidth * scale);
         int scaledHeight = (int) Math.ceil(boxHeight * scale);
@@ -282,5 +315,15 @@ public final class GradleMCStatsOverlay {
 
     private static double safe(double value) {
         return Double.isFinite(value) ? Math.max(0.0D, value) : 0.0D;
+    }
+
+    /** Width work belongs to the bounded formatting refresh, never to every render frame. */
+    private record Layout(int maxWidth) {
+        static Layout empty() { return new Layout(0); }
+        static Layout of(Font font, List<String> lines) {
+            int width = 0;
+            for (String line : lines) width = Math.max(width, font.width(line));
+            return new Layout(width);
+        }
     }
 }

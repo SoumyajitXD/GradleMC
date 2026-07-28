@@ -1,6 +1,7 @@
 package com.soumyajit.gradlemc.profiler;
 
 import com.soumyajit.gradlemc.profiler.memory.GcEventTracker;
+import com.soumyajit.gradlemc.metrics.ServerPerformanceSnapshot;
 import com.soumyajit.gradlemc.profiler.memory.MemoryPressureTracker;
 import com.soumyajit.gradlemc.profiler.report.ProfilingReportWriter;
 import com.soumyajit.gradlemc.profiler.report.ProfilingSummary;
@@ -40,13 +41,13 @@ public final class ProfilerSession {
     private ThreadSampler sampler;
     private ProfilerSessionState state = ProfilerSessionState.RUNNING;
     private Instant endedAt;
-    private long tickStartedNanos;
     private MemoryPressureTracker.Snapshot tickMemoryBefore;
     private GcEventTracker.Snapshot tickGcBefore;
     private long heapEndMiB;
     private long gcCountDelta;
     private long gcTimeDeltaMillis;
     private ProfilingReportWriter.Result reportResult;
+    private ProfilingSummary summary;
 
     public ProfilerSession(ProfilerSessionConfig config, Instant startedAt) {
         this.config = config.sanitized();
@@ -63,28 +64,30 @@ public final class ProfilerSession {
         }
     }
 
-    public void onTickStart() {
-        if (state != ProfilerSessionState.RUNNING) {
-            return;
-        }
-        tickStartedNanos = System.nanoTime();
-        tickMemoryBefore = memoryTracker.snapshot();
-        tickGcBefore = gcTracker.snapshot();
-    }
-
-    public boolean onTickEnd(MinecraftServer server) {
+    /**
+     * Records the shared completed-server-tick evidence. This session may add bounded
+     * contextual aggregation, but never owns an ordinary server-timing producer.
+     */
+    public boolean onTickEnd(MinecraftServer server, ServerPerformanceSnapshot performance) {
         if (state != ProfilerSessionState.RUNNING) {
             return false;
         }
-        long now = System.nanoTime();
-        double durationMs = tickStartedNanos <= 0L ? Math.max(0.0D, server.getAverageTickTime()) : (now - tickStartedNanos) / 1_000_000.0D;
+        if (sampler != null) {
+            sampler.onServerTick(System.nanoTime());
+        }
+        tickMemoryBefore = memoryTracker.snapshot();
+        tickGcBefore = gcTracker.snapshot();
+        double durationMs = performance != null
+                && performance.availability() == ServerPerformanceSnapshot.Availability.AVAILABLE
+                && Double.isFinite(performance.currentMspt())
+                ? performance.currentMspt() : Double.NaN;
         MemoryPressureTracker.Snapshot memoryAfter = memoryTracker.snapshot();
         GcEventTracker.Snapshot gcAfter = gcTracker.snapshot();
         GcEventTracker.Delta tickGc = gcAfter.delta(tickGcBefore);
         TickRecord record = new TickRecord(
                 Instant.now(),
                 durationMs,
-                durationMs <= 0.0D ? 20.0D : Math.min(20.0D, 1000.0D / durationMs),
+                Double.isFinite(durationMs) && durationMs > 0.0D ? Math.min(20.0D, 1000.0D / durationMs) : Double.NaN,
                 dimensionCount(server),
                 server.getPlayerCount(),
                 loadedChunkCount(server),
@@ -96,10 +99,10 @@ public final class ProfilerSession {
                 tickGc.collectionTimeMillis(),
                 false
         );
-        if (config.mode().recordsTicks()) {
+        if (config.mode().recordsTicks() && Double.isFinite(durationMs)) {
             tickRecorder.record(record);
         }
-        if (slowTickDetector.isSlow(durationMs)) {
+        if (Double.isFinite(durationMs) && slowTickDetector.isSlow(durationMs)) {
             if (sampler != null && config.onlySlowTicks()) {
                 sampler.commitRecent();
             }
@@ -108,31 +111,39 @@ public final class ProfilerSession {
         return Duration.between(startedAt, Instant.now()).getSeconds() >= config.timeoutSeconds();
     }
 
-    public ProfilingReportWriter.Result finish(ProfilerSessionState endState) throws IOException {
-        if (state != ProfilerSessionState.RUNNING) {
-            return reportResult;
-        }
+    public synchronized ProfilingReportWriter.Result finish(ProfilerSessionState endState) throws IOException {
+        ProfilingSummary ready = finishSummary(endState);
+        if (reportResult == null) reportResult = new ProfilingReportWriter().write(ready, config, GradleMcPaths.profileDirectory());
+        return reportResult;
+    }
+
+    /** Finalizes bounded in-memory evidence.  Report serialization may safely happen on a worker. */
+    /** A server-tick-safe transition: it signals the sampler but never waits for it. */
+    public synchronized void prepareFinish(ProfilerSessionState endState) {
+        if (state != ProfilerSessionState.RUNNING) return;
         state = endState;
         endedAt = Instant.now();
         if (sampler != null) {
-            sampler.close();
+            sampler.stop();
         }
+    }
+
+    /** Off-thread finalization for the bounded summary and report writer. */
+    public synchronized ProfilingSummary finishSummary(ProfilerSessionState endState) {
+        prepareFinish(endState);
+        if (summary != null) return summary;
+        if (sampler != null) sampler.awaitStopped(2, java.util.concurrent.TimeUnit.SECONDS);
         MemoryPressureTracker.Snapshot memoryEnd = memoryTracker.snapshot();
         GcEventTracker.Delta gcDelta = gcTracker.snapshot().delta(gcStart);
         heapEndMiB = memoryEnd.usedHeapMiB();
         gcCountDelta = gcDelta.collectionCount();
         gcTimeDeltaMillis = gcDelta.collectionTimeMillis();
-        ProfilingSummary summary = new ProfilingSummaryBuilder().build(this);
-        reportResult = new ProfilingReportWriter().write(summary, config, GradleMcPaths.profileDirectory());
-        return reportResult;
+        summary = new ProfilingSummaryBuilder().build(this);
+        return summary;
     }
 
-    public void cancel() {
-        state = ProfilerSessionState.CANCELLED;
-        endedAt = Instant.now();
-        if (sampler != null) {
-            sampler.close();
-        }
+    public synchronized void cancel() {
+        prepareFinish(ProfilerSessionState.CANCELLED);
     }
 
     private void recordSlowTick(TickRecord record) {

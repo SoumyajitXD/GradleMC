@@ -11,9 +11,9 @@ public final class GradleMCGuiOpener {
         if (minecraft.player == null) {
             return;
         }
-        if (minecraft.screen instanceof GradleMCScreen) {
+        if (minecraft.screen instanceof LegacyGradleMCScreen) {
             return;
         }
-        minecraft.setScreen(new GradleMCScreen());
+        minecraft.setScreen(new LegacyGradleMCScreen());
     }
 }

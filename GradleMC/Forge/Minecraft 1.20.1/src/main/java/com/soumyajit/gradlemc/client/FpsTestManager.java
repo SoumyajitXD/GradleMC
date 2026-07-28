@@ -4,7 +4,11 @@ import com.mojang.brigadier.Command;
 import com.soumyajit.gradlemc.metrics.DiagnosticTestProgress;
 import com.soumyajit.gradlemc.metrics.FpsTestResult;
 import com.soumyajit.gradlemc.metrics.FrameTimeStatistics;
+import com.soumyajit.gradlemc.metrics.MeasurementDemand;
+import com.soumyajit.gradlemc.metrics.MeasurementHub;
+import com.soumyajit.gradlemc.metrics.MeasurementSubscription;
 import com.soumyajit.gradlemc.report.FpsTestReportWriter;
+import com.soumyajit.gradlemc.client.gui.ClientReportIndexService;
 import com.soumyajit.gradlemc.smart.AdaptiveBaselineStore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import net.minecraft.client.Minecraft;
@@ -22,6 +26,7 @@ public final class FpsTestManager {
     private static Session currentSession;
     private static FpsTestResult latestResult;
     private static Path latestReportPath;
+    private static MeasurementSubscription frameSubscription;
 
     private FpsTestManager() {
     }
@@ -32,6 +37,7 @@ public final class FpsTestManager {
             return 0;
         }
         currentSession = new Session(seconds, Instant.now());
+        frameSubscription = MeasurementHub.instance().subscribeFrames("fps-test", MeasurementDemand.DETAILED_FOREGROUND, FpsTestManager::onRenderedFrame);
         source.sendSuccess(() -> Component.literal("FPS test started for " + seconds + " active gameplay seconds."), false);
         return Command.SINGLE_SUCCESS;
     }
@@ -60,6 +66,7 @@ public final class FpsTestManager {
             return false;
         }
         currentSession = new Session(seconds, Instant.now());
+        frameSubscription = MeasurementHub.instance().subscribeFrames("fps-test", MeasurementDemand.DETAILED_FOREGROUND, FpsTestManager::onRenderedFrame);
         sendClientMessage(Component.literal("FPS test started for " + seconds + " active gameplay seconds."));
         return true;
     }
@@ -123,11 +130,13 @@ public final class FpsTestManager {
             return;
         }
         currentSession = null;
+        if (frameSubscription != null) { frameSubscription.close(); frameSubscription = null; }
         FpsTestResult result = session.toResult(endReason, Instant.now());
         latestResult = result;
         AdaptiveBaselineStore.recordFps(result);
         try {
             latestReportPath = new FpsTestReportWriter().write(result, GradleMcPaths.reportDirectory());
+            ClientReportIndexService.instance().invalidate();
             sendClientMessage(GradleMcPaths.pathComponent(summary(result) + " Report: ", latestReportPath));
         } catch (IOException exception) {
             latestReportPath = null;

@@ -10,6 +10,8 @@ import java.util.*;
 /** Sequential, bounded task orchestrator. Runtime diagnostics are never cached unless declared static. */
 public final class TaskEngine {
     private static final int MAX_HISTORY_PER_TASK = 32;
+    private static final int MAX_TASK_ID_LENGTH = 128;
+    private static final int MAX_GRAPH_DEPTH = 128;
     private final Map<String, DiagnosticTask> tasks = new TreeMap<>();
     private final Map<String, Cached> cache = new HashMap<>();
     private final Map<String, Map<String, String>> lastInputs = new HashMap<>();
@@ -17,7 +19,7 @@ public final class TaskEngine {
 
     public synchronized void register(DiagnosticTask task) {
         Objects.requireNonNull(task, "task");
-        if (!task.id().matches("[a-z0-9_.-]+:[a-z0-9_.-]+")) {
+        if (task.id().length() > MAX_TASK_ID_LENGTH || !task.id().matches("[a-z0-9_.-]+:[a-z0-9_.-]+")) {
             throw new IllegalArgumentException("Invalid namespaced diagnostic task ID: " + task.id());
         }
         if (task.timeoutMillis() < 1) throw new IllegalArgumentException("Task timeout must be positive: " + task.id());
@@ -31,11 +33,12 @@ public final class TaskEngine {
     public synchronized TaskPlan plan(String requestedId) {
         List<DiagnosticTask> result = new ArrayList<>();
         Set<String> visiting = new LinkedHashSet<>(), done = new HashSet<>();
-        visit(requestedId, true, visiting, done, result);
+        visit(requestedId, true, visiting, done, result, 0);
         return new TaskPlan(requestedId, result);
     }
 
-    private void visit(String id, boolean required, Set<String> visiting, Set<String> done, List<DiagnosticTask> result) {
+    private void visit(String id, boolean required, Set<String> visiting, Set<String> done, List<DiagnosticTask> result, int depth) {
+        if (depth > MAX_GRAPH_DEPTH) throw new IllegalArgumentException("Diagnostic task graph exceeds maximum depth of " + MAX_GRAPH_DEPTH);
         if (done.contains(id)) return;
         DiagnosticTask task = tasks.get(id);
         if (task == null) {
@@ -43,7 +46,8 @@ public final class TaskEngine {
             throw new IllegalArgumentException("Missing diagnostic task dependency: " + id);
         }
         if (!visiting.add(id)) throw new IllegalArgumentException("Diagnostic task cycle: " + String.join(" -> ", visiting) + " -> " + id);
-        for (TaskDependency dep : task.dependencies()) visit(dep.taskId(), dep.required(), visiting, done, result);
+        task.dependencies().stream().sorted(Comparator.comparing(TaskDependency::taskId))
+                .forEach(dep -> visit(dep.taskId(), dep.required(), visiting, done, result, depth + 1));
         visiting.remove(id);
         done.add(id);
         result.add(task);
@@ -252,11 +256,21 @@ public final class TaskEngine {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             new TreeMap<>(inputs).forEach((key, value) -> {
-                digest.update(key.getBytes(StandardCharsets.UTF_8)); digest.update((byte) 0);
-                digest.update(safe(value).getBytes(StandardCharsets.UTF_8)); digest.update((byte) 0);
+                updateLengthPrefixed(digest, key);
+                updateLengthPrefixed(digest, safe(value));
             });
-            return HexFormat.of().formatHex(digest.digest()).substring(0, 16);
+            return HexFormat.of().formatHex(digest.digest());
         } catch (Exception exception) { throw new IllegalStateException(exception); }
+    }
+
+    /** Unambiguous deterministic encoding: neither separators nor values can collide. */
+    private static void updateLengthPrefixed(MessageDigest digest, String value) {
+        byte[] bytes = safe(value).getBytes(StandardCharsets.UTF_8);
+        digest.update((byte) (bytes.length >>> 24));
+        digest.update((byte) (bytes.length >>> 16));
+        digest.update((byte) (bytes.length >>> 8));
+        digest.update((byte) bytes.length);
+        digest.update(bytes);
     }
 
     private static String safe(String value) { return value == null ? "" : value; }

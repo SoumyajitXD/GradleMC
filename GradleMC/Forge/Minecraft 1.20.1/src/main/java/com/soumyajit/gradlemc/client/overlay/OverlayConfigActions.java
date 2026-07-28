@@ -47,6 +47,12 @@ public final class OverlayConfigActions {
         save();
     }
 
+    /** Sets the renderer's alpha input directly; callers never need to manipulate packed colours. */
+    public static void setBackgroundOpacity(double opacity) {
+        GradleMCConfig.OVERLAY_BACKGROUND_OPACITY.set(Math.max(0.0D, Math.min(1.0D, opacity)));
+        save();
+    }
+
     public static void setSamplingWindow(int seconds) {
         GradleMCConfig.OVERLAY_SAMPLING_WINDOW_SECONDS.set(seconds);
         save();
@@ -59,5 +65,6 @@ public final class OverlayConfigActions {
 
     public static void save() {
         GradleMCConfig.SPEC.save();
+        GradleMCStatsOverlay.onSettingsChanged();
     }
 }

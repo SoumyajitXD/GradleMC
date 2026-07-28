@@ -1,0 +1,4 @@
+package com.soumyajit.gradlemc.investigation;
+public record InvestigationEvidenceRef(String evidenceId, String type, String relativeReference, String digest, boolean available) {
+ public InvestigationEvidenceRef { if(evidenceId==null||!evidenceId.matches("[a-z][a-z0-9:-]{0,95}"))throw new IllegalArgumentException("Invalid evidence ID"); if(type==null||!type.matches("[A-Z_]{1,48}"))throw new IllegalArgumentException("Invalid evidence type"); if(relativeReference==null||!relativeReference.matches("[a-z0-9][a-z0-9._/-]{0,159}")||relativeReference.contains("..")||relativeReference.contains("\\")||relativeReference.startsWith("/"))throw new IllegalArgumentException("Unsafe evidence reference"); if(digest==null||!digest.matches("[a-f0-9]{16,128}"))throw new IllegalArgumentException("Invalid evidence digest"); }
+}

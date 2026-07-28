@@ -31,7 +31,10 @@ import com.soumyajit.gradlemc.modaudit.ModAuditService;
 import com.soumyajit.gradlemc.modaudit.ModDescriptor;
 import com.soumyajit.gradlemc.network.GradleMCNetwork;
 import com.soumyajit.gradlemc.profiler.GradleMcProfilerService;
+import com.soumyajit.gradlemc.investigation.session.InvestigationCommandService;
+import com.soumyajit.gradlemc.metrics.HealthCommandService;
 import com.soumyajit.gradlemc.report.IssueBundleExporter;
+import com.soumyajit.gradlemc.report.SharedReleaseEvidence;
 import com.soumyajit.gradlemc.report.Report;
 import com.soumyajit.gradlemc.report.ReportFileNames;
 import com.soumyajit.gradlemc.report.ReportWriter;
@@ -48,6 +51,8 @@ import com.soumyajit.gradlemc.smart.StabilityAdvisor;
 import com.soumyajit.gradlemc.smart.StabilityScore;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import com.soumyajit.gradlemc.task.DiagnosticRunService;
+import com.soumyajit.gradlemc.performance.PerformanceCommandService;
+import com.soumyajit.gradlemc.performance.PerformanceMode;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -91,7 +96,6 @@ public final class GradleMcCommands {
     private static final int MAX_PERF_SECONDS = 1800;
     private static final int MIN_WORLDGEN_SECONDS = 10;
     private static final int MAX_WORLDGEN_SECONDS = 1800;
-    private static final long MIB = 1024L * 1024L;
 
     private GradleMcCommands() {
     }
@@ -104,97 +108,19 @@ public final class GradleMcCommands {
                         .executes(context -> showHelp(context.getSource())))
                 .then(Commands.literal("status")
                         .executes(context -> showStatus(context.getSource())))
-                .then(Commands.literal("tasks")
-                        .executes(context -> DiagnosticRunService.listTasks(context.getSource()))
-                        .then(Commands.literal("all").executes(context -> DiagnosticRunService.listTasks(context.getSource(), true))))
-                .then(Commands.literal("task")
-                        .then(Commands.literal("info").then(Commands.argument("task", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.info(context.getSource(), StringArgumentType.getString(context, "task")))))
-                        .then(Commands.literal("graph").then(Commands.argument("target", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.graph(context.getSource(), StringArgumentType.getString(context, "target")))))
-                        .then(Commands.literal("why").then(Commands.argument("task", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.why(context.getSource(), StringArgumentType.getString(context, "task")))))
-                        .then(Commands.literal("inputs").then(Commands.argument("task", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.inputs(context.getSource(), StringArgumentType.getString(context, "task")))))
-                        .then(Commands.literal("outputs").then(Commands.argument("task", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.outputs(context.getSource(), StringArgumentType.getString(context, "task")))))
-                        .then(Commands.literal("history").then(Commands.argument("task", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.history(context.getSource(), StringArgumentType.getString(context, "task"))))))
-                .then(Commands.literal("workflows").executes(context -> { context.getSource().sendSuccess(() -> Component.literal("GradleMC workflows: " + String.join(", ", DiagnosticRunService.workflows())), false); return Command.SINGLE_SUCCESS; }))
-                .then(Commands.literal("scans").then(Commands.literal("list").executes(context -> DiagnosticRunService.scans(context.getSource(), false))).then(Commands.literal("latest").executes(context -> DiagnosticRunService.scans(context.getSource(), true))))
-                .then(Commands.literal("run").requires(source -> source.hasPermission(2))
-                        .then(Commands.literal("status").executes(context -> DiagnosticRunService.status(context.getSource())))
-                        .then(Commands.literal("cancel").executes(context -> DiagnosticRunService.cancel(context.getSource())))
-                        .then(Commands.argument("target", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), false, false))
-                                .then(Commands.literal("dry-run").executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), true, false)))
-                                .then(Commands.literal("rerun").executes(context -> DiagnosticRunService.run(context.getSource(), StringArgumentType.getString(context, "target"), false, true)))))
+                .then(Commands.literal("performance")
+                        .executes(context -> PerformanceCommandService.summary(context.getSource()))
+                        .then(Commands.literal("overhead").executes(context -> PerformanceCommandService.overhead(context.getSource())))
+                        .then(Commands.literal("guard").executes(context -> PerformanceCommandService.guard(context.getSource())))
+                        .then(Commands.literal("explain").executes(context -> PerformanceCommandService.explain(context.getSource())))
+                        .then(Commands.literal("selftest").requires(source -> source.hasPermission(2)).executes(context -> PerformanceCommandService.selftest(context.getSource())))
+                        .then(Commands.literal("mode").executes(context -> PerformanceCommandService.summary(context.getSource()))
+                                .then(Commands.literal("low_impact").requires(source -> source.hasPermission(2)).executes(context -> PerformanceCommandService.mode(context.getSource(), PerformanceMode.LOW_IMPACT)))
+                                .then(Commands.literal("balanced").requires(source -> source.hasPermission(2)).executes(context -> PerformanceCommandService.mode(context.getSource(), PerformanceMode.BALANCED)))
+                                .then(Commands.literal("detailed").requires(source -> source.hasPermission(2)).executes(context -> PerformanceCommandService.mode(context.getSource(), PerformanceMode.DETAILED)))))
                 .then(Commands.literal("check")
                         .requires(source -> source.hasPermission(2))
-                        .executes(context -> DiagnosticRunService.run(context.getSource(), "check", false, false)))
-                .then(Commands.literal("verify")
-                        .requires(source -> source.hasPermission(2))
-                        .executes(context -> DiagnosticRunService.run(context.getSource(), "verify", false, false)))
-                .then(Commands.literal("releasecheck")
-                        .requires(source -> source.hasPermission(2))
-                        .executes(context -> DiagnosticRunService.run(context.getSource(), "releasecheck", false, false)))
-                .then(Commands.literal("gates")
-                        .executes(context -> DiagnosticRunService.gates(context.getSource(), false))
-                        .then(Commands.literal("evaluate").executes(context -> DiagnosticRunService.gates(context.getSource(), true)))
-                        .then(Commands.literal("explain").then(Commands.argument("gate", StringArgumentType.word())
-                                .executes(context -> DiagnosticRunService.explainGate(context.getSource(), StringArgumentType.getString(context, "gate"))))))
-                .then(Commands.literal("experiment")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.literal("create")
-                                .then(Commands.argument("name", StringArgumentType.word())
-                                        .then(Commands.argument("workflow", StringArgumentType.word())
-                                                .executes(context -> ExperimentService.create(context.getSource(),
-                                                        StringArgumentType.getString(context, "name"),
-                                                        StringArgumentType.getString(context, "workflow"))))))
-                        .then(Commands.literal("baseline").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(context -> ExperimentService.baseline(context.getSource(), StringArgumentType.getString(context, "name")))))
-                        .then(Commands.literal("status").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(context -> ExperimentService.status(context.getSource(), StringArgumentType.getString(context, "name")))))
-                        .then(Commands.literal("compare").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(context -> ExperimentService.compare(context.getSource(), StringArgumentType.getString(context, "name")))))
-                        .then(Commands.literal("cancel").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(context -> ExperimentService.cancel(context.getSource(), StringArgumentType.getString(context, "name"))))))
-                .then(Commands.literal("experiments")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.literal("list").executes(context -> ExperimentService.list(context.getSource()))))
-                .then(Commands.literal("incidents")
-                        .executes(context -> IncidentService.list(context.getSource()))
-                        .then(Commands.literal("start").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.start(context.getSource())))
-                        .then(Commands.literal("stop").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.stop(context.getSource())))
-                        .then(Commands.literal("latest").executes(context -> IncidentService.latest(context.getSource())))
-                        .then(Commands.literal("mark").requires(source -> source.hasPermission(2)).executes(context -> IncidentService.mark(context.getSource())))
-                        .then(Commands.literal("inspect").then(Commands.argument("id", StringArgumentType.word())
-                                .executes(context -> IncidentService.inspect(context.getSource(), StringArgumentType.getString(context, "id")))))
-                        .then(Commands.literal("export").requires(source -> source.hasPermission(2)).then(Commands.argument("id", StringArgumentType.word())
-                                .executes(context -> IncidentService.export(context.getSource(), StringArgumentType.getString(context, "id"))))))
-                .then(Commands.literal("instance")
-                        .then(Commands.literal("lock")
-                                .then(Commands.literal("write").requires(source -> source.hasPermission(2)).executes(context -> InstanceLockService.write(context.getSource())))
-                                .then(Commands.literal("check").executes(context -> InstanceLockService.check(context.getSource())))
-                                .then(Commands.literal("diff").executes(context -> InstanceLockService.diff(context.getSource())))))
-                .then(Commands.literal("startup")
-                        .then(Commands.literal("latest").executes(context -> StartupTimingService.show(context.getSource())))
-                        .then(Commands.literal("export").requires(source -> source.hasPermission(2)).executes(context -> StartupTimingService.export(context.getSource()))))
-                .then(Commands.literal("reload")
-                        .then(Commands.literal("observe").requires(source -> source.hasPermission(2)).executes(context -> ResourceReloadTimingService.observe(context.getSource())))
-                        .then(Commands.literal("latest").executes(context -> ResourceReloadTimingService.show(context.getSource()))))
-                .then(Commands.literal("doctor").executes(context -> DoctorService.run(context.getSource())))
-                .then(Commands.literal("network")
-                        .then(Commands.literal("status").executes(context -> NetworkDiagnosticService.status(context.getSource())))
-                        .then(Commands.literal("sample").requires(source -> source.hasPermission(2)).then(Commands.argument("seconds",IntegerArgumentType.integer(1,300))
-                                .executes(context -> NetworkDiagnosticService.sample(context.getSource(),IntegerArgumentType.getInteger(context,"seconds")))))
-                        .then(Commands.literal("latest").executes(context -> NetworkDiagnosticService.latest(context.getSource()))))
-                .then(Commands.literal("storage")
-                        .executes(context -> StorageService.status(context.getSource()))
-                        .then(Commands.literal("reports").requires(source -> source.hasPermission(2)).executes(context -> StorageService.reports(context.getSource())))
-                        .then(Commands.literal("cleanup").requires(source -> source.hasPermission(2))
-                                .then(Commands.literal("dry-run").executes(context -> StorageService.cleanup(context.getSource(),false)))
-                                .then(Commands.literal("confirm").executes(context -> StorageService.cleanup(context.getSource(),true)))))
+                        .executes(context -> runBasicCheck(context.getSource())))
                 .then(Commands.literal("config")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> showConfigHelp(context.getSource()))
@@ -492,6 +418,17 @@ public final class GradleMcCommands {
         return Command.SINGLE_SUCCESS;
     }
 
+    /** Runs the completed, synchronous v1.0.4 checks only; it does not create a workflow or worker. */
+    private static int runBasicCheck(CommandSourceStack source) {
+        CheckContext context = new CheckContext(source.getServer(), GradleMcPaths.reportDirectory(), Instant.now());
+        List<CheckResult> results = BasicCheckRegistry.runDefaultChecks(context);
+        long failures = results.stream().filter(result -> result.severity() == Severity.FAIL || result.severity() == Severity.CRITICAL).count();
+        long warnings = results.stream().filter(result -> result.severity() == Severity.WARN).count();
+        send(source, "GradleMC check: " + results.size() + " completed, " + warnings + " warning(s), " + failures + " failure(s).");
+        return results.stream().anyMatch(result -> result.severity() == Severity.FAIL || result.severity() == Severity.CRITICAL)
+                ? 0 : Command.SINGLE_SUCCESS;
+    }
+
     private static int showVersion(CommandSourceStack source) {
         send(source, GradleMC.PRODUCT_NAME + " v" + gradleMcVersion() + " - " + GradleMC.CURRENT_DISPLAY_VARIANT);
         send(source, "Product: " + GradleMC.PRODUCT_NAME);
@@ -562,14 +499,7 @@ public final class GradleMcCommands {
                 .map(GradleMcCommands::modLabel)
                 .collect(Collectors.joining(", "));
         send(source, "Loaded mods: " + mods.size() + (preview.isBlank() ? "" : " (" + preview + ")"));
-        if (mods.size() > 12) {
-            try {
-                Path path = writeModListReport(mods);
-                sendPath(source, "Full mod list written to: ", path);
-            } catch (IOException exception) {
-                source.sendFailure(Component.literal("Could not write full mod list: " + safeMessage(exception)));
-            }
-        }
+        if (mods.size() > 12) send(source, "More mods omitted. Operators may use /gradlemc mods export when local reports are enabled.");
         return Command.SINGLE_SUCCESS;
     }
 
@@ -597,11 +527,12 @@ public final class GradleMcCommands {
     }
 
     private static int showMemory(CommandSourceStack source) {
-        MemorySnapshot snapshot = memorySnapshot();
-        send(source, snapshot.status() + " memory: used " + snapshot.usedMiB()
-                + " MiB, free " + snapshot.freeMiB()
-                + " MiB, total " + snapshot.totalMiB()
-                + " MiB, max " + snapshot.maxMiB() + " MiB");
+        com.soumyajit.gradlemc.metrics.MemorySnapshot snapshot = com.soumyajit.gradlemc.metrics.MeasurementHub.instance().memorySnapshot(true);
+        String maximum = snapshot.maxMiB() < 0L ? "unavailable" : snapshot.maxMiB() + " MiB";
+        send(source, snapshot.pressure() + " memory: used " + snapshot.usedMiB()
+                + " MiB, headroom " + (snapshot.freeMiB() < 0L ? "unavailable" : snapshot.freeMiB() + " MiB")
+                + ", committed " + snapshot.committedMiB() + " MiB, max " + maximum
+                + " (" + snapshot.freshness().name().toLowerCase(Locale.ROOT) + ", heap-only)");
         return Command.SINGLE_SUCCESS;
     }
 
@@ -850,6 +781,7 @@ public final class GradleMcCommands {
                 latestWorldgenReportResult()
         ));
         StabilityScore score = StabilityAdvisor.evaluate(source.getServer(), report.results());
+        SharedReleaseEvidence.publishStability(score);
         send(source, score.summaryLine());
         if (!score.findings().isEmpty()) {
             send(source, "Top risks: " + score.findings().stream()
@@ -956,7 +888,9 @@ public final class GradleMcCommands {
                 latestPerfReportResult(),
                 latestWorldgenReportResult()
         ));
-        return StabilityAdvisor.evaluate(source.getServer(), report.results());
+        StabilityScore score = StabilityAdvisor.evaluate(source.getServer(), report.results());
+        SharedReleaseEvidence.publishStability(score);
+        return score;
     }
 
     private static int exportReport(CommandSourceStack source) {
@@ -1157,17 +1091,6 @@ public final class GradleMcCommands {
         }
     }
 
-    private static MemorySnapshot memorySnapshot() {
-        Runtime runtime = Runtime.getRuntime();
-        long max = runtime.maxMemory() / MIB;
-        long total = runtime.totalMemory() / MIB;
-        long free = runtime.freeMemory() / MIB;
-        long used = total - free;
-        double pressure = max <= 0 ? 0.0D : (double) used / max;
-        Severity status = pressure >= 0.95D ? Severity.CRITICAL : pressure >= 0.80D ? Severity.WARN : Severity.PASS;
-        return new MemorySnapshot(used, free, total, max, status);
-    }
-
     private static List<IModInfo> sortedMods() {
         return ModList.get().getMods().stream()
                 .sorted(Comparator.comparing(IModInfo::getModId))
@@ -1209,11 +1132,11 @@ public final class GradleMcCommands {
     }
 
     private static Stream<Path> safeList(Path directory) {
-        try {
-            return Files.list(directory);
-        } catch (IOException exception) {
-            return Stream.empty();
-        }
+        // Apply the traversal bound before the caller's cross-directory sort; this keeps a
+        // player-readable report list from materialising an attacker-sized directory.
+        try (Stream<Path> paths = Files.list(directory)) {
+            return paths.limit(257).toList().stream();
+        } catch (IOException exception) { return Stream.empty(); }
     }
 
     private static boolean legacyReportsAvailable() {
@@ -1344,6 +1267,4 @@ public final class GradleMcCommands {
         source.sendSuccess(() -> GradleMcPaths.pathComponent(prefix, path), false);
     }
 
-    private record MemorySnapshot(long usedMiB, long freeMiB, long totalMiB, long maxMiB, Severity status) {
-    }
 }

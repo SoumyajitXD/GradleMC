@@ -42,5 +42,5 @@ public final class ModAuditReportWriter {
         for (ModDescriptor mod : mods) { Map<String, Object> value = new java.util.TreeMap<>(); value.put("modId", mod.modId()); value.put("namespace", mod.namespace()); value.put("displayName", mod.displayName()); value.put("version", mod.version()); value.put("dependencies", mod.dependencies()); value.put("metadataObservations", mod.metadataObservations()); value.put("bundledEntries", mod.entriesInOwningFile()); if (GradleMCConfig.MOD_AUDIT_INCLUDE_JAR_FILENAMES.get()) value.put("jarFileName", mod.jarFileName()); result.add(value); }
         return result;
     }
-    private static final class GradleMCVersion { static String version() { return net.minecraftforge.fml.ModList.get().getModContainerById(GradleMC.MOD_ID).map(c -> c.getModInfo().getVersion().toString()).orElse("1.0.3"); } }
+    private static final class GradleMCVersion { static String version() { return net.minecraftforge.fml.ModList.get().getModContainerById(GradleMC.MOD_ID).map(c -> c.getModInfo().getVersion().toString()).orElse("1.0.4"); } }
 }

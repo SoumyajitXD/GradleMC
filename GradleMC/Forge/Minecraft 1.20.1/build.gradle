@@ -5,6 +5,8 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
+import java.util.concurrent.atomic.AtomicInteger
+
 version = mod_version
 group = mod_group_id
 
@@ -39,12 +41,23 @@ minecraft {
         }
 
         server {
+            if (gradle.startParameter.taskNames.any { it.endsWith('runFinalizationServer') }) {
+                workingDirectory project.file('run-finalization-server-clean')
+            }
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
 
+        client {
+            if (gradle.startParameter.taskNames.any { it.endsWith('runFinalizationClient') }) {
+                workingDirectory project.file('run-finalization-client')
+            }
+        }
+
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            // GradleMC test names remain owned by this mod; the stock empty template is supplied
+            // by Minecraft and therefore must also be enabled for the development runner.
+            property 'forge.enabledGameTestNamespaces', "${mod_id},minecraft"
         }
 
         data {
@@ -52,6 +65,35 @@ minecraft {
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
+}
+
+// Finalization aliases reuse ForgeGradle's normal client/server launch tasks while
+// selecting fresh project-local working directories. The server preparation carries
+// forward only the already accepted project-local EULA; no world is copied.
+def finalizationServerRequested = gradle.startParameter.taskNames.any { it.endsWith('runFinalizationServer') }
+tasks.register('prepareFinalizationServer') {
+    onlyIf { finalizationServerRequested }
+    doLast {
+        copy {
+            from layout.projectDirectory.file('run/eula.txt')
+            into layout.projectDirectory.dir('run-finalization-server-clean')
+        }
+    }
+}
+tasks.matching { it.name == 'runServer' }.configureEach {
+    if (finalizationServerRequested) {
+        dependsOn tasks.named('prepareFinalizationServer')
+    }
+}
+tasks.register('runFinalizationServer') {
+    group = 'verification'
+    description = 'Runs Forge dedicated-server finalization in an isolated project-local directory.'
+    dependsOn tasks.named('runServer')
+}
+tasks.register('runFinalizationClient') {
+    group = 'verification'
+    description = 'Runs Forge client finalization in an isolated project-local directory.'
+    dependsOn tasks.named('runClient')
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
@@ -69,6 +111,19 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    def executedTests = new AtomicInteger()
+    afterTest { descriptor, result -> executedTests.incrementAndGet() }
+    doLast {
+        if (executedTests.get() == 0) {
+            throw new GradleException('The standard test task discovered zero tests.')
+        }
+    }
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -98,6 +153,9 @@ tasks.named('processResources', ProcessResources).configure {
 
 tasks.named('jar', Jar).configure {
     archiveFileName = artifact_name
+    // GameTest sources remain on the development classpath but are never part of the release mod.
+    exclude 'com/soumyajit/gradlemc/gametest/**'
+    exclude 'gameteststructures/**'
 
     manifest {
         attributes([
@@ -141,4 +199,38 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+// ForgeGradle creates this JavaExec-derived task after the minecraft.runs block.
+// Development server input is otherwise deliberately empty in Gradle child JVMs.
+// Keep forwarding scoped to the interactive dedicated-server runner only: build,
+// self-tests, GameTests, client, and data runs must remain non-interactive.
+tasks.matching { it.name == 'runServer' }.configureEach {
+    standardInput = System.in
+}
+
+// ForgeGradle wires the client asset downloader into every generated development
+// run. Dedicated GameTests do not consume those assets, and allowing that helper
+// to run defeats Gradle's offline contract when a cache entry is absent.
+tasks.matching { it.name == 'downloadAssets' }.configureEach {
+    onlyIf {
+        !gradle.startParameter.isOffline() ||
+                !gradle.startParameter.taskNames.any {
+                    it.endsWith('runGameTestServer') || it.endsWith('runFinalizationServer') ||
+                            it.endsWith('runFinalizationClient')
+                }
+    }
+}
+
+// Vanilla's 1.20.1 GameTest fallback resolves editable SNBT templates from the
+// development game directory, rather than the runtime classpath.  Keep the source
+// template versioned and copy only that template for the dedicated GameTest run.
+tasks.matching { it.name.startsWith('prepareRunGameTestServer') }.configureEach {
+    doLast {
+        copy {
+            from layout.projectDirectory.dir('src/main/resources/gameteststructures')
+            include '**/*.snbt'
+            into layout.projectDirectory.dir('run/gameteststructures')
+        }
+    }
 }

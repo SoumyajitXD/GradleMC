@@ -18,7 +18,7 @@ public final class MinecraftInstanceService {
     public static synchronized MinecraftInstanceSnapshot collect() {
         Instant now = Instant.now();
         Map<String, String> env = Map.of("minecraft", GradleMC.CURRENT_MINECRAFT_VERSION, "loader", GradleMC.CURRENT_LOADER_NAME,
-                "loaderVersion", ForgeVersion.getVersion(), "gradlemc", "1.0.3");
+                "loaderVersion", ForgeVersion.getVersion(), "gradlemc", GradleMC.CURRENT_VERSION);
         Map<String, String> runtime = new TreeMap<>(); runtime.put("java", System.getProperty("java.version", "unknown")); runtime.put("vendor", System.getProperty("java.vendor", "unknown")); runtime.put("jvm", System.getProperty("java.vm.name", "unknown")); runtime.put("maxHeapMiB", Long.toString(Runtime.getRuntime().maxMemory() / (1024 * 1024))); runtime.put("processors", Integer.toString(Runtime.getRuntime().availableProcessors()));
         InstanceComponent<Map<String,String>> environment = new InstanceComponent<>(ComponentAvailability.AVAILABLE, "GradleMC constants", now, "common", ComponentScope.STATIC, true, "No private game path exported.", env);
         InstanceComponent<Map<String,String>> runtimeComponent = new InstanceComponent<>(ComponentAvailability.AVAILABLE, "JVM allowlist", now, "common", ComponentScope.RUNTIME, true, "JVM arguments and environment variables are intentionally omitted.", Map.copyOf(runtime));

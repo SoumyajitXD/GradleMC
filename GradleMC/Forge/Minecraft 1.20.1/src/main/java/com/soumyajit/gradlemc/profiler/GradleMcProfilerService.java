@@ -2,6 +2,8 @@ package com.soumyajit.gradlemc.profiler;
 
 import com.mojang.brigadier.Command;
 import com.soumyajit.gradlemc.GradleMC;
+import com.soumyajit.gradlemc.metrics.MeasurementHub;
+import com.soumyajit.gradlemc.foundation.GradleMcRuntimeExecutor;
 import com.soumyajit.gradlemc.profiler.report.ProfilingReportWriter;
 import com.soumyajit.gradlemc.util.GradleMcPaths;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,10 +20,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public final class GradleMcProfilerService {
     private static ProfilerSession currentSession;
-    private static ProfilingReportWriter.Result latestReport;
+    private static volatile ProfilingReportWriter.Result latestReport;
+    private static volatile boolean reportWriting;
+    private static volatile ThreadPoolExecutor reportWorker = GradleMcRuntimeExecutor.lane(GradleMcRuntimeExecutor.Lane.FILE_WORK);
 
     private GradleMcProfilerService() {
     }
@@ -68,7 +75,7 @@ public final class GradleMcProfilerService {
     public static int status(CommandSourceStack source) {
         ProfilerSession session = currentSession;
         if (session == null || session.state() != ProfilerSessionState.RUNNING) {
-            source.sendSuccess(() -> Component.literal("GradleMC profiler: idle."), false);
+            source.sendSuccess(() -> Component.literal(reportWriting ? "GradleMC profiler: writing local report." : "GradleMC profiler: idle."), false);
             latest(source);
             return Command.SINGLE_SUCCESS;
         }
@@ -148,11 +155,7 @@ public final class GradleMcProfilerService {
         if (session == null || session.state() != ProfilerSessionState.RUNNING) {
             return;
         }
-        if (event.phase == TickEvent.Phase.START) {
-            session.onTickStart();
-            return;
-        }
-        if (event.phase == TickEvent.Phase.END && session.onTickEnd(event.getServer())) {
+        if (event.phase == TickEvent.Phase.END && session.onTickEnd(event.getServer(), MeasurementHub.instance().serverPerformanceSnapshot())) {
             finish(event.getServer(), ProfilerSessionState.COMPLETED, null);
         }
     }
@@ -164,19 +167,38 @@ public final class GradleMcProfilerService {
         }
         currentSession = null;
         try {
-            latestReport = session.finish(state);
-            Component message = GradleMcPaths.pathComponent("GradleMC profile complete. Summary: ", latestReport.textPath());
-            if (source != null) {
-                source.sendSuccess(() -> message, false);
-            } else {
-                GradleMC.LOGGER.info(message.getString());
-            }
-        } catch (IOException | RuntimeException exception) {
+            // This method runs on the server tick for timeout completion.  It only stops new
+            // samples; sampler termination, summary aggregation, and serialization all occur on
+            // the bounded report worker below.
+            session.prepareFinish(state);
+            reportWriting = true;
+            reportWorker.execute(() -> {
+                try {
+                    var summary = session.finishSummary(state);
+                    latestReport = new ProfilingReportWriter().write(summary, session.config(), GradleMcPaths.profileDirectory());
+                    GradleMC.LOGGER.info("GradleMC profile complete: {}", GradleMcPaths.displayPath(latestReport.textPath()));
+                } catch (IOException | RuntimeException exception) {
+                    GradleMC.LOGGER.warn("GradleMC profiler report failed", exception);
+                } finally { reportWriting = false; }
+            });
+            if (source != null) source.sendSuccess(() -> Component.literal("GradleMC profiler captured; writing bounded local TXT/JSON report off-thread."), false);
+        } catch (RuntimeException exception) {
             GradleMC.LOGGER.warn("GradleMC profiler report failed", exception);
             if (source != null) {
                 source.sendFailure(Component.literal("GradleMC profiler failed to write report: " + safeMessage(exception)));
             }
         }
+    }
+
+    /** Forge shutdown hook; it leaves no report writer running after server stop. */
+    public static void shutdown() {
+        ProfilerSession session = currentSession;
+        currentSession = null;
+        if (session != null) session.cancel();
+    }
+
+    public static synchronized void onServerStarted() {
+        reportWorker = GradleMcRuntimeExecutor.lane(GradleMcRuntimeExecutor.Lane.FILE_WORK);
     }
 
     private static Path latestProfileText() {

@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot guiStatus) {
+public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot guiStatus, long epoch, long requestId, long generation) {
     private static final int MAX_RECENT_ADAPTATION_LENGTH = 128;
     private static final int MAX_TOP_FACTORS_LENGTH = 192;
     private static final int MAX_PATH_LENGTH = 192;
@@ -18,6 +18,9 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
     public static void encode(SyncSmartAIStatusPacket packet, FriendlyByteBuf buffer) {
         SmartAIStatus status = packet.status() == null ? SmartAIStatus.disabled() : packet.status();
         GuiStatusSnapshot guiStatus = packet.guiStatus() == null ? GuiStatusSnapshot.empty() : packet.guiStatus();
+        buffer.writeLong(packet.epoch());
+        buffer.writeLong(packet.requestId());
+        buffer.writeLong(packet.generation());
         buffer.writeBoolean(status.adaptiveSmartAIEnabled());
         buffer.writeBoolean(status.adaptiveAmbienceEnabled());
         buffer.writeBoolean(status.adaptiveEventsEnabled());
@@ -50,10 +53,16 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
         buffer.writeUtf(trim(guiStatus.latestIssueBundlePath(), MAX_PATH_LENGTH), MAX_PATH_LENGTH);
         buffer.writeUtf(trim(guiStatus.latestProfilePath(), MAX_PATH_LENGTH), MAX_PATH_LENGTH);
         buffer.writeUtf(trim(guiStatus.latestProfileSummary(), MAX_SUMMARY_LENGTH), MAX_SUMMARY_LENGTH);
+        buffer.writeBoolean(guiStatus.administrativeAllowed());
+        buffer.writeVarInt(guiStatus.supportedOperations().size());
+        for (com.soumyajit.gradlemc.capability.ServerOperation operation : guiStatus.supportedOperations()) buffer.writeEnum(operation);
     }
 
     public static SyncSmartAIStatusPacket decode(FriendlyByteBuf buffer) {
         try {
+        long epoch = buffer.readLong();
+        long requestId = buffer.readLong();
+        long generation = buffer.readLong();
         SmartAIStatus status = new SmartAIStatus(
                 buffer.readBoolean(),
                 buffer.readBoolean(),
@@ -89,11 +98,12 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
                 buffer.readUtf(MAX_PATH_LENGTH),
                 buffer.readUtf(MAX_PATH_LENGTH),
                 buffer.readUtf(MAX_SUMMARY_LENGTH)
+                ,buffer.readBoolean(), readOperations(buffer)
         );
-        return new SyncSmartAIStatusPacket(status, guiStatus);
+        return new SyncSmartAIStatusPacket(status, guiStatus, epoch, requestId, generation);
         } catch (RuntimeException malformed) {
             // A remote endpoint must not turn malformed status metadata into client state or GUI work.
-            return new SyncSmartAIStatusPacket(SmartAIStatus.disabled(), GuiStatusSnapshot.empty());
+            return new SyncSmartAIStatusPacket(SmartAIStatus.disabled(), GuiStatusSnapshot.empty(), 0L, 0L, 0L);
         }
     }
 
@@ -101,7 +111,7 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
         NetworkEvent.Context context = contextSupplier.get();
         if (context.getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
             NetworkDiagnostics.record("sync_status","server-to-client",-1);
-            context.enqueueWork(() -> GradleMCGuiBridge.updateStatus(packet.status(), packet.guiStatus()));
+            context.enqueueWork(() -> GradleMCGuiBridge.acceptResponse(packet.epoch(), packet.requestId(), packet.generation(), packet.status(), packet.guiStatus()));
         }
         context.setPacketHandled(true);
     }
@@ -115,6 +125,14 @@ public record SyncSmartAIStatusPacket(SmartAIStatus status, GuiStatusSnapshot gu
 
     private static DiagnosticTestProgress readProgress(FriendlyByteBuf buffer) {
         return new DiagnosticTestProgress(buffer.readBoolean(), buffer.readInt(), buffer.readInt());
+    }
+
+    private static java.util.Set<com.soumyajit.gradlemc.capability.ServerOperation> readOperations(FriendlyByteBuf buffer) {
+        int count = buffer.readVarInt();
+        if (count < 0 || count > com.soumyajit.gradlemc.capability.ServerOperation.values().length) throw new IllegalArgumentException("Invalid operation count");
+        java.util.EnumSet<com.soumyajit.gradlemc.capability.ServerOperation> operations = java.util.EnumSet.noneOf(com.soumyajit.gradlemc.capability.ServerOperation.class);
+        for (int index = 0; index < count; index++) operations.add(buffer.readEnum(com.soumyajit.gradlemc.capability.ServerOperation.class));
+        return operations;
     }
 
     private static String trim(String value) {

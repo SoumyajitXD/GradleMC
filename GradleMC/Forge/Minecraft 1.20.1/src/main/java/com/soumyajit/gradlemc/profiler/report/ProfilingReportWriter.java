@@ -4,11 +4,13 @@ import com.soumyajit.gradlemc.profiler.ProfilerSessionConfig;
 import com.soumyajit.gradlemc.profiler.sampling.StackTraceAggregator;
 import com.soumyajit.gradlemc.profiler.tick.TickRecord;
 import com.soumyajit.gradlemc.report.ReportFileNames;
+import com.soumyajit.gradlemc.report.ReportRedactor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +22,8 @@ public final class ProfilingReportWriter {
         Instant now = Instant.now();
         Path text = ReportFileNames.unique(directory, "gradlemc-profile-", now, ".txt");
         Path json = text.resolveSibling(text.getFileName().toString().replace(".txt", ".json"));
-        Files.write(text, textLines(summary, config, directory), StandardCharsets.UTF_8);
-        Files.writeString(json, json(summary, config), StandardCharsets.UTF_8);
+        writeAtomically(text, ReportRedactor.redact(String.join("\n", textLines(summary, config, directory)) + "\n"));
+        writeAtomically(json, ReportRedactor.redact(json(summary, config)));
         return new Result(text, json);
     }
 
@@ -80,7 +82,7 @@ public final class ProfilingReportWriter {
         lines.add("- This is Java-level sampling, not async-profiler native CPU profiling.");
         lines.add("- Memory-lite reports pressure and GC correlation; it is not true allocation profiling.");
         lines.add("- Low-confidence attribution means possible contributor, not culprit.");
-        lines.add("Reports directory: " + directory.normalize());
+        lines.add("Reports directory: managed local GradleMC output.");
         return lines;
     }
 
@@ -122,6 +124,16 @@ public final class ProfilingReportWriter {
 
     private static String escape(String value) {
         return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static void writeAtomically(Path target, String content) throws IOException {
+        Path parent = target.getParent();
+        Path temp = Files.createTempFile(parent, ".gradlemc-profile-", ".tmp");
+        try {
+            Files.writeString(temp, content, StandardCharsets.UTF_8);
+            try { Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING); }
+            catch (java.nio.file.AtomicMoveNotSupportedException unsupported) { Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING); }
+        } finally { Files.deleteIfExists(temp); }
     }
 
     private static String format(double value) {

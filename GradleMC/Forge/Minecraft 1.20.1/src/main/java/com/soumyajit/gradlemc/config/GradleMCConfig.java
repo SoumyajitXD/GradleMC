@@ -59,6 +59,7 @@ public final class GradleMCConfig {
     public static final ForgeConfigSpec.BooleanValue REDUCE_INTENSITY_AFTER_DEATH;
     public static final ForgeConfigSpec.DoubleValue ADAPTIVE_DIFFICULTY_MULTIPLIER;
     public static final ForgeConfigSpec.IntValue GUI_STATUS_REFRESH_TICKS;
+    public static final ForgeConfigSpec.ConfigValue<String> PERFORMANCE_MODE;
     public static final ForgeConfigSpec.BooleanValue OVERLAY_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<String> OVERLAY_MODE;
     public static final ForgeConfigSpec.ConfigValue<String> OVERLAY_POSITION;
@@ -232,6 +233,12 @@ public final class GradleMCConfig {
         GUI_STATUS_REFRESH_TICKS = builder
                 .comment("Minimum interval for the GradleMC GUI to request fresh adaptive diagnostics status while open, in ticks.")
                 .defineInRange("guiStatusRefreshTicks", 100, 20, 1200);
+        builder.pop();
+
+        builder.push("performance");
+        PERFORMANCE_MODE = builder
+                .comment("GradleMC diagnostic workload policy. LOW_IMPACT reduces optional work; BALANCED is the default; DETAILED is explicit and remains bounded.")
+                .defineInList("mode", "BALANCED", java.util.List.of("LOW_IMPACT", "BALANCED", "DETAILED"));
         builder.pop();
 
         builder.push("overlay");

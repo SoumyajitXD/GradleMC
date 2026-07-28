@@ -1,0 +1,3 @@
+package com.soumyajit.gradlemc.investigation.storage;
+import java.util.*;
+public record InvestigationIndex(int schemaVersion,List<InvestigationIndexEntry> entries){public static final int SCHEMA_VERSION=1,MAX_SESSIONS=512;public InvestigationIndex{if(schemaVersion!=SCHEMA_VERSION||entries==null||entries.size()>MAX_SESSIONS||entries.stream().anyMatch(Objects::isNull))throw new IllegalArgumentException("Invalid index");entries=entries.stream().sorted(Comparator.comparing(InvestigationIndexEntry::id)).toList();if(entries.stream().map(e->e.id().value()).distinct().count()!=entries.size())throw new IllegalArgumentException("Duplicate index ID");}}

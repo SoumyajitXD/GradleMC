@@ -76,7 +76,7 @@ public final class PerformanceTestManager {
         MinecraftServer server = event.getServer();
         try {
             Session session = currentSession;
-            session.sample(server);
+            session.sample(MeasurementHub.instance().serverPerformanceSnapshot());
             if (Duration.between(session.startedAt, Instant.now()).getSeconds() >= session.requestedSeconds) {
                 finish(server, PerformanceTestResult.EndReason.COMPLETED, null);
             }
@@ -138,7 +138,6 @@ public final class PerformanceTestManager {
         private final long memoryStartMiB;
         private final int playersStart;
         private final int worldsStart;
-        private long previousTickNanos;
         private int sampleCount;
         private double tickTotalMs;
         private double minTickMs = Double.MAX_VALUE;
@@ -156,28 +155,25 @@ public final class PerformanceTestManager {
             this.worldsStart = worldCount(server);
         }
 
-        private void sample(MinecraftServer server) {
-            long now = System.nanoTime();
-            double tickMs = Math.max(0.0D, server.getAverageTickTime());
+        private void sample(ServerPerformanceSnapshot snapshot) {
+            if (snapshot.availability() != ServerPerformanceSnapshot.Availability.AVAILABLE || !Double.isFinite(snapshot.currentMspt())) return;
+            double tickMs = snapshot.currentMspt();
             sampleCount++;
             tickTotalMs += tickMs;
             minTickMs = Math.min(minTickMs, tickMs);
             maxTickMs = Math.max(maxTickMs, tickMs);
 
-            if (previousTickNanos > 0L) {
-                double intervalMs = (now - previousTickNanos) / 1_000_000.0D;
-                intervalTotalMs += intervalMs;
-                minIntervalMs = Math.min(minIntervalMs, intervalMs);
-                maxIntervalMs = Math.max(maxIntervalMs, intervalMs);
-            }
-            previousTickNanos = now;
+            double intervalMs = tickMs;
+            intervalTotalMs += intervalMs;
+            minIntervalMs = Math.min(minIntervalMs, intervalMs);
+            maxIntervalMs = Math.max(maxIntervalMs, intervalMs);
         }
 
         private PerformanceTestResult toResult(MinecraftServer server, PerformanceTestResult.EndReason endReason, Instant endedAt) {
-            int intervalSamples = Math.max(0, sampleCount - 1);
+            int intervalSamples = sampleCount;
             double averageTickMs = sampleCount == 0 ? 0.0D : tickTotalMs / sampleCount;
-            double averageIntervalMs = intervalSamples == 0 ? 50.0D : intervalTotalMs / intervalSamples;
-            double approximateTps = averageIntervalMs <= 0.0D ? 20.0D : Math.min(20.0D, 1000.0D / averageIntervalMs);
+            double averageIntervalMs = intervalSamples == 0 ? 0.0D : intervalTotalMs / intervalSamples;
+            double approximateTps = averageIntervalMs <= 0.0D ? 0.0D : Math.min(20.0D, 1000.0D / averageIntervalMs);
             return new PerformanceTestResult(
                     requestedSeconds,
                     Math.max(0.0D, Duration.between(startedAt, endedAt).toMillis() / 1000.0D),

@@ -10,11 +10,15 @@ public final class ReportRedactor {
     private ReportRedactor() { }
     public static String redact(String value) {
         if (value == null) return "";
-        String safe = replace(value, GradleMcPaths.gameDirectory().toAbsolutePath().normalize().toString(), "[game-dir]");
+        String safe = value;
+        try {
+            safe = replace(safe, GradleMcPaths.gameDirectory().toAbsolutePath().normalize().toString(), "[game-dir]");
+        } catch (RuntimeException unavailable) {
+            // Dependency-free self-tests and early bootstrap do not yet have an FML game path.
+        }
         String home = System.getProperty("user.home", "");
         if (!home.isBlank()) safe = replace(safe, Path.of(home).toAbsolutePath().normalize().toString(), "[user-home]");
-        safe = safe.replaceAll("(?i)(token|password|api[_-]?key|secret)\\s*[=:]\\s*[^\\s,;]+", "$1=[redacted]");
-        return safe.replaceAll("(?i)\\b[A-Z]:[\\\\/][^\\s\\\"']+", "[absolute-path]");
+        return DiagnosticRedactor.redact(safe);
     }
     private static String replace(String value, String literal, String replacement) {
         if (literal.isBlank()) return value;

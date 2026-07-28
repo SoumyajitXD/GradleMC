@@ -10,11 +10,13 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class GradleMCNetwork {
-    private static final String PROTOCOL_VERSION = "4";
+    private static final String PROTOCOL_VERSION = "5";
     private static int packetId;
     private static boolean registered;
+    private static final AtomicLong SNAPSHOT_GENERATION = new AtomicLong();
 
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(Objects.requireNonNull(ResourceLocation.tryBuild(GradleMC.MOD_ID, "main")))
@@ -64,15 +66,23 @@ public final class GradleMCNetwork {
         if (!registered || player == null) {
             return;
         }
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncSmartAIStatusPacket(status, guiStatus));
+        // Unsolicited status is intentionally ignored by the ordered GUI bridge.
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncSmartAIStatusPacket(status, guiStatus, 0L, 0L, nextGeneration()));
         NetworkDiagnostics.record("sync_status","server-to-client",approximateStatusBytes(status,guiStatus));
     }
 
-    public static void requestSmartAIStatus() {
+    public static void syncSmartAIStatus(ServerPlayer player, SmartAIStatus status, GuiStatusSnapshot guiStatus, long epoch, long requestId) {
+        if (!registered || player == null || epoch <= 0L || requestId <= 0L) return;
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncSmartAIStatusPacket(status, guiStatus, epoch, requestId, nextGeneration()));
+        NetworkDiagnostics.record("sync_status","server-to-client",approximateStatusBytes(status,guiStatus));
+    }
+
+    public static void requestSmartAIStatus(long epoch, long requestId) {
         if (!registered) {
             return;
         }
-        CHANNEL.sendToServer(RequestSmartAIStatusPacket.INSTANCE);
+        if (epoch <= 0L || requestId <= 0L) return;
+        CHANNEL.sendToServer(new RequestSmartAIStatusPacket(epoch, requestId));
         NetworkDiagnostics.record("request_status","client-to-server",0);
     }
 
@@ -85,4 +95,5 @@ public final class GradleMCNetwork {
     private static int nextPacketId() {
         return packetId++;
     }
+    private static long nextGeneration() { return SNAPSHOT_GENERATION.updateAndGet(value -> value == Long.MAX_VALUE ? 1L : value + 1L); }
 }

@@ -14,6 +14,7 @@ public final class TaskEngineSelfTest {
         dynamicTasksNeverReuseAndChangesAreExplained();
         timeoutAndBudgetStatesAreExplicit();
         identifiersAndStandardWorkflowAreLowercase();
+        graphDepthAndIdentifierLengthAreBounded();
     }
     private static void optionalMissingDependencyDoesNotBreakPlanning() {
         TaskEngine engine = new TaskEngine();
@@ -51,6 +52,18 @@ public final class TaskEngineSelfTest {
         TaskEngine engine = new TaskEngine(); engine.register(task("gradlemc:a", List.of(TaskDependency.required("gradlemc:b")), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of()))); engine.register(task("gradlemc:b", List.of(TaskDependency.required("gradlemc:a")), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of())));
         expect(() -> engine.plan("gradlemc:a"), "cycle"); expect(() -> engine.register(task("gradlemc:a", List.of(), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of()))), "Duplicate");
         expect(() -> engine.register(task("gradlemc:Upper", List.of(), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of()))), "Invalid namespaced");
+    }
+    private static void graphDepthAndIdentifierLengthAreBounded() {
+        TaskEngine engine = new TaskEngine();
+        String previous = null;
+        for (int i = 0; i < 130; i++) {
+            String id = "gradlemc:d" + i;
+            engine.register(task(id, previous == null ? List.of() : List.of(TaskDependency.required(previous)), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of())));
+            previous = id;
+        }
+        String root = previous;
+        expect(() -> engine.plan(root), "maximum depth");
+        expect(() -> engine.register(task("gradlemc:" + "a".repeat(130), List.of(), CachePolicy.NEVER_CACHE, TaskOutcome.success(Map.of()))), "Invalid namespaced");
     }
     private static void identifiersAndStandardWorkflowAreLowercase() {
         TaskEngine engine = new TaskEngine(); BuiltinTasks.register(engine);
