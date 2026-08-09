@@ -5,87 +5,93 @@
 </p>
 
 <p align="center">
-  <strong>In-game diagnostics, stability checks, Smart Diagnostics, and exportable troubleshooting reports for Minecraft modpacks.</strong>
+  <strong>Local diagnostics, performance evidence, Smart Diagnostics, and exportable troubleshooting reports for modded Minecraft.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Minecraft versions" src="https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.11%20%7C%2026.1.2-brightgreen">
-  <img alt="Loaders" src="https://img.shields.io/badge/Loaders-Forge%20%7C%20Fabric%20%7C%20NeoForge%20%7C%20Quilt-blueviolet">
-  <img alt="Java versions" src="https://img.shields.io/badge/Java-17%20%7C%2021%20%7C%2025-blue">
+  <img alt="Active loaders" src="https://img.shields.io/badge/Active%20loaders-Forge%20%7C%20Fabric%20%7C%20NeoForge-blueviolet">
+  <img alt="Language" src="https://img.shields.io/badge/Forge%201.20.1%20v1.1.0-Kotlin-7f52ff">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
 </p>
 
-<p align="center">
-  <a href="#overview"><strong>Overview</strong></a>
-  · <a href="#supported-releases">Releases</a>
-  · <a href="#quick-start">Quick Start</a>
-  · <a href="#features">Features</a>
-  · <a href="#server-hosting">Server Hosting</a>
-  · <a href="#screenshots">Screenshots</a>
-  · <a href="#build-from-source">Build</a>
-</p>
+---
+
+## Latest Release
+
+### GradleMC `v1.1.0` — Forge `1.20.1`
+
+- Minecraft: `1.20.1`
+- Loader: Forge
+- Java runtime: `17`
+- GradleMC implementation: **Kotlin**
+- Required mod dependency: **Kotlin for Forge**
+- Artifact: `gradlemc-1.1.0-forge-1.20.1.jar`
+
+GradleMC `v1.1.0` is a Kotlin rebuild of the Forge `1.20.1` edition. The previous Java implementation has been removed from this release's GradleMC codebase. Minecraft/Forge still requires Java `17`; "Kotlin rewrite" does **not** mean Minecraft can run without a Java runtime.
+
+> **Required:** install Kotlin for Forge alongside GradleMC `v1.1.0` on Forge `1.20.1`.
+
+### Repository source synchronization note
+
+The Forge `1.20.1` source currently checked into `main` is still the legacy Java `v1.0.4` tree. It is **not** the Kotlin `v1.1.0` source and must not be presented as such. The Kotlin source needs to be synchronized separately before GitHub can be treated as the build-from-source source of truth for Forge `1.20.1` `v1.1.0`.
 
 ---
 
 ## Overview
 
-GradleMC is a diagnostics mod for modded Minecraft. It helps players, modpack makers, server owners, and testers inspect a modded instance before troubleshooting turns into blind guessing.
+GradleMC is a local, privacy-first diagnostics and troubleshooting mod for modded Minecraft. It helps players, modpack creators, server owners, testers, and developers inspect a modded instance before troubleshooting turns into blind guessing.
 
-It provides an in-game control center, readable `/gradlemc` commands, stability checks, memory diagnostics, mod and environment inspection, bounded performance sampling, Smart Diagnostics, adaptive local diagnostics, and exportable reports.
+It provides an in-game diagnostics interface, lowercase `/gradlemc` commands, memory and environment inspection, bounded performance sampling, local Smart Diagnostics, and exportable reports.
 
-**Current public support:**
-
-- Minecraft `1.21.11` on Forge, Fabric, and NeoForge.
-- Minecraft `1.20.1` on Forge, Fabric, and Quilt.
-- Minecraft `26.1.2` on Forge, Fabric, and NeoForge.
-
-Other loader/version pairs are not supported until implementation, builds, runtime behavior, documentation, and artifact naming all agree.
+GradleMC is **not** an FPS booster, crash-fixing bot, cloud AI service, or replacement for specialist profilers.
 
 ---
 
-## Supported Releases
+## Release Matrix
 
-| Loader | GradleMC | Minecraft | Java | Artifact | Loader target / notes |
-| --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` | Forge `61.1.8` |
-| Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
-| NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
-| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
-| Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
-| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
-| Forge | `1.0.4` | `1.20.1` | `17` | `gradlemc-1.0.4-forge-1.20.1.jar` | Forge `47.4.20`; FPS, overlay, Quick Actions, and runtime-sampling improvements |
-| Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
-| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
+| Status | Loader | GradleMC | Minecraft | Java | Dependency / notes | Artifact |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Latest** | Forge | `1.1.0` | `1.20.1` | `17` | **Kotlin for Forge required**; Kotlin implementation | `gradlemc-1.1.0-forge-1.20.1.jar` |
+| Published | Fabric | `1.0.0` | `1.20.1` | `17` | Fabric release | `gradlemc-fabric-1.20.1-1.0.0.jar` |
+| Published | Forge | `1.0.0` | `1.21.11` | `21` | Forge `61.1.8` | `gradlemc-forge-1.21.11-1.0.0.jar` |
+| Published | Fabric | `1.0.0` | `1.21.11` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
+| Published | NeoForge | `1.0.0` | `1.21.11` | `21` | NeoForge `21.11.42` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
+| Published | Forge | `1.0.0` | `26.1.2` | `25` | Forge `26.1.2-64.0.11` | `gradlemc-forge-26.1.2-1.0.0.jar` |
+| Published | Fabric | `1.0.0` | `26.1.2` | `25` | Fabric release | `gradlemc-fabric-26.1.2-1.0.0.jar` |
+| Published | NeoForge | `1.0.0` | `26.1.2` | `25` | NeoForge `26.1.2.78` | `gradlemc-neoforge-26.1.2-1.0.0.jar` |
+| **Discontinued** | Quilt | `1.0.0` | `1.20.1` | `17` | Legacy release; **no new GradleMC Quilt versions or updates planned** | `gradlemc-quilt-1.20.1-1.0.0.jar` |
 
-| Field | Value |
-| --- | --- |
-| CurseForge project ID | `1585182` |
-| License | Apache-2.0 |
-| Telemetry | None |
-| Cloud AI or LLM usage | None |
+Use the exact jar matching your Minecraft version and loader. Renaming a jar changes its filename, not its loader compatibility.
 
-The `1.21.11` release line supports Forge, Fabric, and NeoForge with Java `21`. The `26.1.2` release line supports Forge, Fabric, and NeoForge with Java `25`. Use the jar that exactly matches the loader and Minecraft version; jar roulette is not troubleshooting.
+### Quilt support ended
+
+No new GradleMC versions will be released for Quilt. The Quilt line received too few downloads to justify the additional implementation, testing, and maintenance cost. Existing Quilt files may remain available as legacy downloads, but the line is discontinued and will not receive new GradleMC releases.
 
 ---
 
-## Quick Start
+## Quick Start — Forge 1.20.1 v1.1.0
 
-1. Pick a supported Minecraft and loader target from the table above.
-2. Use Java `17` for `1.20.1`, Java `21` for `1.21.11`, or Java `25` for the released `26.1.2` builds.
-3. Download the jar matching both your loader and Minecraft version.
-4. Put the jar in the instance or server `mods` folder.
-5. Install it on the client for the GUI, keybind, overlay, and client FPS sampling.
-6. Install it on the server for commands, TPS/MSPT sampling, reports, issue bundles, passive worldgen observation, and Smart Diagnostics summaries.
+1. Install Minecraft Java Edition `1.20.1` with Forge.
+2. Run Minecraft with Java `17`.
+3. Install **Kotlin for Forge**.
+4. Install `gradlemc-1.1.0-forge-1.20.1.jar`.
+5. Place both required mod jars in the `mods` folder.
+6. Launch Minecraft and run:
 
-Open the GUI:
+```text
+/gradlemc
+```
+
+Open the GUI where supported:
 
 ```text
 /gradlemc gui
 ```
 
-Useful commands:
+Useful commands include:
 
 ```text
 /gradlemc status
@@ -93,6 +99,7 @@ Useful commands:
 /gradlemc memory
 /gradlemc check
 /gradlemc export
+/gradlemc reports latest
 /gradlemc smart score
 /gradlemc smart advice
 ```
@@ -105,36 +112,30 @@ Minecraft commands are lowercase. Use `/gradlemc`, not `/GradleMC`.
 
 | Feature | What it does |
 | --- | --- |
-| Diagnostics GUI | In-game control center for checks, status, reports, and diagnostics. |
-| Command tree | Lowercase `/gradlemc` commands for status, memory, checks, exports, and Smart Diagnostics. |
-| Exportable reports | Local support evidence for cleaner troubleshooting. |
-| Environment inspection | Minecraft, loader, Java, GradleMC, loaded-mod, config, and path information. |
-| Memory diagnostics | JVM heap pressure and memory context. |
-| Performance sampling | Bounded TPS/MSPT, FPS, entity density, block entity density, and worldgen pressure signals. |
-| Local profiler foundation | Bounded tick, CPU-lite, memory-lite, and combined TXT/JSON summaries. |
-| Smart Diagnostics | Local rule-based scoring, advice, evidence, confidence, trends, and missing-data notes. |
-| Adaptive diagnostics | Lightweight local gameplay-state diagnostics without telemetry or cloud inference. |
-| Issue-bundle exports | Reviewable support bundles for bug reports and pack support. |
+| Diagnostics GUI | In-game control center for checks, status, reports, settings, and supported actions. |
+| Command tree | Lowercase `/gradlemc` commands for diagnostics, status, memory, reports, and Smart Diagnostics. |
+| Environment inspection | Minecraft, loader, JVM, GradleMC, loaded-mod, config, OS, and path context where supported. |
+| Memory diagnostics | JVM heap and memory-pressure information. |
+| Performance evidence | Bounded FPS, TPS/MSPT, entity, block-entity, worldgen, and other runtime signals where supported. |
+| Smart Diagnostics | Local rule-based scoring and prioritised advice; no cloud inference. |
+| Exportable reports | Local troubleshooting evidence for bug reports and controlled comparisons. |
 
-Generated output is written under `<gameDir>/gradlemc/`, including `reports/`, `exports/`, `issue-bundles/`, `profiles/`, and `rules/`.
+Generated output is stored beneath `<gameDir>/gradlemc/` where supported. Review reports before sharing because diagnostic files can contain local paths, mod names, loader/JVM details, and system context.
 
 ---
 
-## Server Hosting
+## Privacy
 
-GradleMC is useful on servers because server support needs evidence, not guesses.
+GradleMC is local by design:
 
-<p align="center">
-  <a href="https://url-shortener.curseforge.com/kZ5IK">
-    <img src="bisecthosting-banner.png" alt="Create a Minecraft server with BisectHosting" width="900">
-  </a>
-</p>
+- no behavioural telemetry;
+- no analytics tracking;
+- no cloud AI or LLM integration;
+- no hidden remote diagnostic inference;
+- no automatic report upload;
+- no broad scanning of unrelated private files.
 
-<p align="center">
-  <a href="https://url-shortener.curseforge.com/kZ5IK"><strong>Create a Minecraft server</strong></a>
-</p>
-
-Use GradleMC server-side for `/gradlemc` commands, TPS/MSPT sampling, memory and environment reports, loaded-mod inspection, passive worldgen observation, issue-bundle exports, and Smart Diagnostics summaries.
+Smart Diagnostics is local and rule-based. Generated evidence remains local until you choose to share it.
 
 ---
 
@@ -152,19 +153,11 @@ More screenshots live in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
 
 ---
 
-## What GradleMC Is Not
-
-- Not a Gradle replacement.
-- Not a crash-fixing bot.
-- Not Spark, VisualVM, or a deep-profiler replacement.
-- Not an LLM, generative AI system, cloud AI service, telemetry feature, or analytics feature.
-- Not a support claim for Bedrock or any loader/version pair absent from the supported-release table.
-
----
-
 ## Build From Source
 
-Use the matching standalone project folder:
+Use the source project matching the loader and Minecraft version. **Do not build the legacy Forge `1.20.1` Java tree and call the result `v1.1.0`.** That checked-in project currently identifies itself as `v1.0.4` and must remain treated as legacy until the Kotlin rewrite is pushed.
+
+Other checked-in source projects include:
 
 ```text
 GradleMC/Forge/Minecraft 1.21.11/
@@ -173,19 +166,11 @@ GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
 GradleMC/NeoForge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/
+GradleMC/Quilt/Minecraft 1.20.1/   # legacy/discontinued
 ```
 
-Example:
-
-```sh
-cd "GradleMC/NeoForge/Minecraft 26.1.2"
-./gradlew build
-```
-
-Windows users can run `gradlew.bat` from the same project folder. Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/export work.
+Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/export work.
 
 ---
 
@@ -193,25 +178,24 @@ Windows users can run `gradlew.bat` from the same project folder. Use [`docs/REL
 
 | Path | Purpose |
 | --- | --- |
-| [`GradleMC/`](GradleMC/) | Standalone source projects organized by loader and Minecraft version. |
-| [`Releases/`](Releases/) | Published release artifacts organized by loader and Minecraft version. |
+| [`GradleMC/`](GradleMC/) | Loader/version source projects. Some historical source trees may not match the latest published artifact until synchronized. |
+| [`Releases/`](Releases/) | Committed release artifacts where present. |
 | [`Screenshots/`](Screenshots/) | README and documentation screenshots. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history. |
-| [`ROADMAP.md`](ROADMAP.md) | Public planning and support gates. |
+| [`ROADMAP.md`](ROADMAP.md) | Public planning and loader support policy. |
 | [`SUPPORT.md`](SUPPORT.md) | Support guide. |
 | [`SECURITY.md`](SECURITY.md) | Security policy. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules. |
-| [`AGENTS.md`](AGENTS.md) | Technical operating manual. |
+| [`AGENTS.md`](AGENTS.md) | Maintainer and coding-agent operating rules. |
 | [`curseforge-description.html`](curseforge-description.html) | CurseForge description source. |
 
 ---
 
-## Contributing
+## Project Information
 
-Before opening a PR, read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md). Keep Minecraft command examples lowercase. Do not claim loader or version support until implementation, builds, runtime checks, documentation, and artifact naming prove it.
+- CurseForge Project ID: `1585182`
+- License: Apache-2.0
+- Telemetry: none
+- Cloud AI / LLM usage: none
 
----
-
-## License
-
-GradleMC is licensed under the [Apache License 2.0](LICENSE).
+GradleMC is an independent Minecraft project. It is not affiliated with, endorsed by, or part of Gradle, Inc. or the Gradle Build Tool, and it does not replace Gradle.
