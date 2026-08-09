@@ -1,14 +1,12 @@
 # GradleMC Screenshots
 
-This page is the full visual inventory for the screenshots currently committed to the repository.
+This page is the visual inventory for screenshots currently committed to the repository.
 
-The screenshot assets live in [`../Screenshots/`](../Screenshots/). The folder name is capitalized, and GitHub paths are case-sensitive.
+The assets live in [`../Screenshots/`](../Screenshots/). GitHub paths are case-sensitive.
 
 ---
 
 ## README Preview Set
-
-The README uses a compact preview so the landing page does not become an image dump.
 
 <p align="center">
   <img src="../Screenshots/0.png" alt="GradleMC screenshot 0" width="900">
@@ -43,15 +41,19 @@ The README uses a compact preview so the landing page does not become an image d
 
 ## What These Screenshots Prove
 
-These screenshots are evidence for the documented GradleMC UI and user-facing flow. A screenshot captured from one loader or Minecraft version must not be used as proof that another target was runtime-tested.
+Screenshots are evidence only for the build and environment they were actually captured from. A screenshot from one loader/version must not be used as proof that another target was runtime-tested.
 
-Current public release families are:
+Current release context includes:
 
+- Forge `1.20.1` GradleMC `v1.1.0`, implemented in Kotlin and requiring Kotlin for Forge;
+- Fabric `1.20.1` existing published release;
 - Forge, Fabric, and NeoForge for Minecraft `1.21.11`;
-- Forge, Fabric, and Quilt for Minecraft `1.20.1`;
-- Forge, Fabric, and NeoForge for Minecraft `26.1.2`.
+- Forge, Fabric, and NeoForge for Minecraft `26.1.2`;
+- Quilt `1.20.1` only as a **legacy/discontinued** GradleMC line with no new versions planned.
 
-The screenshots do **not** prove support for Bedrock, cloud AI, telemetry, or any loader/version pair absent from the supported-release matrix. Screenshots are evidence, not marketing fog.
+Unless a screenshot was explicitly captured from Forge `1.20.1` GradleMC `v1.1.0`, it must not be treated as visual proof of the Kotlin release. Existing screenshots may represent earlier GradleMC versions.
+
+The screenshots do **not** prove Bedrock support, cloud AI, telemetry, or any loader/version pair absent from the release matrix. Pixels are evidence, not a compatibility certificate.
 
 ---
 
@@ -59,15 +61,17 @@ The screenshots do **not** prove support for Bedrock, cloud AI, telemetry, or an
 
 - Keep screenshot links relative so they render on forks and branches.
 - Keep the README preview small; use this page for the full gallery.
-- If screenshots are renamed, update `README.md`, this file, and `docs/SCREENSHOT_PLAN.md` in the same commit.
-- If screenshots are recaptured, verify the release jar, Minecraft version, loader version, Java version, and command casing first.
-- Prefer descriptive filenames in future cleanup work, but only rename files when every reference is updated.
+- If screenshots are renamed, update `README.md`, this file, and `docs/SCREENSHOT_PLAN.md` together.
+- If screenshots are recaptured, record the GradleMC version, Minecraft version, loader, Java version, and required dependencies.
+- Forge `1.20.1` `v1.1.0` captures should be made with Kotlin for Forge installed.
+- Do not use legacy Quilt screenshots to imply active Quilt support.
+- Do not expose sensitive paths, usernames, private server details, or secrets.
 
 ---
 
 ## Future Naming Cleanup
 
-The current screenshot set uses numbered files: `0.png` through `13.png`. That is acceptable because the links are documented and stable.
+The current screenshot set uses numbered files: `0.png` through `13.png`. That is acceptable because the links are stable.
 
 A future focused cleanup may rename them to descriptive lowercase kebab-case names such as:
 
