@@ -1,6 +1,6 @@
 # Security Policy
 
-GradleMC is a local Minecraft diagnostics mod. Most reports are normal bugs, crashes, bad configs, mod conflicts, or documentation issues. Security reports are for risks affecting users, maintainers, project distribution, or release integrity.
+GradleMC is a local Minecraft diagnostics mod. Most reports are ordinary bugs, crashes, bad configurations, mod conflicts, or documentation problems. Security reports are for risks affecting users, maintainers, project distribution, dependencies, privacy, or release integrity.
 
 ---
 
@@ -8,34 +8,35 @@ GradleMC is a local Minecraft diagnostics mod. Most reports are normal bugs, cra
 
 | Version / target | Security support |
 | --- | --- |
-| GradleMC `1.0.0` for Minecraft `1.21.11` Forge | Current public support target |
-| GradleMC `1.0.0` for Minecraft `1.21.11` Fabric | Current public support target |
-| GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | Current public support target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` Forge | Current public support target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Current public support target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` NeoForge | Current public support target |
-| GradleMC `1.0.2` for Minecraft `1.20.1` Forge | Current public support target |
-| GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Current public support target |
-| GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | Current public support target |
-| Future releases for listed targets | Supported after release and documentation update |
+| GradleMC `1.1.0` for Minecraft `1.20.1` Forge | **Current release**; Kotlin for Forge required |
+| GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Published target |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Forge | Published target |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Fabric | Published target |
+| GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | Published target |
+| GradleMC `1.0.0` for Minecraft `26.1.2` Forge | Published target |
+| GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Published target |
+| GradleMC `1.0.0` for Minecraft `26.1.2` NeoForge | Published target |
+| GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | **Discontinued**; no new GradleMC Quilt updates planned |
 | Bedrock or unlisted loader/version combinations | Not supported |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
 
-Current expected release artifacts:
+Current Forge `1.20.1` artifact:
 
 ```text
-gradlemc-forge-1.21.11-1.0.0.jar
-gradlemc-fabric-1.21.11-1.0.0.jar
-gradlemc-neoforge-1.21.11-1.0.0.jar
-gradlemc-forge-26.1.2-1.0.0.jar
-gradlemc-fabric-26.1.2-1.0.0.jar
-gradlemc-neoforge-26.1.2-1.0.0.jar
-gradlemc-1.0.2-forge-1.20.1.jar
-gradlemc-fabric-1.20.1-1.0.0.jar
-gradlemc-quilt-1.20.1-1.0.0.jar
+gradlemc-1.1.0-forge-1.20.1.jar
 ```
 
-A filename alone is not proof that a jar is official. Verify its source and release location.
+This release is implemented in Kotlin and requires **Kotlin for Forge**. Minecraft `1.20.1` still requires Java `17` at runtime.
+
+The Quilt line is discontinued. Existing legacy Quilt artifacts may remain downloadable, but users should not expect new GradleMC Quilt maintenance or security releases.
+
+---
+
+## Dependency And Supply-Chain Notes
+
+For Forge `1.20.1` `v1.1.0`, Kotlin for Forge is part of the expected runtime dependency chain. Dependency confusion, malicious mirrors, tampered Kotlin-for-Forge downloads, or documentation that directs users to an unofficial dependency source can be security concerns.
+
+A filename alone is not proof that a jar is official. Verify release source, project identity, and expected loader/Minecraft target.
 
 ---
 
@@ -45,11 +46,13 @@ Open a GitHub issue if you find or suspect:
 
 - fake GradleMC downloads, mirrors, installers, or jar files;
 - tampered files pretending to be official GradleMC releases;
-- project links or documentation that could mislead users;
+- malicious or misleading dependency links;
+- project links or documentation that could direct users to unsafe downloads;
 - accidental exposure of sensitive project or user information;
+- unexpected network/telemetry behavior attributed to GradleMC;
 - supply-chain concerns involving dependencies, release references, build artifacts, attribution, or license scope.
 
-Bring evidence: links, filenames, hashes if available, screenshots if useful, where you found the problem, and what made it suspicious.
+Bring evidence: links, filenames, hashes if available, screenshots if useful, where you found the problem, and why it appears suspicious.
 
 ---
 
@@ -57,18 +60,18 @@ Bring evidence: links, filenames, hashes if available, screenshots if useful, wh
 
 These belong in normal support or bug channels:
 
-- crashes;
+- ordinary crashes;
+- missing Kotlin for Forge causing `v1.1.0` not to load;
 - command failures;
 - GUI problems;
-- bad config behavior;
+- bad configuration behavior;
 - mod conflicts;
 - low FPS, lag, or memory pressure;
-- server startup failures;
+- server startup failures unrelated to a security boundary;
 - missing reports;
-- unsupported loader or Minecraft-version requests;
-- issues caused by modified jars, unofficial packs, extra mods, or local experiments.
-
-If the issue only affects gameplay, diagnostics behavior, stability, or documentation, file it as a normal bug with logs and reproduction steps.
+- unsupported loader/Minecraft-version requests;
+- requests for new Quilt versions;
+- issues caused by modified jars or unofficial modpacks.
 
 ---
 
@@ -76,18 +79,26 @@ If the issue only affects gameplay, diagnostics behavior, stability, or document
 
 For reports that are safe to discuss publicly, use GitHub Issues:
 
-- https://github.com/SoumyajitXD/GradleMC/issues
+https://github.com/SoumyajitXD/GradleMC/issues
 
-Avoid posting sensitive details publicly. Redact anything private before sharing logs, reports, or screenshots.
+Do not post secrets or sensitive personal data publicly. Redact private information before sharing logs, reports, or screenshots.
 
 ---
 
 ## Logs, Reports, And Privacy
 
-Logs and exported reports can include local paths, mod names, Java details, loader details, runtime context, and server or modpack information. Review files before posting them publicly.
+GradleMC is designed without behavioural telemetry, analytics tracking, cloud AI, or automatic report uploads. However, locally generated logs and diagnostic reports can contain local paths, mod names, Java/JVM details, loader information, runtime context, and server/modpack information.
+
+Review exported evidence before sharing it.
+
+---
+
+## Repository Source Note
+
+The Forge `1.20.1` source currently checked into `main` is still the legacy Java `v1.0.4` tree. It is not the Kotlin `v1.1.0` source. Security reviews of the published `v1.1.0` artifact should not assume that the legacy checked-in Java tree is byte-for-byte representative of that release until the Kotlin source has been synchronized.
 
 ---
 
 ## License Scope
 
-GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, NeoForge, Quilt, third-party mods, third-party assets, mod names, logos, screenshots containing third-party content, libraries, tools, or external project content.
+GradleMC's original repository files are licensed under **Apache-2.0** through [`LICENSE`](LICENSE). That does not relicense Minecraft, Forge, Fabric, NeoForge, Quilt, Kotlin for Forge, third-party mods, libraries, third-party assets, screenshots containing third-party content, tools, or external project content.
