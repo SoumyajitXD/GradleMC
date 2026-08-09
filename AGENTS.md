@@ -2,43 +2,71 @@
 
 ## Purpose
 
-This is the technical operating manual for coding agents and maintainers working on GradleMC. `README.md` is user-facing; this file protects the repository from stale paths, inaccurate support claims, destructive edits, branch mess, and command-casing mistakes.
+This is the technical operating manual for coding agents and maintainers working on GradleMC. `README.md` is user-facing; this file protects the repository from stale paths, inaccurate support claims, destructive edits, branch mess, dependency omissions, and command-casing mistakes.
 
-If instructions conflict, follow the active user task unless it would cause data loss, fabricated features, broken release identity, telemetry, or destructive repository changes.
+If instructions conflict, follow the active user task unless doing so would fabricate release state, cause data loss, introduce telemetry/cloud behavior, break release identity, or misrepresent unsupported loaders.
 
 ---
 
 ## Project Summary
 
-- Project and product name: GradleMC.
-- Purpose: in-game diagnostics and stability checking for Minecraft modpacks.
+- Project/product: GradleMC.
 - Mod ID: `gradlemc`.
-- Main package: `com.soumyajit.gradlemc`.
+- Main package identity: `com.soumyajit.gradlemc`.
 - License: Apache-2.0.
 - CurseForge Project ID: `1585182`.
-- No telemetry, analytics, cloud AI, LLM integration, or phone-home behavior.
+- Privacy model: no telemetry, analytics, cloud AI, LLM integration, automatic report upload, or phone-home diagnostics.
 
-GradleMC includes lowercase `/gradlemc` commands, a diagnostics GUI, configurable keybind, optional disabled-by-default overlay, local reports, local risk rules, Smart Diagnostics, bounded performance/FPS/worldgen diagnostics, profiler foundations, issue bundles, and adaptive diagnostics.
+GradleMC provides lowercase `/gradlemc` commands, an in-game diagnostics GUI, configurable keybind, optional overlay, local reports, Smart Diagnostics, bounded performance diagnostics, and troubleshooting evidence.
 
-Smart Diagnostics and adaptive diagnostics are local rule-based/adaptive systems. They are not LLMs, generative AI, cloud AI, online inference, telemetry, or analytics.
+Smart Diagnostics is local and rule-based. Do not describe it as generative AI, cloud inference, telemetry, or analytics.
 
 ---
 
-## Current Public Releases
+## Current Release Identity
 
-| Loader | GradleMC | Minecraft | Java | Artifact | Loader target / notes |
-| --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` | Forge `61.1.8` |
-| Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
-| NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
-| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
-| Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
-| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
-| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Quick Actions overlay hotfix |
-| Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
-| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
+### Latest Forge `1.20.1`
 
-Treat NeoForge `1.21.11` and NeoForge `26.1.2` as real public targets. Do not convert those facts into a broad claim that every NeoForge source folder or Minecraft version is released.
+| Field | Value |
+| --- | --- |
+| GradleMC | `1.1.0` |
+| Minecraft | `1.20.1` |
+| Loader | Forge |
+| Java runtime | `17` |
+| GradleMC implementation language | **Kotlin** |
+| Required mod dependency | **Kotlin for Forge** |
+| Artifact | `gradlemc-1.1.0-forge-1.20.1.jar` |
+
+The previous Java GradleMC implementation was removed from the `v1.1.0` Forge `1.20.1` release codebase. This does **not** remove Minecraft/Forge's Java `17` runtime requirement.
+
+### Other published lines
+
+- Fabric `1.20.1` `v1.0.0`.
+- Forge/Fabric/NeoForge `1.21.11` `v1.0.0` on Java `21`.
+- Forge/Fabric/NeoForge `26.1.2` `v1.0.0` on Java `25`.
+- Quilt `1.20.1` `v1.0.0` is **legacy/discontinued**.
+
+### Quilt policy
+
+No new GradleMC versions, fixes, or feature ports are planned for Quilt because the release line did not receive enough downloads to justify continued loader-specific maintenance.
+
+Do not create, advertise, or roadmap new Quilt releases unless the project owner explicitly reverses this policy.
+
+---
+
+## Critical Repository Reality: Forge 1.20.1 Source Is Stale
+
+The Forge `1.20.1` source currently checked into `main` is the legacy **Java `v1.0.4`** project. It is not the Kotlin `v1.1.0` source.
+
+Until the Kotlin source is synchronized:
+
+- never bump the old Java project to `1.1.0` merely to make metadata match docs;
+- never claim `main` reproduces the published Kotlin `v1.1.0` artifact;
+- never treat old Java files as the implementation source for Kotlin-release debugging;
+- keep public documentation explicit about this source-sync gap;
+- when the Kotlin source is eventually pushed, verify the migration as a real source replacement rather than a version-label edit.
+
+Version drift is a rake on the floor. Source-language drift is the same rake with nails in it.
 
 ---
 
@@ -51,17 +79,15 @@ GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
 GradleMC/NeoForge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/
+GradleMC/Forge/Minecraft 1.20.1/   # legacy Java v1.0.4 until Kotlin source sync
 GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/
+GradleMC/Quilt/Minecraft 1.20.1/   # legacy/discontinued
 Releases/
 Screenshots/
 docs/
 ```
 
-Other source candidates may exist, including unreleased loader/version pairs. Source presence is not release status.
-
-Do not resurrect stale `SOURCE CODE/` paths. Use the standalone loader/version projects unless the user explicitly changes the layout.
+Source presence is not current support status.
 
 ---
 
@@ -69,85 +95,95 @@ Do not resurrect stale `SOURCE CODE/` paths. Use the standalone loader/version p
 
 - Command root: `gradlemc`.
 - GUI command: `/gradlemc gui`.
-- All Minecraft command literals and examples must be lowercase.
-- Preserve the `gradlemc` mod ID across source, metadata, resources, and docs.
-- Public support claims must exactly match the current release table.
-- Do not create fake jars, renamed-loader jars, placeholder releases, or unsupported claims.
-- Use Java `17` for `1.20.1`, Java `21` for `1.21.11`, and Java `25` for released `26.1.2` work.
+- All Minecraft command literals/examples are lowercase.
+- Preserve mod ID `gradlemc` across metadata/resources/code.
+- Public release claims must match actual artifacts.
+- Forge `1.20.1` `v1.1.0` must document Kotlin for Forge as required.
+- Use Java `17` for Minecraft `1.20.1`, Java `21` for `1.21.11`, and Java `25` for published `26.1.2` work.
+- Do not interpret "Java removed from GradleMC" as "Minecraft no longer needs Java".
+- Do not reintroduce Java into the Kotlin Forge `1.20.1` implementation without a concrete technical requirement.
 - Keep client-only code isolated from common/server-safe code.
-- Do not add LLMs, external ML systems, telemetry, analytics, or cloud APIs.
-- Do not add gameplay features during docs, cleanup, release, or verification tasks.
+- Do not add LLMs, telemetry, analytics, cloud APIs, or hidden remote diagnostics.
+- Do not create fake jars, renamed-loader jars, placeholder releases, or unsupported claims.
+- Do not start new Quilt work by default.
 - Do not use internet-heavy Gradle tasks unless explicitly allowed.
-- Do not create branch sprawl. One active branch is normally enough.
+- Do not create branch sprawl.
 - Small correct changes beat broad rewrites.
+
+---
+
+## Kotlin Forge 1.20.1 Rules
+
+When working on the synchronized Kotlin Forge `1.20.1` source:
+
+- use Kotlin as the application implementation language;
+- keep JVM bytecode/toolchain compatibility at Java `17` for Minecraft `1.20.1`;
+- keep Kotlin for Forge dependency metadata explicit and valid;
+- preserve safe Forge client/server boundaries;
+- prefer straightforward Kotlin over unnecessary abstraction layers;
+- ensure Kotlin/JVM dependency packaging does not accidentally duplicate or shadow Kotlin for Forge runtime components;
+- verify dedicated-server loading after common/networking changes;
+- verify client launch after GUI/keybind/overlay changes;
+- never claim the dependency works merely because compilation succeeds.
 
 ---
 
 ## Source Metadata Discipline
 
-Before building or publishing, read the selected target's metadata files, especially:
+Before building or publishing, inspect the exact target's:
 
 - `gradle.properties`;
-- `build.gradle`;
-- loader metadata such as `mods.toml`, `neoforge.mods.toml`, or `fabric.mod.json`;
-- jar manifest configuration.
+- build script(s);
+- loader metadata (`mods.toml`, `neoforge.mods.toml`, `fabric.mod.json`, etc.);
+- manifest configuration;
+- Kotlin/Kotlin-for-Forge dependency declarations where applicable.
 
 Check at least:
 
 - Minecraft version;
-- loader name and version;
+- loader and loader version;
 - GradleMC version;
-- Java toolchain/release;
-- variant identity;
+- Java/JVM target;
+- implementation language where release-facing;
+- required dependencies;
 - exact artifact name.
 
-If source metadata, public docs, release notes, and artifact names disagree, stop and fix release identity first. Version drift is a rake on the floor.
+If metadata, source language, docs, release notes, and artifact identity disagree, stop and resolve the mismatch first.
 
 ---
 
 ## Build And Verification
 
-Run commands from the relevant source project:
+Run commands from the exact relevant source project.
+
+Typical build:
 
 ```sh
 ./gradlew clean build
 ```
 
-On Windows, use `gradlew.bat`. Run `gradlemcSelfTest` where defined.
+On Windows, use `gradlew.bat`.
 
 Rules:
 
-- Run the build after Java/resource changes unless the task is docs-only or the user forbids it.
-- Run available self-tests after diagnostics, scoring, path, report, or utility changes.
-- Test the client after client-facing changes.
-- Test a dedicated server after common/server changes.
-- Never claim a build or runtime test passed unless it actually did.
-- Do not casually run `--refresh-dependencies`, wrapper upgrades, dependency upgrades, or generated-data tasks.
-- Do not delete Gradle caches as a lazy fix.
-- Do not suppress or hand-wave build errors.
-
----
-
-## Screenshot Rules
-
-- Keep README preview links short and high-signal.
-- Keep the full gallery in `docs/SCREENSHOTS.md`.
-- Keep capture rules in `docs/SCREENSHOT_PLAN.md`.
-- Use relative links.
-- Do not expose sensitive paths, usernames, private server details, or secrets.
-- Do not use one loader's screenshot as proof of another loader's runtime behavior.
-- If files are renamed, update every reference in the same change.
+- build after source/resource changes unless the task is docs-only or explicitly forbids it;
+- run available self-tests after diagnostics/scoring/path/report changes;
+- test the client after client-facing changes;
+- test a dedicated server after common/server changes;
+- verify required dependencies are actually present during runtime testing;
+- never claim a test/build passed unless it ran and passed;
+- do not casually run `--refresh-dependencies`, wrapper upgrades, dependency upgrades, or cache deletion.
 
 ---
 
 ## Command Rules
 
 - Brigadier literals must be lowercase.
-- Root literal must be `Commands.literal("gradlemc")`.
-- GUI literal must produce `/gradlemc gui`.
-- Keep command output short and actionable; put long details in reports.
+- Root literal must resolve to `gradlemc`.
+- GUI path must produce `/gradlemc gui`.
+- Keep command output short and actionable; put long detail in reports.
 - Validate numeric arguments with safe bounds.
-- Handle console execution, missing player context, unsupported side, permission failures, and internal failures clearly.
+- Handle console execution, missing player context, unsupported side, permissions, and failures clearly.
 - Heavy diagnostics must be opt-in and bounded.
 
 ---
@@ -155,41 +191,30 @@ Rules:
 ## GUI And Client Rules
 
 - GUI, overlay, keybind, and FPS sampling code are client-only.
-- Do not import `net.minecraft.client.*` from common/server classes.
+- Do not import client-only Minecraft classes into common/server-safe code.
 - Use loader-safe client boundaries.
-- Server-triggered GUI opening must use safe server-to-client flow.
-- GUI-triggered server actions must respect command permissions.
-- Escape must close custom screens.
-- Provide an explicit Close button.
-- Do not add fake buttons or toggles without real behavior, sync, persistence, validation, and permission handling.
-- Localize visible strings in `assets/gradlemc/lang/en_us.json`.
+- Server-triggered GUI opening must use a safe server-to-client path.
+- GUI-triggered server actions must respect permissions.
+- Escape should close custom screens.
+- Provide an explicit Close button where appropriate.
+- Do not add fake settings without real behavior, persistence, validation, and permission handling.
 
 ---
 
 ## Branch And Git Discipline
 
-Before local edits, inspect:
-
-```sh
-git status --short
-git branch -a
-git log --oneline --decorate --graph --all -n 20
-```
-
-Rules:
-
-- Prefer the current branch, usually `main`, unless the user requests another.
+- Prefer the current intended branch, normally `main`, unless a different workflow is requested.
 - Do not create multiple branches for a simple task.
-- Do not force-push.
-- Do not run destructive reset or cleanup commands without explicit authorization.
-- Never delete user files or old source folders until the replacement is verified complete.
-- Stage and commit only intended files.
+- Do not force-push without explicit authorization.
+- Do not use destructive reset/cleanup commands casually.
+- Stage/commit only intended files.
+- Do not delete legacy source merely to make documentation look cleaner; replace it only when the new source is actually available and verified.
 
 ---
 
 ## Release And Documentation Discipline
 
-Before release-facing changes, update and cross-check:
+Before release-facing changes, cross-check:
 
 - `README.md`;
 - `CHANGELOG.md`;
@@ -197,9 +222,20 @@ Before release-facing changes, update and cross-check:
 - `SUPPORT.md`;
 - `SECURITY.md`;
 - `CONTRIBUTING.md`;
+- `AGENTS.md`;
 - `docs/RELEASE_CHECKLIST.md`;
-- screenshot docs;
 - `curseforge-description.html`;
-- release notes and artifact paths.
+- relevant screenshots/release notes/artifact paths.
 
-Do not let one stale sentence contradict an entire release matrix. Documentation drift is still a bug, just one wearing punctuation.
+For Forge `1.20.1` `v1.1.0`, every public surface should agree on these facts:
+
+1. version `1.1.0`;
+2. Minecraft `1.20.1`;
+3. Forge;
+4. Java `17` runtime;
+5. Kotlin GradleMC implementation;
+6. Kotlin for Forge required;
+7. artifact `gradlemc-1.1.0-forge-1.20.1.jar`;
+8. no new Quilt releases.
+
+Do not let one stale sentence contradict the entire release story. Documentation drift is still a bug; it just wears punctuation.
