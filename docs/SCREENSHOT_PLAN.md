@@ -2,7 +2,7 @@
 
 GradleMC has a committed screenshot set in [`../Screenshots/`](../Screenshots/), with numbered PNG assets from `0.png` through `13.png`.
 
-The job is keeping those screenshots accurate, useful, and linked correctly.
+The job is keeping those screenshots accurate, useful, and honest about which release actually produced them.
 
 ---
 
@@ -34,23 +34,40 @@ A README is a landing page, not an image landfill.
 
 ## Capture Rules
 
-Use real screenshots from an actual supported build. Do not use mockups unless they are clearly labeled as mockups.
+Use real screenshots from an actual published/supported build. Do not use mockups unless they are clearly labeled as mockups.
 
 Before replacing the screenshot set, confirm:
 
 - [ ] the jar is the intended GradleMC release;
-- [ ] the target appears in the current supported-release matrix;
-- [ ] Minecraft `1.21.11` screenshots use Forge, Fabric, or NeoForge and Java `21`;
-- [ ] Minecraft `1.20.1` screenshots use Forge, Fabric, or Quilt and Java `17`;
-- [ ] Minecraft `26.1.2` screenshots use Forge, Fabric, or NeoForge and Java `25`;
-- [ ] the loader version matches the selected release;
+- [ ] the target appears in the current release matrix;
+- [ ] Forge Minecraft `1.20.1` current-release captures use GradleMC `v1.1.0` when claiming to show the latest Forge line;
+- [ ] Forge `1.20.1` `v1.1.0` captures have **Kotlin for Forge installed**;
+- [ ] Minecraft `1.20.1` uses Java `17`;
+- [ ] Minecraft `1.21.11` published targets use Java `21`;
+- [ ] Minecraft `26.1.2` published targets use Java `25`;
+- [ ] Quilt screenshots are labeled legacy/discontinued and are not presented as evidence of current Quilt support;
+- [ ] loader version matches the selected release;
 - [ ] command examples use lowercase `/gradlemc`;
 - [ ] screenshots do not imply Bedrock or unlisted loader/version support;
-- [ ] UI text matches checked-in language and resources;
 - [ ] images remain readable without being absurdly large;
-- [ ] README, `docs/SCREENSHOTS.md`, and this file are updated together.
+- [ ] README, `docs/SCREENSHOTS.md`, and this file stay synchronized.
 
-A screenshot from Forge does not prove Fabric or NeoForge runtime behavior. Pixels are not cross-loader certification.
+A screenshot from Forge does not prove Fabric or NeoForge runtime behavior. An old Java-release screenshot also does not magically prove the Kotlin `v1.1.0` runtime. Pixels are not cross-version certification.
+
+---
+
+## v1.1.0 Screenshot Identity
+
+When a screenshot is intended to represent GradleMC `v1.1.0` for Forge `1.20.1`, record or verify:
+
+- GradleMC `1.1.0`;
+- Minecraft `1.20.1`;
+- Forge;
+- Java `17`;
+- Kotlin for Forge installed;
+- the actual `gradlemc-1.1.0-forge-1.20.1.jar` release artifact.
+
+Do not infer those facts merely because the UI looks similar to an older release.
 
 ---
 
@@ -89,7 +106,8 @@ When screenshots change on GitHub:
 - update README if the visible preview changes;
 - update `docs/SCREENSHOTS.md` if assets are added, removed, renamed, or reordered;
 - update `curseforge-description.html` when public copy or referenced visuals change;
-- keep claims consistent with released jars;
-- do not mention screenshots of features absent from the release.
+- keep claims consistent with actual release jars;
+- do not mention screenshots of features absent from the release;
+- do not use Quilt visuals to imply active Quilt maintenance.
 
 Visuals are proof. Fake proof is worse than no proof.
