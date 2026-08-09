@@ -6,131 +6,171 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 
 ## Release Identity
 
-| Loader | GradleMC | Minecraft | Java | Expected public artifact | Loader target / notes |
-| --- | --- | --- | --- | --- | --- |
-| Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` | Forge `61.1.8` |
-| Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
-| NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` | NeoForge `21.11.42` |
-| Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` | Forge `26.1.2-64.0.11` |
-| Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` | Fabric `26.1.2` release |
-| NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` | NeoForge `26.1.2.78` |
-| Forge | `1.0.2` | `1.20.1` | `17` | `gradlemc-1.0.2-forge-1.20.1.jar` | Forge `47.4.20`; Quick Actions overlay hotfix |
-| Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` | Fabric `1.20.1` release |
-| Quilt | `1.0.0` | `1.20.1` | `17` | `gradlemc-quilt-1.20.1-1.0.0.jar` | Quilt `1.20.1` release |
+### Latest Forge `1.20.1`
 
 | Field | Expected |
 | --- | --- |
+| GradleMC | `1.1.0` |
+| Minecraft | `1.20.1` |
+| Loader | Forge |
+| Java runtime | `17` |
+| GradleMC implementation | **Kotlin** |
+| Required mod dependency | **Kotlin for Forge** |
+| Artifact | `gradlemc-1.1.0-forge-1.20.1.jar` |
 | Mod ID | `gradlemc` |
-| Product name | GradleMC |
 | CurseForge Project ID | `1585182` |
 
-If the version, loader, Minecraft target, Java target, metadata, release notes, and jar filename disagree, stop. That is not a release; it is a bug with a ZIP extension.
+The Kotlin rewrite removes Java from GradleMC's `v1.1.0` implementation, not from Minecraft's runtime requirements.
+
+### Other published/legacy lines
+
+| Status | Loader | GradleMC | Minecraft | Java | Artifact / notes |
+| --- | --- | --- | --- | --- | --- |
+| Published | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` |
+| Published | Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` |
+| Published | Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
+| Published | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
+| Published | Forge | `1.0.0` | `26.1.2` | `25` | `gradlemc-forge-26.1.2-1.0.0.jar` |
+| Published | Fabric | `1.0.0` | `26.1.2` | `25` | `gradlemc-fabric-26.1.2-1.0.0.jar` |
+| Published | NeoForge | `1.0.0` | `26.1.2` | `25` | `gradlemc-neoforge-26.1.2-1.0.0.jar` |
+| **Discontinued** | Quilt | `1.0.0` | `1.20.1` | `17` | Legacy artifact only; no new GradleMC Quilt updates |
+
+If version, loader, Minecraft target, Java target, dependency list, source language, release notes, and jar filename disagree, stop. That is not a release; it is a bug with a ZIP extension.
+
+---
+
+## Forge 1.20.1 Source-Sync Gate
+
+The Forge `1.20.1` source currently checked into `main` is the legacy Java `v1.0.4` project, not the Kotlin `v1.1.0` source.
+
+Before claiming GitHub reproduces Forge `1.20.1` `v1.1.0`, all of these must be true:
+
+- [ ] Kotlin `v1.1.0` source has been synchronized to the repository.
+- [ ] Legacy Java implementation is no longer masquerading as the active Forge `1.20.1` source.
+- [ ] GradleMC version metadata says `1.1.0`.
+- [ ] Artifact name is exactly `gradlemc-1.1.0-forge-1.20.1.jar`.
+- [ ] Kotlin/JVM compilation targets Java `17` bytecode as required.
+- [ ] Kotlin for Forge dependency metadata is present and correct.
+- [ ] Java source is not reintroduced merely to preserve the old architecture.
+- [ ] Build and runtime verification are performed on the synchronized Kotlin project.
+
+Do not "fix" this gate by editing only `gradle.properties`. A release is code plus behavior, not a version sticker.
 
 ---
 
 ## Pre-Release Checks
 
-Run from the matching standalone source project:
+For every target:
 
-```text
-GradleMC/Forge/Minecraft 1.21.11/
-GradleMC/Fabric/Minecraft 1.21.11/
-GradleMC/NeoForge/Minecraft 1.21.11/
-GradleMC/Forge/Minecraft 26.1.2/
-GradleMC/Fabric/Minecraft 26.1.2/
-GradleMC/NeoForge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/
-GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/
-```
+- [ ] Confirm Minecraft version.
+- [ ] Confirm loader and loader version.
+- [ ] Confirm GradleMC version.
+- [ ] Confirm Java/JVM target.
+- [ ] Confirm required mod dependencies.
+- [ ] Confirm exact artifact name.
+- [ ] Confirm source metadata and public docs agree.
+- [ ] Confirm command literals remain lowercase.
+- [ ] Confirm no telemetry/cloud behavior was introduced.
 
-Standard verification:
+For Forge `1.20.1` `v1.1.0` specifically:
+
+- [ ] Kotlin for Forge is present in the test instance/server as required.
+- [ ] Client launches with the actual release jar.
+- [ ] Dedicated server launches where the release supports server use.
+- [ ] Missing Kotlin for Forge produces an understandable dependency failure rather than being documented as a GradleMC bug.
+- [ ] `/gradlemc version` reports `1.1.0` and the expected Forge/Minecraft/JVM context.
+
+---
+
+## Build Verification
+
+Run from the exact source project that represents the intended release:
 
 ```sh
 ./gradlew clean build
 ```
 
-Run `gradlemcSelfTest` where the target defines it. On Windows, use `gradlew.bat`.
+On Windows:
 
-Java rules:
+```text
+gradlew.bat clean build
+```
 
-- Java `17` for Minecraft `1.20.1`.
-- Java `21` for Minecraft `1.21.11`.
-- Java `25` for the released Minecraft `26.1.2` builds.
+Run target-specific self-tests where defined.
 
-Do not claim a build passed unless it actually ran and passed.
+Rules:
+
+- do not claim a build passed unless it ran and passed;
+- do not build the legacy Java Forge `1.20.1` tree and label the result `v1.1.0`;
+- do not casually use `--refresh-dependencies` or delete caches;
+- keep dependency downloads controlled and intentional;
+- use Java `17` for Minecraft `1.20.1`, Java `21` for `1.21.11`, and Java `25` for published `26.1.2` releases.
 
 ---
 
 ## Manual Smoke Test
 
-Test the actual release jar:
+Test the actual release jar, not merely development classes:
 
 - [ ] Client launches.
 - [ ] Dedicated server launches where applicable.
 - [ ] `/gradlemc` help works.
-- [ ] `/gradlemc gui` opens for an in-game player.
-- [ ] GUI keybind opens the GUI.
+- [ ] `/gradlemc gui` opens where supported.
+- [ ] GUI keybind works where supported.
 - [ ] `/gradlemc status` works.
-- [ ] `/gradlemc version` reports the expected Minecraft, loader, GradleMC, and Java identity.
+- [ ] `/gradlemc version` reports expected identity.
 - [ ] `/gradlemc memory` works.
-- [ ] `/gradlemc check` is permission-gated correctly.
-- [ ] `/gradlemc export` writes a report.
-- [ ] `/gradlemc reports latest` locates the newest report.
-- [ ] `/gradlemc smart score` works.
-- [ ] `/gradlemc smart advice` works.
-- [ ] `/gradlemc perf start 30` and `/gradlemc perf stop` work.
-- [ ] Client-only FPS tools do not load on dedicated servers.
-- [ ] Overlay remains disabled by default.
+- [ ] `/gradlemc check` works with correct permissions.
+- [ ] `/gradlemc export` creates output.
+- [ ] `/gradlemc reports latest` finds the newest report.
+- [ ] Smart Diagnostics commands work where included.
+- [ ] Performance/FPS tools behave only on supported sides.
+- [ ] Client-only classes do not load on a dedicated server.
+- [ ] Overlay defaults and settings match release intent.
+- [ ] Reports remain local unless the user manually shares them.
 
-Target-specific identity checks:
+For Forge `1.20.1` `v1.1.0`:
 
-- [ ] Forge `1.21.11`: Forge `61.1.8`, GradleMC `1.0.0`, Java `21`.
-- [ ] Fabric `1.21.11`: Fabric Loader `0.19.3`, Fabric API `0.141.4+1.21.11`, GradleMC `1.0.0`, Java `21`.
-- [ ] NeoForge `1.21.11`: NeoForge `21.11.42`, GradleMC `1.0.0`, Java `21`.
-- [ ] Forge `26.1.2`: Forge `26.1.2-64.0.11`, GradleMC `1.0.0`, Java `25`.
-- [ ] Fabric `26.1.2`: GradleMC `1.0.0`, Java `25`.
-- [ ] NeoForge `26.1.2`: NeoForge `26.1.2.78`, GradleMC `1.0.0`, Java `25`.
-- [ ] Forge `1.20.1` `1.0.2`: the Quick Actions tab no longer overlays lower controls or text.
+- [ ] Kotlin for Forge is installed.
+- [ ] The runtime does not depend on the removed legacy Java GradleMC implementation.
+- [ ] The exported jar is exactly `gradlemc-1.1.0-forge-1.20.1.jar`.
 
 ---
 
 ## Export
 
-Build first, then copy the intended jar from the target's `build/libs/` folder.
+Build first, then copy only the intended release jar.
 
 Verify:
 
-- [ ] the artifact exists before export;
-- [ ] the filename exactly matches the supported-release table;
-- [ ] jar metadata reports the intended GradleMC version;
-- [ ] jar metadata reports the intended loader;
-- [ ] jar metadata reports the intended Minecraft target;
-- [ ] Java compatibility matches the release line;
-- [ ] no generated local reports, logs, run folders, or private files are committed;
+- [ ] artifact exists before export;
+- [ ] filename exactly matches release identity;
+- [ ] jar metadata reports intended GradleMC version;
+- [ ] jar metadata reports intended loader/Minecraft target;
+- [ ] JVM compatibility is correct;
+- [ ] required dependencies are documented;
+- [ ] no logs, run folders, generated reports, or private files are included;
 - [ ] no renamed jar is being passed off as another loader port;
-- [ ] the artifact is placed under the correct `Releases/<Loader>/Minecraft <version>/` path when committed to the repository.
+- [ ] release path/location is correct.
 
 ---
 
-## Screenshot And Visual Check
+## Quilt Gate
 
-The committed screenshot set lives in [`../Screenshots/`](../Screenshots/), and the full gallery is documented in [`SCREENSHOTS.md`](SCREENSHOTS.md).
+Quilt development is discontinued.
 
-Before publishing or replacing screenshots:
+Before any new Quilt work is accepted, the project owner must explicitly reverse that policy. Otherwise:
 
-- [ ] screenshots come from a supported release jar;
-- [ ] screenshots do not imply an untested loader/version pair;
-- [ ] README preview images render on GitHub;
-- [ ] `docs/SCREENSHOTS.md` includes every committed screenshot;
-- [ ] `docs/SCREENSHOT_PLAN.md` matches current paths and support claims;
-- [ ] CurseForge copy is synchronized when relevant.
+- [ ] do not create new Quilt release artifacts;
+- [ ] do not add Quilt to active-loader badges;
+- [ ] do not promise Quilt fixes/features;
+- [ ] keep existing Quilt source/artifacts marked legacy or discontinued.
 
 ---
 
 ## Public Text Check
 
-Check every public surface:
+Check at least:
 
 - [ ] `README.md`;
 - [ ] `CHANGELOG.md`;
@@ -139,32 +179,32 @@ Check every public surface:
 - [ ] `SECURITY.md`;
 - [ ] `CONTRIBUTING.md`;
 - [ ] `AGENTS.md`;
-- [ ] `docs/SCREENSHOTS.md`;
-- [ ] `docs/SCREENSHOT_PLAN.md`;
+- [ ] `docs/RELEASE_CHECKLIST.md`;
+- [ ] screenshot documentation where relevant;
 - [ ] `curseforge-description.html`;
-- [ ] release notes, issue templates, and PR template.
+- [ ] release notes and artifact listings.
 
-Confirm:
+For Forge `1.20.1` `v1.1.0`, every public surface must agree on:
 
-- [ ] all nine current public artifacts are listed accurately;
-- [ ] Java `17`, `21`, and `25` are attached to the correct release lines;
-- [ ] Forge, Fabric, and NeoForge are treated as released targets for both `1.21.11` and `26.1.2`;
-- [ ] commands are lowercase;
-- [ ] Smart Diagnostics and adaptive diagnostics are not described as LLMs, generative AI, telemetry, analytics, or cloud inference;
-- [ ] profiler language does not imply Spark parity;
-- [ ] Bedrock and unlisted loader/version pairs remain unsupported.
+- [ ] GradleMC `1.1.0`;
+- [ ] Minecraft `1.20.1`;
+- [ ] Forge;
+- [ ] Java `17` runtime;
+- [ ] Kotlin implementation;
+- [ ] Kotlin for Forge required;
+- [ ] `gradlemc-1.1.0-forge-1.20.1.jar`;
+- [ ] no new Quilt releases.
 
 ---
 
 ## After Release
 
-- [ ] Publish or attach the correct jar through the intended platform.
-- [ ] Update `CHANGELOG.md`.
-- [ ] Update README artifact/version tables.
-- [ ] Update support and security docs when supported targets change.
-- [ ] Update screenshot docs if visuals change.
-- [ ] Update CurseForge description when public releases change.
-- [ ] Watch GitHub issues and CurseForge comments for regressions.
+- [ ] Publish the exact intended jar.
+- [ ] Update changelog and README.
+- [ ] Update support/security docs when support status changes.
+- [ ] Update CurseForge description.
+- [ ] Synchronize source to GitHub when the public release source is meant to be available there.
+- [ ] Watch issues/comments for regressions and dependency confusion.
 
 ---
 
@@ -175,11 +215,12 @@ Do not release if any of these are true:
 - build or CI fails;
 - artifact name is wrong;
 - source metadata and public docs disagree;
+- required dependency is omitted;
 - command casing regressed;
 - dedicated server loads client-only code;
-- docs claim unsupported loaders or versions;
-- screenshots imply unsupported behavior;
-- stale paths remain;
+- docs claim unsupported loaders/versions;
+- Quilt is accidentally presented as actively maintained;
+- source-language claims do not match the actual release;
 - the release depends on “probably fine.”
 
 “Probably fine” is not quality control. It is a bug-report incubator.
