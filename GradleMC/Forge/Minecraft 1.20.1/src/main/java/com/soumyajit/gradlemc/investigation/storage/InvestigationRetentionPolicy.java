@@ -1,2 +1,0 @@
-package com.soumyajit.gradlemc.investigation.storage;
-import java.time.Duration;public record InvestigationRetentionPolicy(int maximumSessions,long maximumBytes,Duration maximumAge,int minimumRecent){public InvestigationRetentionPolicy{if(maximumSessions<1||maximumBytes<1||maximumAge==null||maximumAge.isNegative()||minimumRecent<0||minimumRecent>=maximumSessions)throw new IllegalArgumentException("Invalid retention policy");}}

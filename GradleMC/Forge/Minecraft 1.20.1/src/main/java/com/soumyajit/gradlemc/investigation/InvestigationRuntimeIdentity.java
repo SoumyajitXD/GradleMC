@@ -1,2 +1,0 @@
-package com.soumyajit.gradlemc.investigation;
-public record InvestigationRuntimeIdentity(String gradleMcVersion,String minecraftVersion,String forgeVersion,String side) { public InvestigationRuntimeIdentity { gradleMcVersion=InvestigationText.safe(gradleMcVersion);minecraftVersion=InvestigationText.safe(minecraftVersion);forgeVersion=InvestigationText.safe(forgeVersion);if(side==null||!(side.equals("CLIENT")||side.equals("SERVER")||side.equals("COMMON")))throw new IllegalArgumentException("Invalid side");} }

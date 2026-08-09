@@ -14,38 +14,28 @@ out
 .idea
 
 # gradle
-/build/
-/.gradle/
-/mcmodsrepo/
+build
+.gradle
+.kotlin
+dependencies/
+caches/
+daemon/
+wrapper/
+native/
+.tmp/
 
 # other
 eclipse
-run/
-run-data/
+run
+run-data
 logs
-crash-reports/
-config/gradlemc/reports/
-gradlemc/reports/
-gradlemc/exports/
-gradlemc/issue-bundles/
-gradlemc/profiles/
-src/generated/resources/
+crash-reports
+screenshots
 *.log
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-*.war
-*.ear
-extracted-jar/
-jar-inspect/
-tmp-jar/
-__pycache__/
-*.py[cod]
 *.tmp
 *.bak
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Files from Forge MDK
 forge*changelog.txt
-
-# OS/editor noise
-.DS_Store
-Thumbs.db
