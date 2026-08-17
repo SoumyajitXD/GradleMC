@@ -4,18 +4,27 @@ Need help with GradleMC? Use this guide so reports contain evidence instead of b
 
 ---
 
-## Latest Supported Forge 1.20.1 Release
+## Latest Minecraft 1.20.1 Releases
 
-GradleMC `v1.1.0` for Forge `1.20.1`:
+GradleMC `v1.1.0` is current for both Forge and Fabric on Minecraft `1.20.1`.
+
+### Forge
 
 - Artifact: `gradlemc-1.1.0-forge-1.20.1.jar`
 - Java runtime: `17`
 - GradleMC implementation: **Kotlin**
-- Required mod dependency: **Kotlin for Forge**
+- Required dependency: **Kotlin for Forge**
 
-The GradleMC Java implementation used by older Forge `1.20.1` releases was replaced for `v1.1.0`. Minecraft/Forge still requires Java `17`; do not remove the Java runtime because GradleMC itself is now written in Kotlin.
+### Fabric
 
-If `v1.1.0` fails before GradleMC initializes, verify that Kotlin for Forge is installed before treating it as a GradleMC bug.
+- Artifact: `gradlemc-1.1.0-fabric-1.20.1.jar`
+- Java runtime: `17`
+- GradleMC implementation: **Kotlin**
+- Required dependencies: **Fabric API** and **Fabric Language Kotlin**
+
+The active 1.20.1 GradleMC implementations are Kotlin-based. Minecraft still requires Java `17`; do not remove the Java runtime because GradleMC itself uses Kotlin.
+
+If `v1.1.0` fails before GradleMC initializes, verify the loader-specific dependencies before treating the failure as a GradleMC bug.
 
 ---
 
@@ -38,7 +47,7 @@ Use community/modpack support channels for general Minecraft, loader, Java, or m
 | Status | Loader | Minecraft | GradleMC | Java | Dependency / notes | Artifact |
 | --- | --- | --- | --- | --- | --- | --- |
 | **Latest** | Forge | `1.20.1` | `1.1.0` | `17` | **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
-| Published | Fabric | `1.20.1` | `1.0.0` | `17` | Fabric release | `gradlemc-fabric-1.20.1-1.0.0.jar` |
+| **Latest** | Fabric | `1.20.1` | `1.1.0` | `17` | **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 | Published | Forge | `1.21.11` | `1.0.0` | `21` | Forge `61.1.8` | `gradlemc-forge-1.21.11-1.0.0.jar` |
 | Published | Fabric | `1.21.11` | `1.0.0` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 | Published | NeoForge | `1.21.11` | `1.0.0` | `21` | NeoForge `21.11.42` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
@@ -64,13 +73,14 @@ Requests for new Quilt versions should therefore be treated as requests to rever
 Check these first:
 
 1. Your Minecraft, loader, GradleMC, and Java combination matches a published release above.
-2. For Forge `1.20.1` `v1.1.0`, **Kotlin for Forge is installed**.
-3. `/gradlemc version` reports the expected Minecraft version, loader, GradleMC version, and JVM context when the command is available.
-4. You restarted the client or server and reproduced the issue again.
-5. You tested with GradleMC plus its required loader/runtime dependencies when practical.
-6. You reviewed generated reports and logs before sharing them.
+2. Forge `1.20.1` `v1.1.0`: **Kotlin for Forge is installed**.
+3. Fabric `1.20.1` `v1.1.0`: **Fabric API and Fabric Language Kotlin are installed**.
+4. `/gradlemc version` reports the expected Minecraft version, loader, GradleMC version, and JVM context when available.
+5. You restarted the client or server and reproduced the issue again.
+6. You tested with GradleMC plus its required loader/runtime dependencies when practical.
+7. You reviewed generated reports and logs before sharing them.
 
-For Forge `1.20.1` `v1.1.0`, include whether the failure occurs before or after GradleMC loads. Missing Kotlin for Forge is a dependency/setup failure, not evidence of a GradleMC diagnostics bug.
+Missing Kotlin for Forge, Fabric Language Kotlin, or another declared loader dependency is a dependency/setup failure, not evidence of a GradleMC diagnostics bug.
 
 ---
 
@@ -101,7 +111,7 @@ For GUI issues:
 
 Minecraft commands are lowercase. Use `/gradlemc`, not `/GradleMC`.
 
-Command availability can vary by release and side. Use `/gradlemc` to inspect the command tree supplied by the exact installed build.
+Command availability can vary by release, loader, and side. Use `/gradlemc` to inspect the command tree supplied by the exact installed build.
 
 ---
 
@@ -114,7 +124,9 @@ A strong report includes:
 - Java version;
 - GradleMC version;
 - exact GradleMC jar filename;
-- required dependency versions, especially Kotlin for Forge for Forge `1.20.1` `v1.1.0`;
+- required dependency versions;
+- for Forge `1.20.1` `v1.1.0`, Kotlin for Forge version;
+- for Fabric `1.20.1` `v1.1.0`, Fabric API and Fabric Language Kotlin versions;
 - client, dedicated server, or integrated server;
 - whether GradleMC reaches initialization;
 - reproduction steps;
@@ -130,7 +142,7 @@ Do not paste enormous logs by default. Start with the relevant evidence.
 
 ## Source-Code Note For v1.1.0
 
-The Forge `1.20.1` project currently checked into `main` is the legacy Java `v1.0.4` source, not the Kotlin `v1.1.0` source. Do not use that old source tree to reproduce a `v1.1.0` build until the Kotlin rewrite has been synchronized to GitHub.
+The checked-in Forge and Fabric `1.20.1` projects are synchronized to GradleMC `v1.1.0`. Use the source tree matching the loader you are reproducing; a successful Forge build is not evidence that the Fabric build behaves identically, and vice versa.
 
 ---
 

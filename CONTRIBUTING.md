@@ -2,9 +2,11 @@
 
 Thanks for wanting to improve GradleMC. Focused, verifiable contributions are welcome.
 
-The latest Forge `1.20.1` release is GradleMC `v1.1.0`, implemented in **Kotlin** and requiring **Kotlin for Forge**. Minecraft `1.20.1` still uses Java `17` as its runtime.
+The current Minecraft `1.20.1` line is GradleMC `v1.1.0` for both Forge and Fabric. Both active 1.20.1 implementations use **Kotlin** and Java `17` as the Minecraft runtime.
 
-Quilt development is discontinued. Do not start new Quilt ports or promise new Quilt releases unless the project owner explicitly reverses that decision.
+- Forge `1.20.1` `v1.1.0` requires **Kotlin for Forge**.
+- Fabric `1.20.1` `v1.1.0` requires **Fabric API** and **Fabric Language Kotlin**.
+- Quilt development is discontinued.
 
 ---
 
@@ -21,18 +23,14 @@ Unsupported ports remain candidates until metadata, dependencies, builds, runtim
 
 ---
 
-## Important Forge 1.20.1 Source Warning
+## Current 1.20.1 Source
 
-The Forge `1.20.1` source currently checked into `main` is the legacy **Java `v1.0.4`** project. It is not the Kotlin `v1.1.0` source.
+The checked-in Forge and Fabric `1.20.1` source trees are synchronized to GradleMC `v1.1.0`.
 
-Until the Kotlin rewrite is synchronized:
+- Forge source lives under `GradleMC/Forge/Minecraft 1.20.1/` and uses Kotlin application source.
+- Fabric source lives under `GradleMC/Fabric/Minecraft 1.20.1/` and uses Kotlin entrypoints.
 
-- do not bump the legacy Java project to `1.1.0` and call it the Kotlin release;
-- do not add Kotlin-only release claims to old Java metadata;
-- do not use the legacy project as proof that the published `v1.1.0` artifact can be reproduced from `main`;
-- keep documentation explicit about the source-sync gap.
-
-A version-number edit is not a migration. That is cosplay with `gradle.properties`.
+Do not reintroduce the previous Java GradleMC implementation merely to recreate old architecture. A migration that preserves stale architecture for nostalgia is just archaeology with a build script.
 
 ---
 
@@ -43,7 +41,7 @@ A version-number edit is not a migration. That is cosplay with `gradle.propertie
 - Correct GUI command: `/gradlemc gui`.
 - Use Java `17` for Minecraft `1.20.1`, Java `21` for `1.21.11`, and Java `25` for the published `26.1.2` line.
 - Forge `1.20.1` `v1.1.0` requires **Kotlin for Forge**.
-- The Kotlin Forge `1.20.1` implementation should not regain Java source without a specific technical reason.
+- Fabric `1.20.1` `v1.1.0` requires **Fabric API** and **Fabric Language Kotlin**.
 - Keep client-only code isolated from dedicated-server-safe code.
 - Do not commit generated build output, run folders, logs, private files, or exported reports.
 - Do not add telemetry, analytics, cloud AI, LLM integrations, or phone-home behavior.
@@ -56,7 +54,7 @@ A version-number edit is not a migration. That is cosplay with `gradle.propertie
 
 ```text
 gradlemc-1.1.0-forge-1.20.1.jar
-gradlemc-fabric-1.20.1-1.0.0.jar
+gradlemc-1.1.0-fabric-1.20.1.jar
 gradlemc-forge-1.21.11-1.0.0.jar
 gradlemc-fabric-1.21.11-1.0.0.jar
 gradlemc-neoforge-1.21.11-1.0.0.jar
@@ -80,18 +78,18 @@ Do not “adapt” one artifact by renaming it. That is not porting.
 Checked-in source projects include:
 
 ```text
+GradleMC/Forge/Minecraft 1.20.1/    # Kotlin v1.1.0
+GradleMC/Fabric/Minecraft 1.20.1/   # Kotlin v1.1.0
 GradleMC/Forge/Minecraft 1.21.11/
 GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
 GradleMC/NeoForge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/   # legacy Java v1.0.4 until Kotlin source sync
-GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/   # legacy/discontinued
+GradleMC/Quilt/Minecraft 1.20.1/    # legacy/discontinued
 ```
 
-Run builds from the matching project folder only after confirming the source metadata actually represents the release you intend to build.
+Run builds from the matching project folder only after confirming the source metadata represents the release you intend to build.
 
 On Windows, use `gradlew.bat`; on Unix-like environments, use `./gradlew`.
 
@@ -103,10 +101,10 @@ For docs-only changes:
 
 - verify release versions and artifact names;
 - verify Forge `1.20.1` `v1.1.0` says Kotlin + Kotlin for Forge;
+- verify Fabric `1.20.1` `v1.1.0` says Kotlin + Fabric API + Fabric Language Kotlin;
 - verify Java `17` is still described as the Minecraft `1.20.1` runtime;
 - verify Quilt is marked discontinued rather than active;
-- verify commands remain lowercase;
-- verify no page claims the legacy Java Forge `1.20.1` tree is `v1.1.0` source.
+- verify commands remain lowercase.
 
 For source/resource changes:
 
@@ -158,7 +156,7 @@ Include:
 - GradleMC version;
 - exact GradleMC jar filename;
 - Java version;
-- required dependency versions (including Kotlin for Forge for Forge `1.20.1` `v1.1.0`);
+- required dependency versions;
 - client/server environment;
 - reproduction steps;
 - expected and actual behavior;

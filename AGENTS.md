@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is the technical operating manual for coding agents and maintainers working on GradleMC. `README.md` is user-facing; this file protects the repository from stale paths, inaccurate support claims, destructive edits, branch mess, dependency omissions, and command-casing mistakes.
+This is the technical operating manual for coding agents and maintainers working on GradleMC. `README.md` is user-facing; this file protects the repository from stale paths, inaccurate support claims, destructive edits, dependency omissions, and command-casing mistakes.
 
 If instructions conflict, follow the active user task unless doing so would fabricate release state, cause data loss, introduce telemetry/cloud behavior, break release identity, or misrepresent unsupported loaders.
 
@@ -23,9 +23,9 @@ Smart Diagnostics is local and rule-based. Do not describe it as generative AI, 
 
 ---
 
-## Current Release Identity
+## Current Release Identity — Minecraft 1.20.1
 
-### Latest Forge `1.20.1`
+### Forge `v1.1.0`
 
 | Field | Value |
 | --- | --- |
@@ -33,15 +33,28 @@ Smart Diagnostics is local and rule-based. Do not describe it as generative AI, 
 | Minecraft | `1.20.1` |
 | Loader | Forge |
 | Java runtime | `17` |
-| GradleMC implementation language | **Kotlin** |
-| Required mod dependency | **Kotlin for Forge** |
+| GradleMC implementation | **Kotlin** |
+| Required dependency | **Kotlin for Forge** |
 | Artifact | `gradlemc-1.1.0-forge-1.20.1.jar` |
 
-The previous Java GradleMC implementation was removed from the `v1.1.0` Forge `1.20.1` release codebase. This does **not** remove Minecraft/Forge's Java `17` runtime requirement.
+### Fabric `v1.1.0`
+
+| Field | Value |
+| --- | --- |
+| GradleMC | `1.1.0` |
+| Minecraft | `1.20.1` |
+| Loader | Fabric |
+| Java runtime | `17` |
+| GradleMC implementation | **Kotlin** |
+| Required dependencies | **Fabric API + Fabric Language Kotlin** |
+| Artifact | `gradlemc-1.1.0-fabric-1.20.1.jar` |
+
+The previous Java GradleMC implementation was replaced in the active 1.20.1 `v1.1.0` line. This does **not** remove Minecraft's Java `17` runtime requirement.
+
+The checked-in Forge and Fabric `1.20.1` source trees are synchronized to `v1.1.0`.
 
 ### Other published lines
 
-- Fabric `1.20.1` `v1.0.0`.
 - Forge/Fabric/NeoForge `1.21.11` `v1.0.0` on Java `21`.
 - Forge/Fabric/NeoForge `26.1.2` `v1.0.0` on Java `25`.
 - Quilt `1.20.1` `v1.0.0` is **legacy/discontinued**.
@@ -54,40 +67,24 @@ Do not create, advertise, or roadmap new Quilt releases unless the project owner
 
 ---
 
-## Critical Repository Reality: Forge 1.20.1 Source Is Stale
-
-The Forge `1.20.1` source currently checked into `main` is the legacy **Java `v1.0.4`** project. It is not the Kotlin `v1.1.0` source.
-
-Until the Kotlin source is synchronized:
-
-- never bump the old Java project to `1.1.0` merely to make metadata match docs;
-- never claim `main` reproduces the published Kotlin `v1.1.0` artifact;
-- never treat old Java files as the implementation source for Kotlin-release debugging;
-- keep public documentation explicit about this source-sync gap;
-- when the Kotlin source is eventually pushed, verify the migration as a real source replacement rather than a version-label edit.
-
-Version drift is a rake on the floor. Source-language drift is the same rake with nails in it.
-
----
-
 ## Current Repository Layout
 
 ```text
+GradleMC/Forge/Minecraft 1.20.1/    # Kotlin v1.1.0
+GradleMC/Fabric/Minecraft 1.20.1/   # Kotlin v1.1.0
 GradleMC/Forge/Minecraft 1.21.11/
 GradleMC/Fabric/Minecraft 1.21.11/
 GradleMC/NeoForge/Minecraft 1.21.11/
 GradleMC/Forge/Minecraft 26.1.2/
 GradleMC/Fabric/Minecraft 26.1.2/
 GradleMC/NeoForge/Minecraft 26.1.2/
-GradleMC/Forge/Minecraft 1.20.1/   # legacy Java v1.0.4 until Kotlin source sync
-GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/   # legacy/discontinued
+GradleMC/Quilt/Minecraft 1.20.1/    # legacy/discontinued
 Releases/
 Screenshots/
 docs/
 ```
 
-Source presence is not current support status.
+Source presence is not current support status. Verify metadata and artifacts before making release claims.
 
 ---
 
@@ -99,32 +96,43 @@ Source presence is not current support status.
 - Preserve mod ID `gradlemc` across metadata/resources/code.
 - Public release claims must match actual artifacts.
 - Forge `1.20.1` `v1.1.0` must document Kotlin for Forge as required.
+- Fabric `1.20.1` `v1.1.0` must document Fabric API and Fabric Language Kotlin as required.
 - Use Java `17` for Minecraft `1.20.1`, Java `21` for `1.21.11`, and Java `25` for published `26.1.2` work.
 - Do not interpret "Java removed from GradleMC" as "Minecraft no longer needs Java".
-- Do not reintroduce Java into the Kotlin Forge `1.20.1` implementation without a concrete technical requirement.
+- Do not reintroduce Java into active Kotlin implementations without a concrete technical requirement.
 - Keep client-only code isolated from common/server-safe code.
 - Do not add LLMs, telemetry, analytics, cloud APIs, or hidden remote diagnostics.
 - Do not create fake jars, renamed-loader jars, placeholder releases, or unsupported claims.
 - Do not start new Quilt work by default.
-- Do not use internet-heavy Gradle tasks unless explicitly allowed.
 - Do not create branch sprawl.
 - Small correct changes beat broad rewrites.
 
 ---
 
-## Kotlin Forge 1.20.1 Rules
+## Kotlin 1.20.1 Rules
 
-When working on the synchronized Kotlin Forge `1.20.1` source:
+### Forge
 
 - use Kotlin as the application implementation language;
-- keep JVM bytecode/toolchain compatibility at Java `17` for Minecraft `1.20.1`;
+- keep JVM bytecode/toolchain compatibility at Java `17`;
 - keep Kotlin for Forge dependency metadata explicit and valid;
 - preserve safe Forge client/server boundaries;
+- ensure Kotlin/JVM dependency packaging does not duplicate or shadow Kotlin for Forge runtime components.
+
+### Fabric
+
+- use Kotlin entrypoints intentionally;
+- keep JVM bytecode/toolchain compatibility at Java `17`;
+- keep Fabric API and Fabric Language Kotlin dependency metadata explicit and valid;
+- preserve Fabric-safe client/server boundaries;
+- do not assume Forge APIs, lifecycle rules, or dependency semantics apply to Fabric.
+
+For both loaders:
+
 - prefer straightforward Kotlin over unnecessary abstraction layers;
-- ensure Kotlin/JVM dependency packaging does not accidentally duplicate or shadow Kotlin for Forge runtime components;
 - verify dedicated-server loading after common/networking changes;
 - verify client launch after GUI/keybind/overlay changes;
-- never claim the dependency works merely because compilation succeeds.
+- never claim a dependency works merely because compilation succeeds.
 
 ---
 
@@ -136,7 +144,7 @@ Before building or publishing, inspect the exact target's:
 - build script(s);
 - loader metadata (`mods.toml`, `neoforge.mods.toml`, `fabric.mod.json`, etc.);
 - manifest configuration;
-- Kotlin/Kotlin-for-Forge dependency declarations where applicable.
+- Kotlin/runtime dependency declarations where applicable.
 
 Check at least:
 
@@ -193,7 +201,7 @@ Rules:
 - GUI, overlay, keybind, and FPS sampling code are client-only.
 - Do not import client-only Minecraft classes into common/server-safe code.
 - Use loader-safe client boundaries.
-- Server-triggered GUI opening must use a safe server-to-client path.
+- Server-triggered GUI opening must use a safe server-to-client path where implemented.
 - GUI-triggered server actions must respect permissions.
 - Escape should close custom screens.
 - Provide an explicit Close button where appropriate.
@@ -208,7 +216,7 @@ Rules:
 - Do not force-push without explicit authorization.
 - Do not use destructive reset/cleanup commands casually.
 - Stage/commit only intended files.
-- Do not delete legacy source merely to make documentation look cleaner; replace it only when the new source is actually available and verified.
+- Do not modify unrelated loader/version trees just to make documentation look uniform.
 
 ---
 
@@ -224,18 +232,16 @@ Before release-facing changes, cross-check:
 - `CONTRIBUTING.md`;
 - `AGENTS.md`;
 - `docs/RELEASE_CHECKLIST.md`;
-- `curseforge-description.html`;
-- relevant screenshots/release notes/artifact paths.
+- release notes and artifact paths.
 
-For Forge `1.20.1` `v1.1.0`, every public surface should agree on these facts:
+For Minecraft `1.20.1` `v1.1.0`, public surfaces should agree on:
 
-1. version `1.1.0`;
+1. GradleMC version `1.1.0`;
 2. Minecraft `1.20.1`;
-3. Forge;
-4. Java `17` runtime;
-5. Kotlin GradleMC implementation;
-6. Kotlin for Forge required;
-7. artifact `gradlemc-1.1.0-forge-1.20.1.jar`;
-8. no new Quilt releases.
+3. Java `17` runtime;
+4. Kotlin implementation;
+5. Forge artifact + Kotlin for Forge dependency;
+6. Fabric artifact + Fabric API + Fabric Language Kotlin dependencies;
+7. no new Quilt releases.
 
 Do not let one stale sentence contradict the entire release story. Documentation drift is still a bug; it just wears punctuation.

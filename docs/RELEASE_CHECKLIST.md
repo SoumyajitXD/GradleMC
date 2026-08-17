@@ -4,9 +4,9 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 
 ---
 
-## Release Identity
+## Release Identity — Minecraft 1.20.1 v1.1.0
 
-### Latest Forge `1.20.1`
+### Forge
 
 | Field | Expected |
 | --- | --- |
@@ -15,18 +15,31 @@ Use this checklist before publishing or exporting a GradleMC release. Releases a
 | Loader | Forge |
 | Java runtime | `17` |
 | GradleMC implementation | **Kotlin** |
-| Required mod dependency | **Kotlin for Forge** |
+| Required dependency | **Kotlin for Forge** |
 | Artifact | `gradlemc-1.1.0-forge-1.20.1.jar` |
 | Mod ID | `gradlemc` |
-| CurseForge Project ID | `1585182` |
 
-The Kotlin rewrite removes Java from GradleMC's `v1.1.0` implementation, not from Minecraft's runtime requirements.
+### Fabric
+
+| Field | Expected |
+| --- | --- |
+| GradleMC | `1.1.0` |
+| Minecraft | `1.20.1` |
+| Loader | Fabric |
+| Java runtime | `17` |
+| GradleMC implementation | **Kotlin** |
+| Required dependencies | **Fabric API + Fabric Language Kotlin** |
+| Artifact | `gradlemc-1.1.0-fabric-1.20.1.jar` |
+| Mod ID | `gradlemc` |
+
+CurseForge Project ID: `1585182`.
+
+The Kotlin implementation replaces GradleMC's previous Java application code; it does not replace Minecraft's Java `17` runtime requirement.
 
 ### Other published/legacy lines
 
 | Status | Loader | GradleMC | Minecraft | Java | Artifact / notes |
 | --- | --- | --- | --- | --- | --- |
-| Published | Fabric | `1.0.0` | `1.20.1` | `17` | `gradlemc-fabric-1.20.1-1.0.0.jar` |
 | Published | Forge | `1.0.0` | `1.21.11` | `21` | `gradlemc-forge-1.21.11-1.0.0.jar` |
 | Published | Fabric | `1.0.0` | `1.21.11` | `21` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 | Published | NeoForge | `1.0.0` | `1.21.11` | `21` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
@@ -39,22 +52,20 @@ If version, loader, Minecraft target, Java target, dependency list, source langu
 
 ---
 
-## Forge 1.20.1 Source-Sync Gate
+## Source-Sync Gate
 
-The Forge `1.20.1` source currently checked into `main` is the legacy Java `v1.0.4` project, not the Kotlin `v1.1.0` source.
+Before claiming GitHub reproduces a release, all of these must be true:
 
-Before claiming GitHub reproduces Forge `1.20.1` `v1.1.0`, all of these must be true:
+- [ ] The relevant source tree is synchronized to the intended version.
+- [ ] GradleMC version metadata matches the release.
+- [ ] Artifact naming is exact.
+- [ ] Kotlin/JVM compilation targets the required Java level.
+- [ ] Loader-specific dependency metadata is present and correct.
+- [ ] Build and runtime verification use the synchronized project.
 
-- [ ] Kotlin `v1.1.0` source has been synchronized to the repository.
-- [ ] Legacy Java implementation is no longer masquerading as the active Forge `1.20.1` source.
-- [ ] GradleMC version metadata says `1.1.0`.
-- [ ] Artifact name is exactly `gradlemc-1.1.0-forge-1.20.1.jar`.
-- [ ] Kotlin/JVM compilation targets Java `17` bytecode as required.
-- [ ] Kotlin for Forge dependency metadata is present and correct.
-- [ ] Java source is not reintroduced merely to preserve the old architecture.
-- [ ] Build and runtime verification are performed on the synchronized Kotlin project.
+For current Minecraft `1.20.1` `v1.1.0`, both Forge and Fabric source trees are synchronized in `main`; future changes must preserve that alignment.
 
-Do not "fix" this gate by editing only `gradle.properties`. A release is code plus behavior, not a version sticker.
+A release is code plus behavior, not a version sticker.
 
 ---
 
@@ -72,19 +83,26 @@ For every target:
 - [ ] Confirm command literals remain lowercase.
 - [ ] Confirm no telemetry/cloud behavior was introduced.
 
-For Forge `1.20.1` `v1.1.0` specifically:
+For Forge `1.20.1` `v1.1.0`:
 
-- [ ] Kotlin for Forge is present in the test instance/server as required.
+- [ ] Kotlin for Forge is present in the test instance/server.
 - [ ] Client launches with the actual release jar.
-- [ ] Dedicated server launches where the release supports server use.
-- [ ] Missing Kotlin for Forge produces an understandable dependency failure rather than being documented as a GradleMC bug.
-- [ ] `/gradlemc version` reports `1.1.0` and the expected Forge/Minecraft/JVM context.
+- [ ] Dedicated server launches where server use is supported.
+- [ ] `/gradlemc version` reports `1.1.0` and expected Forge/Minecraft/JVM context.
+
+For Fabric `1.20.1` `v1.1.0`:
+
+- [ ] Fabric API is present.
+- [ ] Fabric Language Kotlin is present.
+- [ ] Client launches with the actual release jar.
+- [ ] Dedicated server launches where server use is supported.
+- [ ] `/gradlemc version` reports `1.1.0` and expected Fabric/Minecraft/JVM context.
 
 ---
 
 ## Build Verification
 
-Run from the exact source project that represents the intended release:
+Run from the exact source project representing the intended release:
 
 ```sh
 ./gradlew clean build
@@ -101,7 +119,7 @@ Run target-specific self-tests where defined.
 Rules:
 
 - do not claim a build passed unless it ran and passed;
-- do not build the legacy Java Forge `1.20.1` tree and label the result `v1.1.0`;
+- do not build one loader and rename the output for another loader;
 - do not casually use `--refresh-dependencies` or delete caches;
 - keep dependency downloads controlled and intentional;
 - use Java `17` for Minecraft `1.20.1`, Java `21` for `1.21.11`, and Java `25` for published `26.1.2` releases.
@@ -132,8 +150,13 @@ Test the actual release jar, not merely development classes:
 For Forge `1.20.1` `v1.1.0`:
 
 - [ ] Kotlin for Forge is installed.
-- [ ] The runtime does not depend on the removed legacy Java GradleMC implementation.
-- [ ] The exported jar is exactly `gradlemc-1.1.0-forge-1.20.1.jar`.
+- [ ] Exported jar is exactly `gradlemc-1.1.0-forge-1.20.1.jar`.
+
+For Fabric `1.20.1` `v1.1.0`:
+
+- [ ] Fabric API is installed.
+- [ ] Fabric Language Kotlin is installed.
+- [ ] Exported jar is exactly `gradlemc-1.1.0-fabric-1.20.1.jar`.
 
 ---
 
@@ -181,18 +204,16 @@ Check at least:
 - [ ] `AGENTS.md`;
 - [ ] `docs/RELEASE_CHECKLIST.md`;
 - [ ] screenshot documentation where relevant;
-- [ ] `curseforge-description.html`;
 - [ ] release notes and artifact listings.
 
-For Forge `1.20.1` `v1.1.0`, every public surface must agree on:
+For Minecraft `1.20.1` `v1.1.0`, public surfaces must agree on:
 
 - [ ] GradleMC `1.1.0`;
 - [ ] Minecraft `1.20.1`;
-- [ ] Forge;
 - [ ] Java `17` runtime;
 - [ ] Kotlin implementation;
-- [ ] Kotlin for Forge required;
-- [ ] `gradlemc-1.1.0-forge-1.20.1.jar`;
+- [ ] Forge + Kotlin for Forge + `gradlemc-1.1.0-forge-1.20.1.jar`;
+- [ ] Fabric + Fabric API + Fabric Language Kotlin + `gradlemc-1.1.0-fabric-1.20.1.jar`;
 - [ ] no new Quilt releases.
 
 ---
@@ -202,7 +223,6 @@ For Forge `1.20.1` `v1.1.0`, every public surface must agree on:
 - [ ] Publish the exact intended jar.
 - [ ] Update changelog and README.
 - [ ] Update support/security docs when support status changes.
-- [ ] Update CurseForge description.
 - [ ] Synchronize source to GitHub when the public release source is meant to be available there.
 - [ ] Watch issues/comments for regressions and dependency confusion.
 

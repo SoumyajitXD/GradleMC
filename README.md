@@ -12,31 +12,25 @@
   <a href="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Minecraft versions" src="https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.11%20%7C%2026.1.2-brightgreen">
   <img alt="Active loaders" src="https://img.shields.io/badge/Active%20loaders-Forge%20%7C%20Fabric%20%7C%20NeoForge-blueviolet">
-  <img alt="Language" src="https://img.shields.io/badge/Forge%201.20.1%20v1.1.0-Kotlin-7f52ff">
+  <img alt="Language" src="https://img.shields.io/badge/1.20.1%20v1.1.0-Kotlin-7f52ff">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
 </p>
 
 ---
 
-## Latest Release
+## Latest 1.20.1 Release
 
-### GradleMC `v1.1.0` — Forge `1.20.1`
+GradleMC `v1.1.0` is available for both **Forge** and **Fabric** on Minecraft `1.20.1`. Both current 1.20.1 implementations are Kotlin-based and still run on Java `17`.
 
-- Minecraft: `1.20.1`
-- Loader: Forge
-- Java runtime: `17`
-- GradleMC implementation: **Kotlin**
-- Required mod dependency: **Kotlin for Forge**
-- Artifact: `gradlemc-1.1.0-forge-1.20.1.jar`
+| Loader | Required dependencies | Artifact |
+| --- | --- | --- |
+| Forge | **Kotlin for Forge** | `gradlemc-1.1.0-forge-1.20.1.jar` |
+| Fabric | **Fabric API** + **Fabric Language Kotlin** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 
-GradleMC `v1.1.0` is a Kotlin rebuild of the Forge `1.20.1` edition. The previous Java implementation has been removed from this release's GradleMC codebase. Minecraft/Forge still requires Java `17`; "Kotlin rewrite" does **not** mean Minecraft can run without a Java runtime.
+The previous Java GradleMC implementation has been replaced in the current 1.20.1 `v1.1.0` line. Kotlin does **not** replace Minecraft's Java runtime; Minecraft `1.20.1` still requires Java `17`.
 
-> **Required:** install Kotlin for Forge alongside GradleMC `v1.1.0` on Forge `1.20.1`.
-
-### Repository source synchronization note
-
-The Forge `1.20.1` source currently checked into `main` is still the legacy Java `v1.0.4` tree. It is **not** the Kotlin `v1.1.0` source and must not be presented as such. The Kotlin source needs to be synchronized separately before GitHub can be treated as the build-from-source source of truth for Forge `1.20.1` `v1.1.0`.
+The checked-in Forge and Fabric `1.20.1` source trees are synchronized to `v1.1.0`.
 
 ---
 
@@ -54,38 +48,44 @@ GradleMC is **not** an FPS booster, crash-fixing bot, cloud AI service, or repla
 
 | Status | Loader | GradleMC | Minecraft | Java | Dependency / notes | Artifact |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Latest** | Forge | `1.1.0` | `1.20.1` | `17` | **Kotlin for Forge required**; Kotlin implementation | `gradlemc-1.1.0-forge-1.20.1.jar` |
-| Published | Fabric | `1.0.0` | `1.20.1` | `17` | Fabric release | `gradlemc-fabric-1.20.1-1.0.0.jar` |
+| **Latest** | Forge | `1.1.0` | `1.20.1` | `17` | Kotlin; **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
+| **Latest** | Fabric | `1.1.0` | `1.20.1` | `17` | Kotlin; **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 | Published | Forge | `1.0.0` | `1.21.11` | `21` | Forge `61.1.8` | `gradlemc-forge-1.21.11-1.0.0.jar` |
 | Published | Fabric | `1.0.0` | `1.21.11` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 | Published | NeoForge | `1.0.0` | `1.21.11` | `21` | NeoForge `21.11.42` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
 | Published | Forge | `1.0.0` | `26.1.2` | `25` | Forge `26.1.2-64.0.11` | `gradlemc-forge-26.1.2-1.0.0.jar` |
 | Published | Fabric | `1.0.0` | `26.1.2` | `25` | Fabric release | `gradlemc-fabric-26.1.2-1.0.0.jar` |
 | Published | NeoForge | `1.0.0` | `26.1.2` | `25` | NeoForge `26.1.2.78` | `gradlemc-neoforge-26.1.2-1.0.0.jar` |
-| **Discontinued** | Quilt | `1.0.0` | `1.20.1` | `17` | Legacy release; **no new GradleMC Quilt versions or updates planned** | `gradlemc-quilt-1.20.1-1.0.0.jar` |
+| **Discontinued** | Quilt | `1.0.0` | `1.20.1` | `17` | Legacy only; no new GradleMC Quilt updates | `gradlemc-quilt-1.20.1-1.0.0.jar` |
 
 Use the exact jar matching your Minecraft version and loader. Renaming a jar changes its filename, not its loader compatibility.
 
 ### Quilt support ended
 
-No new GradleMC versions will be released for Quilt. The Quilt line received too few downloads to justify the additional implementation, testing, and maintenance cost. Existing Quilt files may remain available as legacy downloads, but the line is discontinued and will not receive new GradleMC releases.
+No new GradleMC versions will be released for Quilt. Existing Quilt files may remain available as legacy downloads, but the line is discontinued and will not receive new GradleMC releases.
 
 ---
 
-## Quick Start — Forge 1.20.1 v1.1.0
+## Quick Start — 1.20.1 v1.1.0
+
+### Forge
 
 1. Install Minecraft Java Edition `1.20.1` with Forge.
-2. Run Minecraft with Java `17`.
+2. Use Java `17`.
 3. Install **Kotlin for Forge**.
 4. Install `gradlemc-1.1.0-forge-1.20.1.jar`.
-5. Place both required mod jars in the `mods` folder.
-6. Launch Minecraft and run:
+5. Launch Minecraft and run `/gradlemc`.
 
-```text
-/gradlemc
-```
+### Fabric
 
-Open the GUI where supported:
+1. Install Minecraft Java Edition `1.20.1` with Fabric Loader.
+2. Use Java `17`.
+3. Install **Fabric API**.
+4. Install **Fabric Language Kotlin**.
+5. Install `gradlemc-1.1.0-fabric-1.20.1.jar`.
+6. Launch Minecraft and run `/gradlemc`.
+
+Open the GUI where supported with:
 
 ```text
 /gradlemc gui
@@ -155,20 +155,16 @@ More screenshots live in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
 
 ## Build From Source
 
-Use the source project matching the loader and Minecraft version. **Do not build the legacy Forge `1.20.1` Java tree and call the result `v1.1.0`.** That checked-in project currently identifies itself as `v1.0.4` and must remain treated as legacy until the Kotlin rewrite is pushed.
+Use the source project matching the loader and Minecraft version.
 
-Other checked-in source projects include:
+Current 1.20.1 Kotlin projects:
 
 ```text
-GradleMC/Forge/Minecraft 1.21.11/
-GradleMC/Fabric/Minecraft 1.21.11/
-GradleMC/NeoForge/Minecraft 1.21.11/
-GradleMC/Forge/Minecraft 26.1.2/
-GradleMC/Fabric/Minecraft 26.1.2/
-GradleMC/NeoForge/Minecraft 26.1.2/
+GradleMC/Forge/Minecraft 1.20.1/
 GradleMC/Fabric/Minecraft 1.20.1/
-GradleMC/Quilt/Minecraft 1.20.1/   # legacy/discontinued
 ```
+
+Other checked-in source projects include Forge, Fabric, and NeoForge targets for newer published Minecraft versions. Quilt `1.20.1` remains legacy/discontinued.
 
 Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/export work.
 
@@ -178,7 +174,7 @@ Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/expo
 
 | Path | Purpose |
 | --- | --- |
-| [`GradleMC/`](GradleMC/) | Loader/version source projects. Some historical source trees may not match the latest published artifact until synchronized. |
+| [`GradleMC/`](GradleMC/) | Loader/version source projects. |
 | [`Releases/`](Releases/) | Committed release artifacts where present. |
 | [`Screenshots/`](Screenshots/) | README and documentation screenshots. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history. |
@@ -187,7 +183,6 @@ Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/expo
 | [`SECURITY.md`](SECURITY.md) | Security policy. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution rules. |
 | [`AGENTS.md`](AGENTS.md) | Maintainer and coding-agent operating rules. |
-| [`curseforge-description.html`](curseforge-description.html) | CurseForge description source. |
 
 ---
 
