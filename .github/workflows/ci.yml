@@ -74,7 +74,7 @@ jobs:
                 ;;
               *.jar)
                 case "$path" in
-                  */gradle/wrapper/gradle-wrapper.jar|Releases/*.jar|Releases/**/*.jar) ;;
+                  */gradle/wrapper/gradle-wrapper.jar|Releases/*.jar) ;;
                   *) echo "::warning file=$path::Unexpected JAR is tracked outside Releases/ or a Gradle wrapper" ;;
                 esac
                 ;;
