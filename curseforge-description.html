@@ -10,21 +10,22 @@
 <p style="text-align: center;"><img style="display: block; width: 100%; border: 1px solid #252c36;" src="https://media.forgecdn.net/attachments/1764/961/2-png.png" alt="GradleMC diagnostics overview showing stability, memory, FPS and recent reports"></p>
 <p style="color: #7f8792; font-size: 12px; text-align: center;">Environment information, runtime evidence, checks and reports without leaving Minecraft.</p>
 <hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 28px; line-height: 1.25;">GradleMC v1.1.0 &mdash; rebuilt in Kotlin</h2>
-<p style="color: #9da8b6;">Minecraft 1.20.1 &nbsp;&bull;&nbsp; Forge &nbsp;&bull;&nbsp; Java 17 runtime &nbsp;&bull;&nbsp; Kotlin for Forge required</p>
-<p><code style="color: #b9d2ef;">gradlemc-1.1.0-forge-1.20.1.jar</code></p>
-<p>GradleMC v1.1.0 marks a major internal transition. The Forge 1.20.1 edition has been <strong style="color: #eef1f5;">rebuilt in Kotlin</strong>, replacing the previous Java implementation.</p>
+<h2 style="color: #f0f2f5; font-size: 28px; line-height: 1.25;">GradleMC v1.1.0 &mdash; Kotlin on Forge and Fabric</h2>
+<p style="color: #9da8b6;">Minecraft 1.20.1 &nbsp;&bull;&nbsp; Forge + Fabric &nbsp;&bull;&nbsp; Java 17 runtime &nbsp;&bull;&nbsp; Kotlin runtime dependency required</p>
+<p><code style="color: #b9d2ef;">gradlemc-1.1.0-forge-1.20.1.jar</code><br><code style="color: #b9d2ef;">gradlemc-1.1.0-fabric-1.20.1.jar</code></p>
+<p>GradleMC v1.1.0 marks a major internal transition. The current Minecraft 1.20.1 Forge and Fabric editions are <strong style="color: #eef1f5;">implemented in Kotlin</strong>, replacing the previous Java GradleMC implementation.</p>
 <ul style="padding-left: 22px;">
-<li>GradleMC's own source implementation is now Kotlin.</li>
-<li>The previous Java GradleMC implementation has been removed from this release.</li>
-<li>The mod now depends on <strong>Kotlin for Forge</strong> to provide its Kotlin runtime and Forge integration.</li>
-<li>The current Forge 1.20.1 development line uses Kotlin for Forge 4.12.0.</li>
+<li>GradleMC's active 1.20.1 implementation is now Kotlin.</li>
+<li>The previous Java GradleMC implementation has been removed from the current v1.1.0 release line.</li>
+<li>The <strong>Forge</strong> build requires <strong>Kotlin for Forge</strong>.</li>
+<li>The <strong>Fabric</strong> build requires <strong>Fabric Language Kotlin</strong>.</li>
 <li>Minecraft 1.20.1 itself still runs on Java 17. The Kotlin rewrite does <strong>not</strong> mean Java should be removed from your Minecraft installation.</li>
 </ul>
 <div>
-<p><strong style="color: #f2f4f7;">Required dependency for GradleMC v1.1.0 on Forge 1.20.1</strong></p>
-<p>Install <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener"><strong>Kotlin for Forge</strong></a> alongside GradleMC.</p>
-<p style="color: #949eaa;">Without Kotlin for Forge, the Kotlin-based GradleMC v1.1.0 build cannot load correctly.</p>
+<p><strong style="color: #f2f4f7;">Required dependencies for GradleMC v1.1.0 on Minecraft 1.20.1</strong></p>
+<p><strong style="color: #dce1e7;">Forge:</strong> install <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener"><strong>Kotlin for Forge</strong></a> alongside GradleMC.</p>
+<p><strong style="color: #dce1e7;">Fabric:</strong> install <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin/preview" target="_blank" rel="nofollow noopener"><strong>Fabric Language Kotlin</strong></a> alongside GradleMC.</p>
+<p style="color: #949eaa;">Use the dependency matching your loader. A Forge dependency will not satisfy Fabric, and a Fabric dependency will not satisfy Forge. Minecraft mod loaders remain stubbornly uninterested in telepathy.</p>
 </div>
 <hr style="border: 0; background-color: #272d36;">
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">What is GradleMC?</h2>
@@ -46,7 +47,7 @@
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Core capabilities</h2>
 <h3 style="color: #dce1e7; font-size: 20px;">Diagnostics control centre</h3>
 <ul style="padding-left: 22px;">
-<li>Open the in-game GradleMC interface using <code style="color: #b7d0ed;">/gradlemc gui</code> or the configurable keybind.</li>
+<li>Open the in-game GradleMC interface using <code style="color: #b7d0ed;">/gradlemc gui</code> or the configurable keybind where supported.</li>
 <li>Access diagnostics, runtime information, reports, performance tools and supported configuration controls from one interface.</li>
 <li>Inspect the current state of the instance without leaving Minecraft.</li>
 </ul>
@@ -89,12 +90,13 @@
 <hr style="border: 0; background-color: #272d36;">
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Client and server</h2>
 <h3 style="color: #b4c7df; font-size: 19px;">Client</h3>
-<p>Install GradleMC on the client for features such as the diagnostics interface, configurable keybind, optional overlay, FPS information, timed FPS testing and client-side environment evidence.</p>
+<p>Install GradleMC on the client for supported features such as the diagnostics interface, configurable keybind, optional overlay, FPS information, timed FPS testing and client-side environment evidence.</p>
 <h3 style="color: #b4c7df; font-size: 19px;">Server</h3>
 <p>Supported server-side functionality can include commands, runtime observations, memory and environment information, loaded-mod inspection, performance evidence, reports and Smart Diagnostics.</p>
-<p>For investigations that require evidence from both sides, install the appropriate GradleMC build and its required dependencies wherever that build is intended to run.</p>
+<p>For investigations that require evidence from both sides, install the appropriate GradleMC build and its required loader-specific dependencies wherever that build is intended to run.</p>
 <hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Installation &mdash; Forge 1.20.1 v1.1.0</h2>
+<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Installation &mdash; Minecraft 1.20.1 v1.1.0</h2>
+<h3 style="color: #dce1e7; font-size: 20px;">Forge</h3>
 <ol style="padding-left: 24px;">
 <li>Install Minecraft Java Edition 1.20.1 with a compatible Forge 1.20.1 installation.</li>
 <li>Use Java 17 for Minecraft 1.20.1.</li>
@@ -104,9 +106,20 @@
 <li>Launch Minecraft.</li>
 <li>Run <code style="color: #b7d0ed;">/gradlemc</code> to inspect the command tree supplied by the installed GradleMC build.</li>
 </ol>
+<h3 style="color: #dce1e7; font-size: 20px;">Fabric</h3>
+<ol style="padding-left: 24px;">
+<li>Install Minecraft Java Edition 1.20.1 with a compatible Fabric Loader installation.</li>
+<li>Use Java 17 for Minecraft 1.20.1.</li>
+<li>Download <code style="color: #b7d0ed;">gradlemc-1.1.0-fabric-1.20.1.jar</code>.</li>
+<li>Download <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin/preview" target="_blank" rel="nofollow noopener">Fabric Language Kotlin</a>.</li>
+<li>Place GradleMC and Fabric Language Kotlin in the instance or server <code style="color: #b7d0ed;">mods</code> folder.</li>
+<li>Install any other dependencies listed for the GradleMC file you downloaded.</li>
+<li>Launch Minecraft.</li>
+<li>Run <code style="color: #b7d0ed;">/gradlemc</code> to inspect the command tree supplied by the installed GradleMC build.</li>
+</ol>
 <div>
 <p><strong style="color: #f1f2f4;">Do not confuse language with runtime.</strong></p>
-<p>GradleMC v1.1.0 has been rewritten in Kotlin and contains no Java implementation from the previous GradleMC codebase. Minecraft Forge 1.20.1 still requires a Java runtime.</p>
+<p>GradleMC v1.1.0 is implemented in Kotlin rather than the previous Java GradleMC codebase. Minecraft 1.20.1 still requires a Java 17 runtime. Kotlin for Forge and Fabric Language Kotlin provide the Kotlin integration required by their respective loaders; they do not replace Java itself.</p>
 </div>
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Use the exact build</h2>
 <p>Minecraft versions and mod loaders are not interchangeable.</p>
@@ -123,7 +136,7 @@
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Release lines</h2>
 <p>GradleMC has been published for multiple Minecraft versions and mod loaders. The Files page remains the source of truth for builds that are actually available.</p>
 <h3 style="color: #dce1e7; font-size: 19px;">Minecraft 1.20.1</h3>
-<p>Java 17 &nbsp;&bull;&nbsp; loader-specific builds</p>
+<p>Java 17 &nbsp;&bull;&nbsp; GradleMC v1.1.0 available for Forge and Fabric</p>
 <h3 style="color: #dce1e7; font-size: 19px;">Minecraft 1.21.11</h3>
 <p>Java 21 &nbsp;&bull;&nbsp; loader-specific builds where published</p>
 <h3 style="color: #dce1e7; font-size: 19px;">Minecraft 26.1.2</h3>
@@ -131,10 +144,10 @@
 <p style="color: #939ca8;"><strong>Quilt:</strong> discontinued. No new GradleMC Quilt releases are planned.</p>
 <hr style="border: 0; background-color: #272d36;">
 <h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Essential commands</h2>
-<p>GradleMC commands are lowercase. Exact command availability can vary by release, environment, permissions and client/server side.</p>
+<p>GradleMC commands are lowercase. Exact command availability can vary by release, loader, environment, permissions and client/server side.</p>
 <ul style="padding-left: 22px;">
 <li><code style="color: #b7d0ed;">/gradlemc</code> &mdash; inspect the command tree available in your build.</li>
-<li><code style="color: #b7d0ed;">/gradlemc gui</code> &mdash; open the diagnostics interface.</li>
+<li><code style="color: #b7d0ed;">/gradlemc gui</code> &mdash; open the diagnostics interface where supported.</li>
 <li><code style="color: #b7d0ed;">/gradlemc status</code> &mdash; show a compact diagnostic status summary.</li>
 <li><code style="color: #b7d0ed;">/gradlemc version</code> &mdash; show GradleMC and environment version information.</li>
 <li><code style="color: #b7d0ed;">/gradlemc memory</code> &mdash; inspect JVM memory information.</li>
@@ -191,7 +204,7 @@
 <p style="color: #7f8792; font-size: 12px; font-weight: bold; text-transform: uppercase;">Optional server-hosting partner</p>
 <h2 style="color: #f0f2f5; font-size: 25px;">Need a separate test server?</h2>
 <p>The partner link below offers 25% off the first month. Hosting is entirely optional and is not required to install or use GradleMC.</p>
-<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"> <img style="display: inline-block; width: 78%;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/bisecthosting-banner.png" alt="Optional BisectHosting partner offer with 25 percent off the first month"> </a></p>
+<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"><img style="display: inline-block; width: 78%;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/bisecthosting-banner.png" alt="Optional BisectHosting partner offer with 25 percent off the first month"></a></p>
 </div>
 <hr style="border: 0; background-color: #272d36;">
 <p style="color: #78818d; font-size: 12px; text-align: center;">Apache-2.0 &bull; CurseForge Project ID 1585182 &bull; Minecraft Java Edition &bull; Client and server</p>
