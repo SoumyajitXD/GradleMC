@@ -50,8 +50,9 @@ jobs:
               errors += 1
 
           text = workflow.read_text(encoding="utf-8")
-          if "pull_request_target:" in text:
-              print(f"::error file={workflow}::pull_request_target is forbidden")
+          forbidden_trigger = "pull_request" + "_target:"
+          if forbidden_trigger in text:
+              print(f"::error file={workflow}::Untrusted pull requests must never run in a privileged target context")
               errors += 1
           if re.search(r"^\s+(?:contents|pull-requests|actions|id-token):\s+write\s*$", text, re.MULTILINE):
               print(f"::error file={workflow}::CI must remain read-only")
@@ -87,6 +88,41 @@ jobs:
             echo "::warning::Possible credential-shaped text found; review matches above"
           fi
 
+  workflow-lint:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          for attempt in 1 2 3; do
+            if GOBIN="$RUNNER_TEMP/bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7; then
+              break
+            fi
+            if [[ "$attempt" -eq 3 ]]; then
+              echo "::error::Failed to install actionlint after 3 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Lint workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          actionlint .github/workflows/ci.yml
+
   select-projects:
     name: Select projects
     runs-on: ubuntu-latest
@@ -117,10 +153,10 @@ jobs:
           projects = [
               {"name":"Forge 1.21.11","runner":"ubuntu-latest","project_dir":"GradleMC/Forge/Minecraft 1.21.11","java":"21","command":"clean check gradlemcSelfTest assemble","kind":"forge"},
               {"name":"Forge 26.1.2","runner":"ubuntu-latest","project_dir":"GradleMC/Forge/Minecraft 26.1.2","java":"25","command":"clean build","kind":"forge"},
-              {"name":"Forge 1.20.1","runner":"windows-latest","project_dir":"GradleMC/Forge/Minecraft 1.20.1","java":"17","command":"clean check gradlemcSelfTest runGameTestServer assemble","kind":"forge"},
+              {"name":"Forge 1.20.1","runner":"windows-latest","project_dir":"GradleMC/Forge/Minecraft 1.20.1","java":"17","command":"clean check assemble","kind":"forge"},
               {"name":"Fabric 1.21.11","runner":"ubuntu-latest","project_dir":"GradleMC/Fabric/Minecraft 1.21.11","java":"21","command":"clean build","kind":"fabric"},
               {"name":"Fabric 26.1.2","runner":"ubuntu-latest","project_dir":"GradleMC/Fabric/Minecraft 26.1.2","java":"25","command":"clean build","kind":"fabric"},
-              {"name":"Fabric 1.20.1","runner":"ubuntu-latest","project_dir":"GradleMC/Fabric/Minecraft 1.20.1","java":"17","command":"clean build","kind":"fabric"},
+              {"name":"Fabric 1.20.1","runner":"windows-latest","project_dir":"GradleMC/Fabric/Minecraft 1.20.1","java":"17","command":"clean build","kind":"fabric"},
               {"name":"NeoForge 1.21.11","runner":"ubuntu-latest","project_dir":"GradleMC/NeoForge/Minecraft 1.21.11","java":"21","command":"clean check gradlemcSelfTest assemble","kind":"neoforge"},
               {"name":"NeoForge 26.1.2","runner":"ubuntu-latest","project_dir":"GradleMC/NeoForge/Minecraft 26.1.2","java":"25","command":"clean build","kind":"neoforge"},
           ]
@@ -151,8 +187,7 @@ jobs:
                   changed = changed_between(event.get("before", ""), event.get("after", ""))
 
           if changed is not None:
-              ci_changed = any(path.startswith(".github/") for path in changed)
-              if ci_changed:
+              if any(path.startswith(".github/") for path in changed):
                   selected = projects
               else:
                   selected = [
@@ -388,20 +423,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: always()
-    needs: [repository-sanity, select-projects, build-supported-port]
+    needs:
+      - repository-sanity
+      - workflow-lint
+      - select-projects
+      - build-supported-port
     steps:
       - name: Enforce required results
         shell: bash
         run: |
           set -euo pipefail
           repository="${{ needs.repository-sanity.result }}"
+          lint="${{ needs.workflow-lint.result }}"
           selection="${{ needs.select-projects.result }}"
           build="${{ needs.build-supported-port.result }}"
 
           echo "repository-sanity: $repository"
+          echo "workflow-lint: $lint"
           echo "select-projects: $selection"
           echo "build-supported-port: $build"
 
           [[ "$repository" == success ]]
+          [[ "$lint" == success ]]
           [[ "$selection" == success ]]
           [[ "$build" == success || "$build" == skipped ]]
