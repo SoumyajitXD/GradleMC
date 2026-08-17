@@ -1,3 +1,0 @@
-package com.soumyajit.gradlemc.task;
-
-public enum EvidenceAvailability { AVAILABLE, UNAVAILABLE, UNSUPPORTED, PERMISSION_DENIED, NO_WORLD, NO_SAMPLES, COLLECTOR_FAILED, CANCELLED, TIMED_OUT }
