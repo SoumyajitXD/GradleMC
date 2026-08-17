@@ -1,56 +1,40 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
 # eclipse
-bin
+
 *.launch
-.settings
-.metadata
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
 .classpath
 .project
 
-# idea
-out
-*.ipr
-*.iws
-*.iml
-.idea
-.vscode/
+# macos
 
-# gradle
-/build/
-/.gradle/
-/mcmodsrepo/
+*.DS_Store
 
-# other
-eclipse
+# fabric
+
 run/
-run-data/
-logs
-crash-reports/
-config/gradlemc/reports/
-gradlemc/reports/
-gradlemc/exports/
-gradlemc/issue-bundles/
-gradlemc/profiles/
-src/generated/resources/
-*.log
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-*.war
-*.ear
-extracted-jar/
-jar-inspect/
-tmp-jar/
-__pycache__/
-*.py[cod]
-*.tmp
-*.bak
-*.orig
-*.rej
-*.swp
-*.swo
 
-# Files from Forge MDK
-forge*changelog.txt
+# java
 
-# OS/editor noise
-.DS_Store
-Thumbs.db
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr

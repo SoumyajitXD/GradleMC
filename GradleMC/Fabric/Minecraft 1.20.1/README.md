@@ -1,23 +1,27 @@
-# GradleMC v1.0.1 for Fabric 1.20.1
+# GradleMC V1.1.0 for Fabric 1.20.1
 
-GradleMC provides bounded, local diagnostics for Minecraft 1.20.1 modpacks running Fabric. It includes stability checks, FPS and server-tick sampling, passive world-generation observations, a Java sampling profiler, Fabric-native mod metadata inspection, deterministic workflows, and local reports.
+GradleMC is a local-first, privacy-first diagnostics tool for Minecraft 1.20.1 on Fabric. It provides bounded diagnostics, local reports and issue bundles, configuration and mod inspection helpers, deterministic Smart guidance, FPS/performance sampling, and a client diagnostics screen with an optional overlay.
 
-## Build and development
+This implementation is written in Kotlin. Fabric Language Kotlin is a required runtime dependency: [Fabric Language Kotlin](https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin/preview).
 
-Java 17 is the production target and runtime requirement. The checked-in Gradle wrapper is required; dependency versions are pinned for this Minecraft target.
+## Build
+
+Use Java 17 and the checked-in Gradle wrapper:
 
 ```powershell
-.\gradlew.bat build --offline
-.\gradlew.bat runClient --offline
-.\gradlew.bat runServer --offline
+.\gradlew.bat clean test build --no-daemon
 ```
 
-Use `test` for the JUnit suite, `gradlemcSelfTest` for the legacy deterministic harness, and `verifyCommonEnvironmentBoundary` for the common/client source check. The remapped development artifact is written to `build/libs/gradlemc-fabric-1.20.1-1.0.1.jar`. It is not a final release export.
+The remapped production artifact is:
 
-## Scope and privacy
+```text
+build/libs/gradlemc-1.1.0-fabric-1.20.1.jar
+```
 
-Diagnostics and reports are generated locally. GradleMC has no telemetry, analytics, cloud AI, hidden upload, or remote diagnostic service. Reports can still contain mod metadata and machine/runtime context; redaction is best-effort, so review every artifact before sharing it. See [docs/PRIVACY.md](docs/PRIVACY.md).
+The project declares Minecraft 1.20.1, Fabric Loader, Fabric API, and Fabric Language Kotlin through `gradle.properties` and `build.gradle.kts`.
 
-The Forge 1.20.1 v1.0.3 project is a behavioral reference for this port, not a package-layout template or runtime dependency. Current equivalence and intentional gaps are recorded in [docs/forge-1.0.3-parity.md](docs/forge-1.0.3-parity.md).
+## Privacy and scope
 
-This project does not declare a stable external Java API. Internal packages and report schemas may change only with documented compatibility handling. GradleMC is not affiliated with or endorsed by Gradle, Mojang Studios, Microsoft, or the Fabric project. Minecraft is a trademark of Microsoft; Fabric is maintained by its respective project.
+Diagnostics, reports, configuration, and issue bundles stay on the local machine. The implementation does not upload telemetry or diagnostic data. Generated reports can contain local Minecraft/mod metadata, so review them before sharing.
+
+The source is split between server-safe common Kotlin code and client-only Kotlin code. The porting notes in [PORTING_STATUS.md](PORTING_STATUS.md) record current coverage and remaining runtime-test limitations.
