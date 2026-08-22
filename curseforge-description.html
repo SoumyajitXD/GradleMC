@@ -1,174 +1,250 @@
-<div style="background-color: #0c0705; color: #c7cdd6; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.7;">
+<div style="background-color: #0c0705; color: #c9ced5; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.7;">
 <div style="text-align: center;">
-<p><img style="display: inline-block; width: 180px;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/GradleMC_logo.png" alt="Official GradleMC logo"></p>
-<p style="color: #8fa7c4; font-size: 12px; font-weight: bold; text-transform: uppercase;">Local diagnostics for modded Minecraft Java Edition</p>
-<h1 style="color: #f2f4f7; font-size: 40px; line-height: 1.08;">Stop guessing.<br>Inspect what Minecraft is actually doing.</h1>
-<p style="color: #b9c0ca; font-size: 17px; line-height: 1.7; margin-left: auto; margin-right: auto;">GradleMC is a local, privacy-first diagnostics and troubleshooting mod for modded Minecraft. It helps you inspect your environment, measure runtime behaviour, investigate performance and stability problems, and export useful evidence instead of debugging by superstition.</p>
-<p style="color: #8f98a5;"><strong style="color: #dce1e7;">Diagnostics</strong> &nbsp;&bull;&nbsp; Performance evidence &nbsp;&bull;&nbsp; Local reports &nbsp;&bull;&nbsp; No telemetry &nbsp;&bull;&nbsp; No cloud AI</p>
-<p><a style="display: inline-block; background-color: #315f96; color: #fff; text-decoration: none; font-weight: bold;" href="https://www.curseforge.com/minecraft/mc-mods/gradlemc/files" rel="nofollow">Download GradleMC</a> <a style="display: inline-block; border: 1px solid #48515e; color: #d9dee5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC" target="_blank" rel="nofollow noopener">GitHub</a> <a style="display: inline-block; border: 1px solid #48515e; color: #d9dee5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC/issues" target="_blank" rel="nofollow noopener">Report an Issue</a></p>
+<p><img style="display: inline-block; width: 165px;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/GradleMC_logo.png" alt="Official GradleMC logo"></p>
+<div style="color: #8aa8bd; font-size: 12px; font-weight: bold; text-transform: uppercase;">Minecraft Java Edition diagnostics &amp; troubleshooting</div>
+<h1 style="color: #f4f2ef; font-size: 40px; line-height: 1.08;">Stop guessing.<br>Inspect what Minecraft is actually doing.</h1>
+<p style="color: #bec5cc; font-size: 17px; line-height: 1.75;"><strong style="color: #edf0f2;">GradleMC</strong> is a local, privacy-first diagnostics and troubleshooting mod for modded Minecraft. Inspect the environment, measure bounded runtime behaviour, investigate performance and stability problems, use local diagnostic guidance, and export evidence that is considerably more useful than <em>&ldquo;the pack feels laggy.&rdquo;</em></p>
+<p style="color: #8e989f;"><strong style="color: #b9d4e5;">Environment inspection</strong> &nbsp;&bull;&nbsp; FPS &amp; runtime evidence &nbsp;&bull;&nbsp; Smart Diagnostics &nbsp;&bull;&nbsp; Local reports &nbsp;&bull;&nbsp; No telemetry</p>
+<p><a style="display: inline-block; background-color: #467c99; color: #fff; text-decoration: none; font-weight: bold;" href="https://www.curseforge.com/minecraft/mc-mods/gradlemc/files" rel="nofollow">Download the right build</a> <a style="display: inline-block; border: 1px solid #4b5155; color: #e0e3e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC" target="_blank" rel="nofollow noopener">GitHub</a> <a style="display: inline-block; border: 1px solid #4b5155; color: #e0e3e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC/issues" target="_blank" rel="nofollow noopener">Report an issue</a></p>
 </div>
-<p style="text-align: center;"><img style="display: block; width: 100%; border: 1px solid #252c36;" src="https://media.forgecdn.net/attachments/1764/961/2-png.png" alt="GradleMC diagnostics overview showing stability, memory, FPS and recent reports"></p>
-<p style="color: #7f8792; font-size: 12px; text-align: center;">Environment information, runtime evidence, checks and reports without leaving Minecraft.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 28px; line-height: 1.25;">GradleMC v1.1.0 &mdash; Kotlin on Forge and Fabric</h2>
-<p style="color: #9da8b6;">Minecraft 1.20.1 &nbsp;&bull;&nbsp; Forge + Fabric &nbsp;&bull;&nbsp; Java 17 runtime &nbsp;&bull;&nbsp; Kotlin runtime dependency required</p>
-<p><code style="color: #b9d2ef;">gradlemc-1.1.0-forge-1.20.1.jar</code><br><code style="color: #b9d2ef;">gradlemc-1.1.0-fabric-1.20.1.jar</code></p>
-<p>GradleMC v1.1.0 marks a major internal transition. The current Minecraft 1.20.1 Forge and Fabric editions are <strong style="color: #eef1f5;">implemented in Kotlin</strong>, replacing the previous Java GradleMC implementation.</p>
-<ul style="padding-left: 22px;">
-<li>GradleMC's active 1.20.1 implementation is now Kotlin.</li>
-<li>The previous Java GradleMC implementation has been removed from the current v1.1.0 release line.</li>
-<li>The <strong>Forge</strong> build requires <strong>Kotlin for Forge</strong>.</li>
-<li>The <strong>Fabric</strong> build requires <strong>Fabric Language Kotlin</strong>.</li>
-<li>Minecraft 1.20.1 itself still runs on Java 17. The Kotlin rewrite does <strong>not</strong> mean Java should be removed from your Minecraft installation.</li>
-</ul>
+<div><img style="display: block; width: 100%; border: 1px solid #302a28;" src="https://media.forgecdn.net/attachments/1764/961/2-png.png" alt="GradleMC diagnostics overview showing stability score, risk, memory, FPS, active tests and latest report">
+<p style="color: #837e7a; font-size: 12px; text-align: center;">Environment information, runtime evidence, checks and reports without leaving Minecraft. Gallery screenshots may show an earlier release; exact labels and layout can vary by build.</p>
+</div>
 <div>
-<p><strong style="color: #f2f4f7;">Required dependencies for GradleMC v1.1.0 on Minecraft 1.20.1</strong></p>
-<p><strong style="color: #dce1e7;">Forge:</strong> install <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener"><strong>Kotlin for Forge</strong></a> alongside GradleMC.</p>
-<p><strong style="color: #dce1e7;">Fabric:</strong> install <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin/preview" target="_blank" rel="nofollow noopener"><strong>Fabric Language Kotlin</strong></a> alongside GradleMC.</p>
-<p style="color: #949eaa;">Use the dependency matching your loader. A Forge dependency will not satisfy Fabric, and a Fabric dependency will not satisfy Forge. Minecraft mod loaders remain stubbornly uninterested in telepathy.</p>
+<div>
+<div style="color: #91b9cd; font-size: 12px; font-weight: bold; text-transform: uppercase;">Current active 1.20.1 line</div>
+<h2 style="color: #f0eeeb; font-size: 24px;">GradleMC v1.1.0 &mdash; Forge + Fabric</h2>
+<p style="color: #aeb5bb;">Minecraft 1.20.1 &nbsp;&bull;&nbsp; Java 17 &nbsp;&bull;&nbsp; Kotlin implementation &nbsp;&bull;&nbsp; <strong style="color: #d9dee1;">Forge:</strong> Kotlin for Forge required &nbsp;&bull;&nbsp; <strong style="color: #d9dee1;">Fabric:</strong> Fabric API + Fabric Language Kotlin required</p>
 </div>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">What is GradleMC?</h2>
-<p>Modded Minecraft can fail in spectacularly unhelpful ways. Low FPS, stuttering, memory pressure, overloaded worlds, strange mod combinations, server tick problems and unstable configurations often produce the same diagnostic masterpiece:</p>
-<p style="color: #e2e5e9; font-size: 18px; text-align: center;"><em>"It feels laggy."</em></p>
-<p>That is not evidence.</p>
-<p>GradleMC gives players, modpack creators, server owners, testers and developers a structured way to inspect a Minecraft instance before changing random settings or deleting half the modpack.</p>
-<p>It gathers relevant local information, measures bounded runtime signals, performs rule-based checks and turns the available evidence into readable diagnostic output.</p>
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">The workflow</h2>
-<h3 style="color: #b4c7df; font-size: 19px;">01 &mdash; Inspect</h3>
-<p>Review Minecraft, mod loader, Java runtime and GradleMC information alongside loaded mods, configurations, paths, memory state and relevant environment details.</p>
-<h3 style="color: #b4c7df; font-size: 19px;">02 &mdash; Measure</h3>
-<p>Observe supported runtime signals such as FPS, frame behaviour, memory pressure, TPS/MSPT, entities, block entities, world-generation activity and bounded profiling information.</p>
-<h3 style="color: #b4c7df; font-size: 19px;">03 &mdash; Diagnose</h3>
-<p>Use local rule-based Smart Diagnostics to connect available evidence, identify suspicious conditions, expose missing information and produce prioritised guidance.</p>
-<h3 style="color: #b4c7df; font-size: 19px;">04 &mdash; Export</h3>
-<p>Generate readable reports and diagnostic evidence for troubleshooting, bug reports, controlled comparisons, support requests and modpack maintenance.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Core capabilities</h2>
-<h3 style="color: #dce1e7; font-size: 20px;">Diagnostics control centre</h3>
-<ul style="padding-left: 22px;">
-<li>Open the in-game GradleMC interface using <code style="color: #b7d0ed;">/gradlemc gui</code> or the configurable keybind where supported.</li>
-<li>Access diagnostics, runtime information, reports, performance tools and supported configuration controls from one interface.</li>
-<li>Inspect the current state of the instance without leaving Minecraft.</li>
-</ul>
-<h3 style="color: #dce1e7; font-size: 20px;">Environment and mod inspection</h3>
-<ul style="padding-left: 22px;">
-<li>Minecraft, loader, GradleMC and JVM/runtime information.</li>
-<li>Operating-system and environment context.</li>
-<li>Loaded-mod summaries and inspection tools.</li>
-<li>Configuration, report and other relevant local paths.</li>
-<li>Heap and JVM memory information.</li>
-</ul>
-<h3 style="color: #dce1e7; font-size: 20px;">Performance evidence</h3>
-<ul style="padding-left: 22px;">
-<li>Current FPS and optional average FPS information on supported clients.</li>
-<li>Bounded timed FPS tests.</li>
-<li>TPS/MSPT-related observations where supported.</li>
-<li>Memory-pressure and runtime-health signals.</li>
-<li>Entity and block-entity observations.</li>
-<li>World-generation activity and pressure indicators.</li>
-<li>Lightweight bounded performance sampling.</li>
-</ul>
-<h3 style="color: #dce1e7; font-size: 20px;">Smart Diagnostics</h3>
-<ul style="padding-left: 22px;">
-<li>Local rule-based diagnostic scoring.</li>
-<li>Prioritised diagnostic advice.</li>
-<li>Supporting evidence and context.</li>
-<li>Identification of incomplete or missing evidence.</li>
-<li>No generative AI and no remote inference.</li>
-</ul>
-<h3 style="color: #dce1e7; font-size: 20px;">Reports and troubleshooting evidence</h3>
-<ul style="padding-left: 22px;">
-<li>Readable locally generated diagnostic reports.</li>
-<li>Recent-report discovery through supported commands and interfaces.</li>
-<li>Performance and diagnostic summaries.</li>
-<li>Exportable evidence for bug reports and support requests.</li>
-<li>TXT and JSON output where supported by the installed build.</li>
-</ul>
-<p style="text-align: center;"><img style="display: block; width: 100%; border: 1px solid #252c36;" src="https://media.forgecdn.net/attachments/1764/968/5-png.png" alt="GradleMC profiling and diagnostics interface"></p>
-<p style="color: #7f8792; font-size: 12px; text-align: center;">GradleMC uses deliberately bounded diagnostic sampling. It is a troubleshooting utility, not async-profiler wearing a Minecraft skin.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Client and server</h2>
-<h3 style="color: #b4c7df; font-size: 19px;">Client</h3>
-<p>Install GradleMC on the client for supported features such as the diagnostics interface, configurable keybind, optional overlay, FPS information, timed FPS testing and client-side environment evidence.</p>
-<h3 style="color: #b4c7df; font-size: 19px;">Server</h3>
-<p>Supported server-side functionality can include commands, runtime observations, memory and environment information, loaded-mod inspection, performance evidence, reports and Smart Diagnostics.</p>
-<p>For investigations that require evidence from both sides, install the appropriate GradleMC build and its required loader-specific dependencies wherever that build is intended to run.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Installation &mdash; Minecraft 1.20.1 v1.1.0</h2>
-<h3 style="color: #dce1e7; font-size: 20px;">Forge</h3>
-<ol style="padding-left: 24px;">
-<li>Install Minecraft Java Edition 1.20.1 with a compatible Forge 1.20.1 installation.</li>
-<li>Use Java 17 for Minecraft 1.20.1.</li>
-<li>Download <code style="color: #b7d0ed;">gradlemc-1.1.0-forge-1.20.1.jar</code>.</li>
-<li>Download <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener">Kotlin for Forge</a>.</li>
-<li>Place both required mod jars in the instance or server <code style="color: #b7d0ed;">mods</code> folder.</li>
-<li>Launch Minecraft.</li>
-<li>Run <code style="color: #b7d0ed;">/gradlemc</code> to inspect the command tree supplied by the installed GradleMC build.</li>
+<div>
+<div style="color: #7fbba8; font-size: 12px; font-weight: bold; text-transform: uppercase;">Evidence before superstition</div>
+<h2 style="color: #f1efec; font-size: 29px; line-height: 1.25;">What GradleMC actually helps investigate</h2>
+<p>Modded Minecraft has an impressive talent for making completely different problems look identical. Low FPS, stuttering, memory pressure, overloaded worlds, bad configurations, mod interactions, server tick problems and unstable environments can all eventually collapse into the same technical diagnosis:</p>
+<p style="color: #f0e9df; font-size: 20px; text-align: center;"><em>&ldquo;It feels laggy.&rdquo;</em></p>
+<p style="text-align: center; color: #9fb2bd; font-weight: bold;">That is not evidence.</p>
+<p>GradleMC gives players, modpack creators, server owners, testers and developers a structured way to inspect an instance before changing random JVM flags, deleting half the modpack, or blaming whichever mod happened to load last.</p>
+<p>Depending on the installed build and environment, GradleMC can expose Minecraft, loader and JVM information; loaded-mod and environment context; memory state; FPS and bounded performance measurements; TPS/MSPT-related observations; entity, block-entity and world-generation signals; reports; and local diagnostic guidance.</p>
+</div>
+<div>
+<h2 style="color: #f1efec; font-size: 27px;">A troubleshooting workflow that makes sense</h2>
+<div style="padding-left: 17px;">
+<div style="color: #8eb9d0; font-size: 12px; font-weight: bold;">01 &mdash; INSPECT</div>
+<h3 style="color: #e8e9e9; font-size: 19px;">Establish what you are actually running</h3>
+<p>Review Minecraft, mod loader, GradleMC, Java/JVM, operating-system, memory, loaded-mod and relevant environment information instead of relying on remembered configuration.</p>
+</div>
+<div style="padding-left: 17px;">
+<div style="color: #8fc8bb; font-size: 12px; font-weight: bold;">02 &mdash; MEASURE</div>
+<h3 style="color: #e8e9e9; font-size: 19px;">Collect bounded runtime evidence</h3>
+<p>Run supported FPS or performance tests, observe memory/runtime pressure and inspect other available signals without turning a diagnostic mod into a permanent benchmark harness.</p>
+</div>
+<div style="padding-left: 17px;">
+<div style="color: #c6ae78; font-size: 12px; font-weight: bold;">03 &mdash; DIAGNOSE</div>
+<h3 style="color: #e8e9e9; font-size: 19px;">Connect the evidence</h3>
+<p>Use local rule-based Smart Diagnostics to identify suspicious conditions, surface incomplete evidence and return prioritised guidance grounded in the information GradleMC can actually see.</p>
+</div>
+<div style="padding-left: 17px;">
+<div style="color: #b7a3ca; font-size: 12px; font-weight: bold;">04 &mdash; EXPORT</div>
+<h3 style="color: #e8e9e9; font-size: 19px;">Turn the investigation into something shareable</h3>
+<p>Generate local reports and troubleshooting evidence for controlled comparisons, bug reports, support requests and modpack maintenance.</p>
+</div>
+</div>
+<hr style="border: 0; background-color: #302926;">
+<div>
+<div style="color: #7fbba8; font-size: 12px; font-weight: bold; text-transform: uppercase;">Inside GradleMC</div>
+<h2 style="color: #f1efec; font-size: 29px;">Diagnostics without the feature-wall nonsense</h2>
+<h3 style="color: #dfe4e6; font-size: 20px;">Diagnostics control centre</h3>
+<p>Open the in-game interface with <code style="color: #a9cee2;">/gradlemc gui</code> where supported, or use the configurable client keybind. The GUI brings status, checks, reports, diagnostic tools, performance controls and supported settings into one place.</p>
+<h3 style="color: #dfe4e6; font-size: 20px;">Environment &amp; mod inspection</h3>
+<p>Inspect Minecraft, loader, GradleMC and JVM versions; operating-system and runtime context; loaded-mod information; heap/memory state; and relevant configuration or report paths. Useful because troubleshooting the wrong environment very efficiently is still troubleshooting the wrong environment.</p>
+<h3 style="color: #dfe4e6; font-size: 20px;">Performance evidence</h3>
+<p>Observe supported client FPS information, run bounded timed FPS tests, collect lightweight runtime/performance samples and inspect available TPS/MSPT, entity, block-entity, memory-pressure and world-generation signals. Availability varies by release and side.</p>
+<h3 style="color: #dfe4e6; font-size: 20px;">Overlay &amp; runtime visibility</h3>
+<p>Supported clients can expose optional runtime information such as current/average FPS and other available status data without requiring the main diagnostics screen to stay open.</p>
+<h3 style="color: #dfe4e6; font-size: 20px;">Reports &amp; evidence export</h3>
+<p>Generate readable local diagnostic output, locate recent reports and preserve evidence for before/after comparisons or useful issue reports. TXT and JSON output are available where provided by the installed release.</p>
+</div>
+<div><img style="display: block; width: 100%; border: 1px solid #302a28;" src="https://media.forgecdn.net/attachments/1764/968/5-png.png" alt="GradleMC profiler screen showing bounded profiling controls, duration, sample interval and profile status">
+<p style="color: #837e7a; font-size: 12px; text-align: center;">GradleMC deliberately keeps diagnostic sampling bounded. It is a troubleshooting utility, not async-profiler wearing a Minecraft skin.</p>
+</div>
+<div style="background-color: #15110f;">
+<div style="color: #8cc7b4; font-size: 12px; font-weight: bold; text-transform: uppercase;">Smart Diagnostics</div>
+<h2 style="color: #f0eeeb; font-size: 26px;">Local diagnostic guidance. Not an AI chatbot.</h2>
+<p>Smart Diagnostics evaluates the evidence GradleMC has collected using local rules and scoring. It can produce prioritised advice, supporting context and indications that important evidence is missing or incomplete.</p>
+<p style="color: #a9b0b4;">There is <strong style="color: #e2e5e6;">no cloud AI, no LLM inference and no hidden remote diagnostic service</strong>. &ldquo;Smart&rdquo; describes the diagnostic logic, not a server farm being asked to hallucinate why your TPS collapsed.</p>
+</div>
+<div><img style="display: block; width: 100%; border: 1px solid #302a28;" src="https://media.forgecdn.net/attachments/1764/967/6-png.png" alt="Earlier GradleMC gallery capture showing local adaptive diagnostics, risk information and tracked gameplay signals">
+<p style="color: #837e7a; font-size: 12px; text-align: center;">Earlier gallery capture of GradleMC's local diagnostic/scoring interface. Names and controls may differ in current builds.</p>
+</div>
+<hr style="border: 0; background-color: #302926;">
+<div>
+<div style="color: #91b9cd; font-size: 12px; font-weight: bold; text-transform: uppercase;">Compatibility</div>
+<h2 style="color: #f1efec; font-size: 29px;">Use the exact build for your Minecraft version and loader</h2>
+<p>GradleMC is <strong style="color: #e7eaeb;">not one universal jar</strong>. A Forge build is not a Fabric build, and changing a filename does not perform a loader port. It merely gives the crash a more optimistic filename.</p>
+<div>
+<table style="width: 100%; text-align: left;">
+<tbody>
+<tr>
+<th style="color: #dce2e5;">Status</th>
+<th style="color: #dce2e5;">Minecraft</th>
+<th style="color: #dce2e5;">GradleMC</th>
+<th style="color: #dce2e5;">Loaders</th>
+<th style="color: #dce2e5;">Java</th>
+</tr>
+<tr>
+<td style="color: #8dc6af;"><strong>Active</strong></td>
+<td>1.20.1</td>
+<td>v1.1.0</td>
+<td>Forge, Fabric</td>
+<td>17</td>
+</tr>
+<tr>
+<td style="color: #aeb7bd;">Published</td>
+<td>1.21.11</td>
+<td>v1.0.0</td>
+<td>Forge, Fabric, NeoForge</td>
+<td>21</td>
+</tr>
+<tr>
+<td style="color: #aeb7bd;">Published</td>
+<td>26.1.2</td>
+<td>v1.0.0</td>
+<td>Forge, Fabric, NeoForge</td>
+<td>25</td>
+</tr>
+<tr>
+<td style="color: #c69c75;"><strong>Discontinued</strong></td>
+<td>1.20.1</td>
+<td>v1.0.0</td>
+<td>Quilt</td>
+<td>17</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="color: #9da5aa;">The <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/gradlemc/files" rel="nofollow"><strong>CurseForge Files page</strong></a> is the safest place to choose an actually published jar. Match both your Minecraft version and loader.</p>
+</div>
+<div>
+<h2 style="color: #f1efec; font-size: 27px;">Minecraft 1.20.1 v1.1.0 dependencies</h2>
+<h3 style="color: #dfe4e6; font-size: 20px;">Forge</h3>
+<p>Install <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener"><strong>Kotlin for Forge</strong></a> alongside GradleMC.</p>
+<p style="color: #949da3;">Current v1.1.0 source targets Forge 47.4.22 and declares the Forge range from 47.4.22 up to, but not including, 47.5. Its Kotlin loader range is Kotlin for Forge 4.12 up to, but not including, 5; the build uses Kotlin for Forge 4.12.0.</p>
+<h3 style="color: #dfe4e6; font-size: 20px;">Fabric</h3>
+<p>Install both <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-api" target="_blank" rel="nofollow noopener"><strong>Fabric API</strong></a> and <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin" target="_blank" rel="nofollow noopener"><strong>Fabric Language Kotlin</strong></a>.</p>
+<p style="color: #949da3;">Current v1.1.0 metadata declares Fabric Loader 0.19.3 or newer, Fabric API 0.92.11+1.20.1 or newer, and Fabric Language Kotlin 1.13.13+kotlin.2.4.10 or newer for the 1.20.1 build.</p>
+<div style="background-color: #161210;"><strong style="color: #e7d4ae;">Kotlin did not replace Java.</strong><br>GradleMC v1.1.0's active 1.20.1 Forge and Fabric implementations are written in Kotlin, but Minecraft 1.20.1 still runs on Java 17. Loader-specific Kotlin support is an additional dependency, not a substitute JVM.</div>
+</div>
+<div>
+<div style="color: #7fbba8; font-size: 12px; font-weight: bold; text-transform: uppercase;">Quick start</div>
+<h2 style="color: #f1efec; font-size: 29px;">Installation &mdash; Minecraft 1.20.1 v1.1.0</h2>
+<h3 style="color: #dfe4e6; font-size: 20px;">Forge</h3>
+<ol style="padding-left: 23px;">
+<li>Install Minecraft Java Edition 1.20.1.</li>
+<li>Use a compatible Forge 1.20.1 installation and Java 17.</li>
+<li>Download <code style="color: #add0e1;">gradlemc-1.1.0-forge-1.20.1.jar</code>.</li>
+<li>Install <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/kotlin-for-forge" target="_blank" rel="nofollow noopener">Kotlin for Forge</a>.</li>
+<li>Place the required jars in the instance or server <code style="color: #add0e1;">mods</code> folder.</li>
+<li>Launch Minecraft and run <code style="color: #add0e1;">/gradlemc</code>.</li>
 </ol>
-<h3 style="color: #dce1e7; font-size: 20px;">Fabric</h3>
-<ol style="padding-left: 24px;">
-<li>Install Minecraft Java Edition 1.20.1 with a compatible Fabric Loader installation.</li>
-<li>Use Java 17 for Minecraft 1.20.1.</li>
-<li>Download <code style="color: #b7d0ed;">gradlemc-1.1.0-fabric-1.20.1.jar</code>.</li>
-<li>Download <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin/preview" target="_blank" rel="nofollow noopener">Fabric Language Kotlin</a>.</li>
-<li>Place GradleMC and Fabric Language Kotlin in the instance or server <code style="color: #b7d0ed;">mods</code> folder.</li>
-<li>Install any other dependencies listed for the GradleMC file you downloaded.</li>
-<li>Launch Minecraft.</li>
-<li>Run <code style="color: #b7d0ed;">/gradlemc</code> to inspect the command tree supplied by the installed GradleMC build.</li>
+<h3 style="color: #dfe4e6; font-size: 20px;">Fabric</h3>
+<ol style="padding-left: 23px;">
+<li>Install Minecraft Java Edition 1.20.1.</li>
+<li>Install a compatible Fabric Loader and use Java 17.</li>
+<li>Download <code style="color: #add0e1;">gradlemc-1.1.0-fabric-1.20.1.jar</code>.</li>
+<li>Install <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-api" target="_blank" rel="nofollow noopener">Fabric API</a>.</li>
+<li>Install <a style="color: #9dc8df;" href="https://www.curseforge.com/minecraft/mc-mods/fabric-language-kotlin" target="_blank" rel="nofollow noopener">Fabric Language Kotlin</a>.</li>
+<li>Place GradleMC and its dependencies in the instance or server <code style="color: #add0e1;">mods</code> folder.</li>
+<li>Launch Minecraft and run <code style="color: #add0e1;">/gradlemc</code>.</li>
 </ol>
-<div>
-<p><strong style="color: #f1f2f4;">Do not confuse language with runtime.</strong></p>
-<p>GradleMC v1.1.0 is implemented in Kotlin rather than the previous Java GradleMC codebase. Minecraft 1.20.1 still requires a Java 17 runtime. Kotlin for Forge and Fabric Language Kotlin provide the Kotlin integration required by their respective loaders; they do not replace Java itself.</p>
 </div>
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Use the exact build</h2>
-<p>Minecraft versions and mod loaders are not interchangeable.</p>
-<p>A Forge build is not a Fabric build. A Fabric build is not a NeoForge build. A 1.20.1 jar does not magically become a 1.21 build because its filename has been edited.</p>
-<p>Always check the <a style="color: #9fc3ed;" href="https://www.curseforge.com/minecraft/mc-mods/gradlemc/files" rel="nofollow">GradleMC Files page</a> and choose the file matching your Minecraft version and loader.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Quilt support has ended</h2>
 <div>
-<p><strong style="color: #f0f2f5;">No new GradleMC versions are planned for Quilt.</strong></p>
-<p>The Quilt release line received too few downloads to justify continuing the additional development, testing and maintenance work required for another loader.</p>
-<p>Existing Quilt releases may remain available for users who need them, but they should be treated as discontinued builds. New GradleMC features, fixes and releases will not be ported to Quilt.</p>
+<h2 style="color: #f1efec; font-size: 27px;">Client &amp; server capabilities</h2>
+<h3 style="color: #9fc4d5; font-size: 19px;">Client</h3>
+<p>Install GradleMC on a supported client for client-side features such as the diagnostics GUI, configurable keybind, optional overlay, FPS information, timed FPS testing and client environment evidence.</p>
+<h3 style="color: #9fc4d5; font-size: 19px;">Server / common diagnostics</h3>
+<p>Supported server-side functionality can include commands, runtime observations, memory and environment information, loaded-mod inspection, performance evidence, report generation and Smart Diagnostics.</p>
+<p style="color: #929b9f;">Exact feature availability depends on the GradleMC release, loader, permissions and whether a capability is inherently client-only. FPS testing on a headless dedicated server would be quite a philosophical achievement.</p>
 </div>
-<p>Maintaining another loader is not free. Every supported target multiplies compatibility work, testing and opportunities for something to catch fire in a completely loader-specific way. Development effort is better spent on the GradleMC versions people are actually using.</p>
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Release lines</h2>
-<p>GradleMC has been published for multiple Minecraft versions and mod loaders. The Files page remains the source of truth for builds that are actually available.</p>
-<h3 style="color: #dce1e7; font-size: 19px;">Minecraft 1.20.1</h3>
-<p>Java 17 &nbsp;&bull;&nbsp; GradleMC v1.1.0 available for Forge and Fabric</p>
-<h3 style="color: #dce1e7; font-size: 19px;">Minecraft 1.21.11</h3>
-<p>Java 21 &nbsp;&bull;&nbsp; loader-specific builds where published</p>
-<h3 style="color: #dce1e7; font-size: 19px;">Minecraft 26.1.2</h3>
-<p>Java 25 &nbsp;&bull;&nbsp; loader-specific builds where published</p>
-<p style="color: #939ca8;"><strong>Quilt:</strong> discontinued. No new GradleMC Quilt releases are planned.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Essential commands</h2>
-<p>GradleMC commands are lowercase. Exact command availability can vary by release, loader, environment, permissions and client/server side.</p>
-<ul style="padding-left: 22px;">
-<li><code style="color: #b7d0ed;">/gradlemc</code> &mdash; inspect the command tree available in your build.</li>
-<li><code style="color: #b7d0ed;">/gradlemc gui</code> &mdash; open the diagnostics interface where supported.</li>
-<li><code style="color: #b7d0ed;">/gradlemc status</code> &mdash; show a compact diagnostic status summary.</li>
-<li><code style="color: #b7d0ed;">/gradlemc version</code> &mdash; show GradleMC and environment version information.</li>
-<li><code style="color: #b7d0ed;">/gradlemc memory</code> &mdash; inspect JVM memory information.</li>
-<li><code style="color: #b7d0ed;">/gradlemc check</code> &mdash; run available local diagnostic checks.</li>
-<li><code style="color: #b7d0ed;">/gradlemc testfps start &lt;seconds&gt;</code> &mdash; begin a bounded client FPS test.</li>
-<li><code style="color: #b7d0ed;">/gradlemc testfps stop</code> &mdash; stop an active FPS test.</li>
-<li><code style="color: #b7d0ed;">/gradlemc perf start &lt;seconds&gt;</code> &mdash; start a supported bounded performance sample.</li>
-<li><code style="color: #b7d0ed;">/gradlemc export</code> &mdash; export local troubleshooting evidence.</li>
-<li><code style="color: #b7d0ed;">/gradlemc reports latest</code> &mdash; locate the newest generated report.</li>
-<li><code style="color: #b7d0ed;">/gradlemc smart score</code> &mdash; inspect the current Smart Diagnostics score.</li>
-<li><code style="color: #b7d0ed;">/gradlemc smart advice</code> &mdash; inspect prioritised diagnostic guidance.</li>
-</ul>
-<p style="color: #929ba7;">Additional commands may exist for performance testing, reports, profiling, loaded mods, entities, world generation and other diagnostic systems. Use <code style="color: #b7d0ed;">/gradlemc</code> instead of assuming that every historical command exists in every build.</p>
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Generated files</h2>
-<p>GradleMC stores its local diagnostic data beneath:</p>
-<p><code style="color: #b9d2ef;">&lt;gameDir&gt;/gradlemc/</code></p>
-<p>Depending on the installed release and action used, this directory can contain diagnostic reports, exports, profiling information, issue evidence, configuration-related files and other GradleMC output.</p>
-<p><strong style="color: #eef1f4;">Review diagnostic files before sharing them.</strong> Reports can contain local paths, Java/JVM information, loaded mod names, loader details, instance information and other system context.</p>
-<p>GradleMC does not automatically upload these reports.</p>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Local by design</h2>
+<div><img style="display: block; width: 100%; border: 1px solid #302a28;" src="https://media.forgecdn.net/attachments/1764/945/0-png.png" alt="Minecraft world with the optional GradleMC runtime overlay showing FPS and JVM memory information">
+<p style="color: #837e7a; font-size: 12px; text-align: center;">Optional client runtime visibility without keeping the full diagnostics screen open. Exact overlay fields vary by release and configuration.</p>
+</div>
+<hr style="border: 0; background-color: #302926;">
+<div>
+<div style="color: #91b9cd; font-size: 12px; font-weight: bold; text-transform: uppercase;">Command line</div>
+<h2 style="color: #f1efec; font-size: 29px;">Essential <code style="color: #add0e1;">/gradlemc</code> commands</h2>
+<p>GradleMC commands are lowercase. The exact tree varies by release, loader, side and permissions, so <code style="color: #add0e1;">/gradlemc</code> itself is the authoritative help menu for your installed build.</p>
+<div>
+<table style="width: 100%; text-align: left;">
+<tbody>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc</code></td>
+<td>Show the command tree supplied by the installed build.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc gui</code></td>
+<td>Open the diagnostics interface where supported.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc status</code></td>
+<td>Show a compact diagnostic status summary.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc version</code></td>
+<td>Inspect GradleMC and environment version information.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc memory</code></td>
+<td>Inspect JVM memory information.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc check</code></td>
+<td>Run available local diagnostic checks.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc testfps start &lt;seconds&gt;</code></td>
+<td>Start a bounded client FPS test.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc testfps stop</code></td>
+<td>Stop the active FPS test.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc perf start &lt;seconds&gt;</code></td>
+<td>Start a supported bounded performance sample.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc export</code></td>
+<td>Export local troubleshooting evidence.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc reports latest</code></td>
+<td>Locate the newest generated report.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc smart score</code></td>
+<td>Inspect the current Smart Diagnostics score.</td>
+</tr>
+<tr>
+<td><code style="color: #add0e1;">/gradlemc smart advice</code></td>
+<td>Inspect prioritised diagnostic guidance.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="color: #929b9f;">Additional commands may exist for profiling, loaded mods, reports, entities, world generation and other diagnostic systems. Use the command tree supplied by the exact jar you installed rather than assuming every historical command exists everywhere.</p>
+</div>
+<div>
+<h2 style="color: #f1efec; font-size: 27px;">Generated reports stay under your control</h2>
+<p>GradleMC stores its local diagnostic output beneath:</p>
+<p style="background-color: #151210;"><code style="color: #b7d5e5;">&lt;gameDir&gt;/gradlemc/</code></p>
+<p>Depending on the release and action used, this can contain diagnostic reports, exports, profiling information, issue evidence, configuration-related files and other GradleMC output.</p>
+<div style="background-color: #18120f;"><strong style="color: #ebd4ad;">Review diagnostic files before sharing them.</strong><br>Reports can contain local paths, Java/JVM details, loaded mod names, loader information, instance details and other runtime context. GradleMC does <strong>not</strong> automatically upload these files.</div>
+</div>
+<div><img style="display: block; width: 100%; border: 1px solid #302a28;" src="https://media.forgecdn.net/attachments/1764/966/7-png.png" alt="GradleMC reports interface showing latest locally generated reports and report path controls">
+<p style="color: #837e7a; font-size: 12px; text-align: center;">Reports are generated locally and remain local until you choose what to share.</p>
+</div>
+<div>
+<div style="color: #7fbba8; font-size: 12px; font-weight: bold; text-transform: uppercase;">Local by design</div>
+<h2 style="color: #f1efec; font-size: 29px;">Diagnostics should not require surrendering the diagnostics</h2>
 <ul style="padding-left: 22px;">
 <li>No behavioural telemetry.</li>
 <li>No analytics tracking.</li>
@@ -177,35 +253,56 @@
 <li>No automatic report upload.</li>
 <li>No automatic transmission of generated troubleshooting evidence.</li>
 <li>No broad scanning of unrelated private files.</li>
-<li>Your generated evidence remains local until you choose to share it.</li>
+<li>Generated evidence remains local until you decide to share it.</li>
 </ul>
-<p><strong style="color: #eef1f4;">Smart Diagnostics is not generative AI.</strong> It is a local rule-based diagnostic system designed to evaluate available GradleMC evidence and return structured guidance.</p>
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">What GradleMC is not</h2>
-<ul style="padding-left: 22px;">
-<li><strong style="color: #dce1e7;">Not an FPS booster:</strong> GradleMC measures and diagnoses performance; it does not manufacture additional GPU horsepower.</li>
-<li><strong style="color: #dce1e7;">Not a crash-fixing bot:</strong> it can expose useful evidence, but it cannot automatically repair every incompatible or broken modpack.</li>
-<li><strong style="color: #dce1e7;">Not a replacement for performance mods:</strong> it does not replace Sodium, Embeddium or careful configuration.</li>
-<li><strong style="color: #dce1e7;">Not a full low-level profiler:</strong> advanced CPU, allocation or tick investigations may still require tools such as Spark, Java Flight Recorder, VisualVM or async-profiler.</li>
-<li><strong style="color: #dce1e7;">Not a universal jar:</strong> use the correct Minecraft-version and loader-specific build.</li>
-<li><strong style="color: #dce1e7;">Not a Gradle replacement:</strong> GradleMC and the Gradle Build Tool are separate projects.</li>
-<li><strong style="color: #dce1e7;">Not a Bedrock Edition tool:</strong> GradleMC targets supported Minecraft Java Edition releases.</li>
-</ul>
+<p>Smart Diagnostics follows the same model: local evidence, local rules, local guidance.</p>
+</div>
 <div>
-<p>GradleMC can tell you that your performance problem has evidence behind it. It cannot negotiate extra frames from hardware that has already submitted its resignation letter.</p>
+<h2 style="color: #f1efec; font-size: 27px;">What GradleMC deliberately is not</h2>
+<p><strong style="color: #dce3e6;">Not an FPS booster.</strong> It measures and diagnoses performance; it does not manufacture spare GPU horsepower.</p>
+<p><strong style="color: #dce3e6;">Not a universal crash-fixing bot.</strong> GradleMC can expose evidence and suspicious conditions, but it cannot automatically repair every incompatible or broken modpack.</p>
+<p><strong style="color: #dce3e6;">Not a replacement for Sodium or Embeddium.</strong> Diagnostics and optimisation are different jobs.</p>
+<p><strong style="color: #dce3e6;">Not a replacement for specialist low-level profilers.</strong> Deep CPU, allocation or tick investigations may still require tools such as Spark, Java Flight Recorder, VisualVM or async-profiler.</p>
+<p><strong style="color: #dce3e6;">Not one jar for every loader and Minecraft version.</strong> Install the exact published target you need.</p>
+<p><strong style="color: #dce3e6;">Not the Gradle Build Tool.</strong> Similar name, completely different job.</p>
+<p><strong style="color: #dce3e6;">Not a Bedrock utility.</strong> GradleMC targets supported Minecraft Java Edition releases.</p>
+<p style="color: #a7afb3; font-style: italic;">GradleMC can tell you that your performance problem has evidence behind it. It cannot negotiate extra frames from hardware that has already submitted its resignation letter.</p>
 </div>
-<hr style="border: 0; background-color: #272d36;">
-<h2 style="color: #f0f2f5; font-size: 27px; line-height: 1.25;">Support and development</h2>
-<p>Source code and project documentation are available from the <a style="color: #9fc3ed;" href="https://github.com/SoumyajitXD/GradleMC" target="_blank" rel="nofollow noopener">GradleMC GitHub repository</a>.</p>
-<p>For reproducible GradleMC bugs, use the <a style="color: #9fc3ed;" href="https://github.com/SoumyajitXD/GradleMC/issues" target="_blank" rel="nofollow noopener">GitHub issue tracker</a>.</p>
-<p>Useful reports should include the exact Minecraft version, mod loader, Java runtime, GradleMC version or jar filename, reproduction steps and relevant reviewed diagnostic evidence.</p>
-<p>GradleMC is an independent Minecraft project. It is not affiliated with, endorsed by or part of Gradle, Inc. or the Gradle Build Tool, and it does not replace Gradle.</p>
-<hr style="border: 0; background-color: #272d36;">
+<hr style="border: 0; background-color: #302926;">
+<div>
+<div style="color: #b99b76; font-size: 12px; font-weight: bold; text-transform: uppercase;">Legacy loader notice</div>
+<h2 style="color: #f1efec; font-size: 27px;">Quilt support has ended</h2>
+<p><strong style="color: #e5dfd8;">No new GradleMC versions are planned for Quilt.</strong> The existing Quilt 1.20.1 v1.0.0 file may remain downloadable as a legacy build, but future GradleMC features, fixes and releases are not being ported to Quilt.</p>
+<p style="color: #989fa3;">Maintaining another loader multiplies implementation, compatibility, testing and documentation work. The Quilt release line did not receive enough use to justify that continuing cost, so development effort is being spent on the GradleMC targets people are actually using.</p>
+</div>
+<div>
+<div style="color: #91b9cd; font-size: 12px; font-weight: bold; text-transform: uppercase;">Support &amp; development</div>
+<h2 style="color: #f1efec; font-size: 29px;">Found a GradleMC problem? Bring evidence.</h2>
+<p>Reproducible GradleMC bugs belong on the <a style="color: #9dc8df;" href="https://github.com/SoumyajitXD/GradleMC/issues" target="_blank" rel="nofollow noopener"><strong>GitHub issue tracker</strong></a>.</p>
+<p>A useful report should include the exact:</p>
+<ul style="padding-left: 22px;">
+<li>Minecraft version;</li>
+<li>mod loader and loader version;</li>
+<li>Java version;</li>
+<li>GradleMC version and preferably exact jar filename;</li>
+<li>required dependency versions;</li>
+<li>client, dedicated-server or integrated-server environment;</li>
+<li>reproduction steps and expected/actual behaviour;</li>
+<li>relevant reviewed GradleMC report or log evidence;</li>
+<li>screenshots or short clips for GUI/overlay issues where useful.</li>
+</ul>
+<p><a style="display: inline-block; border: 1px solid #4b5155; color: #dce2e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC" target="_blank" rel="nofollow noopener">Source &amp; docs</a> <a style="display: inline-block; border: 1px solid #4b5155; color: #dce2e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC/blob/main/SUPPORT.md" target="_blank" rel="nofollow noopener">Support guide</a> <a style="display: inline-block; border: 1px solid #4b5155; color: #dce2e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC/blob/main/CHANGELOG.md" target="_blank" rel="nofollow noopener">Changelog</a> <a style="display: inline-block; border: 1px solid #4b5155; color: #dce2e5; text-decoration: none; font-weight: bold;" href="https://github.com/SoumyajitXD/GradleMC/blob/main/ROADMAP.md" target="_blank" rel="nofollow noopener">Roadmap</a></p>
+</div>
+<div style="background-color: #14110f;"><strong style="color: #e2e4e5;">Project identity</strong><br>GradleMC is an independent Minecraft project. It is not affiliated with, endorsed by, or part of Gradle, Inc. or the Gradle Build Tool, and it does not replace Gradle.<br><span style="color: #959da1;">Project license: Apache-2.0 &nbsp;&bull;&nbsp; CurseForge Project ID: 1585182 &nbsp;&bull;&nbsp; Minecraft Java Edition &nbsp;&bull;&nbsp; Client &amp; server</span></div>
 <div style="text-align: center;">
-<p style="color: #7f8792; font-size: 12px; font-weight: bold; text-transform: uppercase;">Optional server-hosting partner</p>
-<h2 style="color: #f0f2f5; font-size: 25px;">Need a separate test server?</h2>
-<p>The partner link below offers 25% off the first month. Hosting is entirely optional and is not required to install or use GradleMC.</p>
-<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"><img style="display: inline-block; width: 78%;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/bisecthosting-banner.png" alt="Optional BisectHosting partner offer with 25 percent off the first month"></a></p>
+<div style="color: #827c77; font-size: 11px; font-weight: bold; text-transform: uppercase;">Optional server-hosting partner</div>
+<h2 style="color: #e9e7e4; font-size: 24px;">Need a separate test server?</h2>
+<p style="color: #a6aaac;">The BisectHosting partner link below offers <strong style="color: #ded8d1;">25% off the first month</strong>. Hosting is completely optional and is not required to install, run or use GradleMC.</p>
+<p><a href="https://url-shortener.curseforge.com/kZ5IK" target="_blank" rel="nofollow noopener"> <img style="display: inline-block; width: 78%;" src="https://raw.githubusercontent.com/SoumyajitXD/GradleMC/main/bisecthosting-banner.png" alt="Optional BisectHosting partner offer with 25 percent off the first month"> </a></p>
 </div>
-<hr style="border: 0; background-color: #272d36;">
-<p style="color: #78818d; font-size: 12px; text-align: center;">Apache-2.0 &bull; CurseForge Project ID 1585182 &bull; Minecraft Java Edition &bull; Client and server</p>
+<div style="text-align: center;">
+<p style="color: #777b7e; font-size: 12px;">Apache-2.0 &bull; CurseForge Project ID 1585182 &bull; Minecraft Java Edition &bull; Local-first diagnostics</p>
+<p style="color: #706b67; font-size: 12px;">Choose the exact GradleMC file for your Minecraft version and mod loader. Evidence first; random configuration archaeology second.</p>
+</div>
+</div>
 </div>
