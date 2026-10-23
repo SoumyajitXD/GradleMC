@@ -208,7 +208,7 @@ jobs:
           distribution_url="$(sed -n 's/^distributionUrl=//p' gradle/wrapper/gradle-wrapper.properties | tail -n 1)"
           distribution_url="${distribution_url//\\:/:}"
           [[ "$distribution_url" == https://services.gradle.org/distributions/gradle-*-bin.zip ]]
-          ./gradlew --no-daemon --version
+          bash ./gradlew --no-daemon --version
 
       - name: Resolve project metadata
         id: metadata
@@ -241,7 +241,7 @@ jobs:
         working-directory: ${{ matrix.project_dir }}
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon --stacktrace --warning-mode all ${{ matrix.command }} 2>&1 | tee ci-gradle.log
+          bash ./gradlew --no-daemon --stacktrace --warning-mode all ${{ matrix.command }} 2>&1 | tee ci-gradle.log
 
       - name: Verify built JAR
         id: verify
