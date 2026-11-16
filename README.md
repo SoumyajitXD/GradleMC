@@ -1,5 +1,8 @@
 # GradleMC
 
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
+
 <p align="center">
   <img src="GradleMC_logo.png" width="180" alt="GradleMC logo">
 </p>
@@ -9,9 +12,10 @@
 </p>
 
 <p align="center">
+  <img alt="Project status discontinued" src="https://img.shields.io/badge/Status-Discontinued-critical">
   <a href="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/SoumyajitXD/GradleMC/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Minecraft versions" src="https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.11%20%7C%2026.1.2-brightgreen">
-  <img alt="Active loaders" src="https://img.shields.io/badge/Active%20loaders-Forge%20%7C%20Fabric%20%7C%20NeoForge-blueviolet">
+  <img alt="Previously released loaders" src="https://img.shields.io/badge/Previously%20released%20loaders-Forge%20%7C%20Fabric%20%7C%20NeoForge-blueviolet">
   <img alt="Language" src="https://img.shields.io/badge/1.20.1%20v1.1.0-Kotlin-7f52ff">
   <img alt="License Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-lightgrey">
   <img alt="Telemetry none" src="https://img.shields.io/badge/Telemetry-none-success">
@@ -19,7 +23,7 @@
 
 ---
 
-## Latest 1.20.1 Release
+## Last Published 1.20.1 Release
 
 GradleMC `v1.1.0` is available for both **Forge** and **Fabric** on Minecraft `1.20.1`. Both current 1.20.1 implementations are Kotlin-based and still run on Java `17`.
 
@@ -48,8 +52,8 @@ GradleMC is **not** an FPS booster, crash-fixing bot, cloud AI service, or repla
 
 | Status | Loader | GradleMC | Minecraft | Java | Dependency / notes | Artifact |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Latest** | Forge | `1.1.0` | `1.20.1` | `17` | Kotlin; **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
-| **Latest** | Fabric | `1.1.0` | `1.20.1` | `17` | Kotlin; **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
+| **Last published** | Forge | `1.1.0` | `1.20.1` | `17` | Kotlin; **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
+| **Last published** | Fabric | `1.1.0` | `1.20.1` | `17` | Kotlin; **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 | Published | Forge | `1.0.0` | `1.21.11` | `21` | Forge `61.1.8` | `gradlemc-forge-1.21.11-1.0.0.jar` |
 | Published | Fabric | `1.0.0` | `1.21.11` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 | Published | NeoForge | `1.0.0` | `1.21.11` | `21` | NeoForge `21.11.42` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
@@ -157,7 +161,7 @@ More screenshots live in [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md).
 
 Use the source project matching the loader and Minecraft version.
 
-Current 1.20.1 Kotlin projects:
+Previously published 1.20.1 Kotlin projects:
 
 ```text
 GradleMC/Forge/Minecraft 1.20.1/
@@ -166,7 +170,7 @@ GradleMC/Fabric/Minecraft 1.20.1/
 
 Other checked-in source projects include Forge, Fabric, and NeoForge targets for newer published Minecraft versions. Quilt `1.20.1` remains legacy/discontinued.
 
-Use [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before release/export work.
+The [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) is retained as a historical reference; no further release/export work is planned.
 
 ---
 

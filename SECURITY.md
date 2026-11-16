@@ -1,21 +1,26 @@
 # Security Policy
 
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
+
+**Security support has ended for all GradleMC versions and loaders.** No fixes, patches, response times, or advisories are guaranteed. Consider this before using the mod, especially in environments with elevated security requirements.
+
 GradleMC is a local Minecraft diagnostics mod. Most reports are ordinary bugs, crashes, bad configurations, mod conflicts, or documentation problems. Security reports are for risks affecting users, maintainers, project distribution, dependencies, privacy, or release integrity.
 
 ---
 
-## Supported Versions
+## Historical Release Targets — All Unsupported
 
 | Version / target | Security support |
 | --- | --- |
-| GradleMC `1.1.0` for Minecraft `1.20.1` Forge | **Current release**; Kotlin for Forge required |
-| GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | Published target |
-| GradleMC `1.0.0` for Minecraft `1.21.11` Forge | Published target |
-| GradleMC `1.0.0` for Minecraft `1.21.11` Fabric | Published target |
-| GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | Published target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` Forge | Published target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | Published target |
-| GradleMC `1.0.0` for Minecraft `26.1.2` NeoForge | Published target |
+| GradleMC `1.1.0` for Minecraft `1.20.1` Forge | **Unsupported**; formerly published, Kotlin for Forge required |
+| GradleMC `1.0.0` for Minecraft `1.20.1` Fabric | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Forge | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `1.21.11` Fabric | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `1.21.11` NeoForge | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `26.1.2` Forge | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `26.1.2` Fabric | **Unsupported**; historical release |
+| GradleMC `1.0.0` for Minecraft `26.1.2` NeoForge | **Unsupported**; historical release |
 | GradleMC `1.0.0` for Minecraft `1.20.1` Quilt | **Discontinued**; no new GradleMC Quilt updates planned |
 | Bedrock or unlisted loader/version combinations | Not supported |
 | Unofficial mirrors, modified jars, or random ZIPs | Not supported |
@@ -42,7 +47,7 @@ A filename alone is not proof that a jar is official. Verify release source, pro
 
 ## What Counts As A Security Concern
 
-Open a GitHub issue if you find or suspect:
+The following remain security concerns, but this discontinued project does not promise investigation or fixes:
 
 - fake GradleMC downloads, mirrors, installers, or jar files;
 - tampered files pretending to be official GradleMC releases;
@@ -77,7 +82,7 @@ These belong in normal support or bug channels:
 
 ## Reporting Security Issues
 
-For reports that are safe to discuss publicly, use GitHub Issues:
+For reports that are safe to discuss publicly, GitHub Issues remains an option for historical public documentation, but review or response is not guaranteed:
 
 https://github.com/SoumyajitXD/GradleMC/issues
 

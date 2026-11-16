@@ -1,12 +1,17 @@
-# GradleMC Support
+# GradleMC Support (Historical)
+
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
+
+This page documents older installation and troubleshooting information for self-service use; it is not an offer of active support.
 
 Need help with GradleMC? Use this guide so reports contain evidence instead of becoming another vague modpack mystery.
 
 ---
 
-## Latest Minecraft 1.20.1 Releases
+## Last Published Minecraft 1.20.1 Releases
 
-GradleMC `v1.1.0` is current for both Forge and Fabric on Minecraft `1.20.1`.
+GradleMC `v1.1.0` was the last published 1.20.1 version for both Forge and Fabric on Minecraft `1.20.1`.
 
 ### Forge
 
@@ -22,15 +27,15 @@ GradleMC `v1.1.0` is current for both Forge and Fabric on Minecraft `1.20.1`.
 - GradleMC implementation: **Kotlin**
 - Required dependencies: **Fabric API** and **Fabric Language Kotlin**
 
-The active 1.20.1 GradleMC implementations are Kotlin-based. Minecraft still requires Java `17`; do not remove the Java runtime because GradleMC itself uses Kotlin.
+The published 1.20.1 GradleMC implementations are Kotlin-based. Minecraft still requires Java `17`; do not remove the Java runtime because GradleMC itself uses Kotlin.
 
 If `v1.1.0` fails before GradleMC initializes, verify the loader-specific dependencies before treating the failure as a GradleMC bug.
 
 ---
 
-## Where To Ask
+## Historical Issue Records
 
-Use GitHub issues for:
+Existing GitHub issues may help explain:
 
 - reproducible GradleMC bugs;
 - crashes or command failures caused by GradleMC;
@@ -46,8 +51,8 @@ Use community/modpack support channels for general Minecraft, loader, Java, or m
 
 | Status | Loader | Minecraft | GradleMC | Java | Dependency / notes | Artifact |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Latest** | Forge | `1.20.1` | `1.1.0` | `17` | **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
-| **Latest** | Fabric | `1.20.1` | `1.1.0` | `17` | **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
+| **Last published** | Forge | `1.20.1` | `1.1.0` | `17` | **Kotlin for Forge required** | `gradlemc-1.1.0-forge-1.20.1.jar` |
+| **Last published** | Fabric | `1.20.1` | `1.1.0` | `17` | **Fabric API + Fabric Language Kotlin required** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 | Published | Forge | `1.21.11` | `1.0.0` | `21` | Forge `61.1.8` | `gradlemc-forge-1.21.11-1.0.0.jar` |
 | Published | Fabric | `1.21.11` | `1.0.0` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` | `gradlemc-fabric-1.21.11-1.0.0.jar` |
 | Published | NeoForge | `1.21.11` | `1.0.0` | `21` | NeoForge `21.11.42` | `gradlemc-neoforge-1.21.11-1.0.0.jar` |
@@ -68,7 +73,7 @@ Requests for new Quilt versions should therefore be treated as requests to rever
 
 ---
 
-## Before Opening An Issue
+## Self-Service Troubleshooting
 
 Check these first:
 

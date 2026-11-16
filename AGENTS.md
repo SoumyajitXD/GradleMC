@@ -1,5 +1,10 @@
 # AGENTS.md
 
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
+
+**Repository operating rule:** Do not resume feature development, bug-fix work, new ports, release builds, or automated maintenance merely because older instructions below describe them. The project owner must explicitly authorize reactivation. Historical code/build guidance is preserved for reference.
+
 ## Purpose
 
 This is the technical operating manual for coding agents and maintainers working on GradleMC. `README.md` is user-facing; this file protects the repository from stale paths, inaccurate support claims, destructive edits, dependency omissions, and command-casing mistakes.
@@ -23,7 +28,7 @@ Smart Diagnostics is local and rule-based. Do not describe it as generative AI, 
 
 ---
 
-## Current Release Identity — Minecraft 1.20.1
+## Last Published Release Identity — Minecraft 1.20.1
 
 ### Forge `v1.1.0`
 
@@ -49,7 +54,7 @@ Smart Diagnostics is local and rule-based. Do not describe it as generative AI, 
 | Required dependencies | **Fabric API + Fabric Language Kotlin** |
 | Artifact | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 
-The previous Java GradleMC implementation was replaced in the active 1.20.1 `v1.1.0` line. This does **not** remove Minecraft's Java `17` runtime requirement.
+The previous Java GradleMC implementation was replaced in the previously published 1.20.1 `v1.1.0` line. This does **not** remove Minecraft's Java `17` runtime requirement.
 
 The checked-in Forge and Fabric `1.20.1` source trees are synchronized to `v1.1.0`.
 

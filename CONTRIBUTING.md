@@ -1,8 +1,11 @@
-# Contributing To GradleMC
+# Contributing To GradleMC (Historical)
 
-Thanks for wanting to improve GradleMC. Focused, verifiable contributions are welcome.
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
 
-The current Minecraft `1.20.1` line is GradleMC `v1.1.0` for both Forge and Fabric. Both active 1.20.1 implementations use **Kotlin** and Java `17` as the Minecraft runtime.
+**New contributions are not being solicited.** Existing contribution rules are preserved below for reference only; new issues and pull requests may not be reviewed or merged.
+
+The current Minecraft `1.20.1` line is GradleMC `v1.1.0` for both Forge and Fabric. Both previously published 1.20.1 implementations use **Kotlin** and Java `17` as the Minecraft runtime.
 
 - Forge `1.20.1` `v1.1.0` requires **Kotlin for Forge**.
 - Fabric `1.20.1` `v1.1.0` requires **Fabric API** and **Fabric Language Kotlin**.
@@ -117,7 +120,7 @@ For source/resource changes:
 
 ---
 
-## Pull Request Expectations
+## Former Pull Request Expectations (Inactive)
 
 A useful PR includes:
 

@@ -1,21 +1,26 @@
-# GradleMC Roadmap
+# GradleMC Roadmap (Retired)
+
+> [!IMPORTANT]
+> **Project discontinued — 16 November 2026.** GradleMC is no longer developed or maintained. No further releases, features, bug fixes, compatibility updates, or security patches are planned. Existing source code and downloads are retained for historical reference and are provided as-is. Support, issue responses, and pull-request reviews are not guaranteed.
+
+**This is a historical roadmap, not an active development plan.** All previously proposed work and ports are cancelled unless the project owner explicitly reverses the discontinuation decision.
 
 This roadmap records the public support plan. A target is current only when release identity, dependencies, documentation, source, and artifacts agree.
 
 ---
 
-## Current Focus
+## Former Focus (Inactive)
 
 ### Minecraft `1.20.1` — GradleMC `v1.1.0`
 
-The current 1.20.1 line is Kotlin-based for both Forge and Fabric:
+The last published 1.20.1 line was Kotlin-based for both Forge and Fabric:
 
 | Loader | Java | Required dependencies | Artifact |
 | --- | --- | --- | --- |
 | Forge | `17` | **Kotlin for Forge** | `gradlemc-1.1.0-forge-1.20.1.jar` |
 | Fabric | `17` | **Fabric API** + **Fabric Language Kotlin** | `gradlemc-1.1.0-fabric-1.20.1.jar` |
 
-Priority work for these lines:
+Former priorities (not ongoing):
 
 - keep diagnostics accurate and bounded;
 - preserve lowercase `/gradlemc` commands;
@@ -34,8 +39,8 @@ The Forge and Fabric `1.20.1` source trees are synchronized to `v1.1.0` in the r
 
 | Status | Loader | GradleMC | Minecraft | Java | Notes |
 | --- | --- | --- | --- | --- | --- |
-| **Latest / active** | Forge | `1.1.0` | `1.20.1` | `17` | Kotlin; Kotlin for Forge required |
-| **Latest / active** | Fabric | `1.1.0` | `1.20.1` | `17` | Kotlin; Fabric API + Fabric Language Kotlin required |
+| **Last published** | Forge | `1.1.0` | `1.20.1` | `17` | Kotlin; Kotlin for Forge required |
+| **Last published** | Fabric | `1.1.0` | `1.20.1` | `17` | Kotlin; Fabric API + Fabric Language Kotlin required |
 | Published | Forge | `1.0.0` | `1.21.11` | `21` | Forge `61.1.8` |
 | Published | Fabric | `1.0.0` | `1.21.11` | `21` | Fabric Loader `0.19.3`; Fabric API `0.141.4+1.21.11` |
 | Published | NeoForge | `1.0.0` | `1.21.11` | `21` | NeoForge `21.11.42` |
@@ -61,9 +66,9 @@ Roadmap rules:
 
 ---
 
-## Kotlin Direction
+## Historical Kotlin Direction
 
-GradleMC `v1.1.0` establishes Kotlin as the implementation language for the active Minecraft `1.20.1` Forge and Fabric lines.
+GradleMC `v1.1.0` establishes Kotlin as the implementation language for the previously maintained Minecraft `1.20.1` Forge and Fabric lines.
 
 For these Kotlin lines:
 
@@ -79,9 +84,9 @@ Kotlin replacing GradleMC's previous Java source does not change the fact that M
 
 ---
 
-## Quality Priorities
+## Former Quality Priorities (Inactive)
 
-Future work should be quality-first rather than feature stuffing:
+Before discontinuation, the project prioritized quality over feature count:
 
 1. Fix confirmed bugs from real reports.
 2. Keep FPS and performance evidence trustworthy.
@@ -98,11 +103,11 @@ A feature that exists only in documentation is not a feature. It is fan fiction 
 
 ---
 
-## Future Ports
+## Former Port Criteria (Cancelled)
 
-Possible future targets may include additional Forge, Fabric, or NeoForge releases and later Minecraft versions.
+No new ports or Minecraft-version updates are planned. Historically, possible targets had included additional Forge, Fabric, and NeoForge releases.
 
-A new port becomes supported only after all of the following are true:
+Previously, support for a port required all of the following:
 
 - source metadata identifies the correct Minecraft version and loader;
 - the project builds successfully;
